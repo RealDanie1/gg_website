@@ -4,12 +4,12 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>GG Clan — Let's call it a GG</title>
-  <meta name="description" content="GG Clan is a competitive Age of Empires II community built on cooperation, defensive craft and memorable cities. Daily ladder roster, clan intel and an open gate.">
+  <meta name="description" content="GG Clan is an Age of Empires II community. Meet the players, explore clan match stats and join us on Discord.">
   <meta name="theme-color" content="#050607">
 
   <meta property="og:type" content="website">
   <meta property="og:title" content="GG Clan — Let's call it a GG">
-  <meta property="og:description" content="Competitive Age of Empires II, played with cooperation, defensive control and just enough cheek. Daily ladder roster and clan intel.">
+  <meta property="og:description" content="Age of Empires II, played together. Meet GG Clan, explore our games and join us on Discord.">
   <meta property="og:image" content="assets/img/hero-castle.webp">
   <meta name="twitter:card" content="summary_large_image">
 
@@ -18,8 +18,6 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="preconnect" href="https://data.aoe2companion.com">
-  <link rel="preconnect" href="https://discord.com">
   <link rel="preconnect" href="https://cdn.discordapp.com">
   <link rel="preload" as="image" href="assets/img/hero-castle.webp">
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -60,11 +58,11 @@
       <a href="#roster">Roster</a>
       <a href="#ledger">Ledger</a>
       <a href="#cities">Cities</a>
-      <a class="button" data-discord href="#join">Enter Discord</a>
+      <a class="button" data-discord href="#join">Join Discord</a>
     </nav>
 
     <a class="button" data-discord href="#join">
-      Enter Discord
+      Join Discord
       <svg class="arrow" aria-hidden="true"><use href="#i-arrow"></use></svg>
     </a>
     <button class="burger" id="burger" aria-label="Menu" aria-expanded="false" aria-controls="nav">
@@ -87,11 +85,10 @@
           <span class="motto">Let's call it a <span class="nb">GG<span class="period">.</span></span></span>
         </h1>
         <div class="hero__rule"></div>
-        <p class="hero__lead" data-lead>Shape the battlefield. Build what lasts.</p>
         <p class="hero__body" data-blurb></p>
         <div class="hero__actions">
           <a class="button" data-discord href="#join">
-            Join the clan
+            Join Discord
             <svg class="arrow" aria-hidden="true"><use href="#i-arrow"></use></svg>
           </a>
           <a class="button button--ghost" href="#roster">
@@ -102,9 +99,6 @@
       </div>
     </div>
 
-    <p class="hero__pulse" id="pulse" aria-live="polite">
-      <span class="dot"></span> Connecting to clan signal
-    </p>
   </section>
 
   <!-- ============================================================ CREED -->
@@ -133,9 +127,8 @@
       <div class="section-head">
         <div>
           <h2 class="title">The lineup<span class="period">.</span></h2>
-          <p class="lead">Everyone carrying the tag, straight off the ranked ladder — nobody types these numbers in.</p>
         </div>
-        <p class="live-badge" id="rosterStatus"><span class="dot"></span> Connecting</p>
+        <p class="live-badge" id="rosterStatus"><span class="dot"></span> Loading…</p>
       </div>
 
       <div class="roster-toolbar">
@@ -158,9 +151,8 @@
       <div class="section-head">
         <div>
           <h2 class="title">The clan in play<span class="period">.</span></h2>
-          <p class="lead">Shared games, familiar maps and the people beside you.</p>
         </div>
-        <p class="live-badge" id="ledgerStatus"><span class="dot"></span> Connecting</p>
+        <p class="live-badge" id="ledgerStatus"><span class="dot"></span> Loading…</p>
       </div>
 
       <div class="period-controls" data-period-controls role="group" aria-label="Clan statistics period"></div>
@@ -173,7 +165,7 @@
       <div class="ledger__grid">
         <section class="ledger__panel ledger__panel--warband">
           <p class="data-label data-label--ico"><svg class="ico" aria-hidden="true"><use href="#i-duo"></use></svg>The warband</p>
-          <p class="panel-note">Who queues together. Select a pair to explore their shared matches.</p>
+          <p class="panel-note">Select a pair to see their shared games.</p>
           <div id="warband"><div class="state">Loading…</div></div>
           <div id="pairDetail" aria-live="polite"></div>
         </section>
@@ -192,18 +184,17 @@
         </section>
 
         <section class="ledger__panel ledger__panel--formats">
-          <p class="data-label data-label--ico"><svg class="ico" aria-hidden="true"><use href="#i-swords"></use></svg>How the clan queues</p>
+          <p class="data-label data-label--ico"><svg class="ico" aria-hidden="true"><use href="#i-swords"></use></svg>Game formats</p>
           <div id="clanFormats"><div class="state">Loading…</div></div>
         </section>
         <section class="ledger__panel ledger__panel--atlas">
-          <p class="data-label data-label--ico"><svg class="ico" aria-hidden="true"><use href="#i-globe"></use></svg>Who the clan runs into</p>
+          <p class="data-label data-label--ico"><svg class="ico" aria-hidden="true"><use href="#i-globe"></use></svg>Opponent countries</p>
           <div id="clanAtlas"><div class="state">Loading…</div></div>
         </section>
       </div>
 
-      <div class="ledger__more" id="ledgerMore"></div>
+      <div class="ledger__more" id="ledgerMore" hidden></div>
 
-      <p class="footnote">All panels follow the selected period and mode. Match totals count each game once. Win rate and duration exclude AI games, unknown results and games with clan members on both sides. Civilisations and maps count member appearances with recorded results; two members in one match contribute two appearances. Formats count decided matches. Pair results count teammates with an agreed result, excluding AI. Latest games includes unknown and split results. “Small sample” means fewer than 10 appearances; it is not a confidence rating.<span data-snapshot></span></p>
     </div>
   </section>
 
@@ -214,7 +205,6 @@
       <div class="section-head">
         <div>
           <h2 class="title">Cities worth defending<span class="period">.</span></h2>
-          <p class="lead">Victory is temporary. A great skyline is forever.</p>
         </div>
       </div>
 
@@ -250,19 +240,16 @@
   <!-- ============================================================ JOIN -->
   <section class="section join" id="join">
     <div class="wrap">
-      <p class="marker" style="justify-content:center">Recruitment</p>
       <h2>The gate is open<span class="period">.</span></h2>
-      <p>Come for the games. Stay for the people, the plans and the cities that take far too long to build. Any rating — we care about how you show up.</p>
+      <p>Team games and good company. All ratings welcome.</p>
       <a class="button" data-discord href="#">
         <svg class="arrow" aria-hidden="true" style="width:18px;height:18px" ><use href="#i-discord"></use></svg>
-        Join GG Clan on Discord
+        Join Discord
       </a>
       <!-- Filled from the Discord server widget; stays hidden if the
            widget is switched off or unreachable. -->
       <div class="presence" id="presence" hidden></div>
 
-      <a class="join__link" data-discord data-discord-label href="#"></a>
-      <blockquote data-motto-quote></blockquote>
     </div>
   </section>
 
@@ -286,7 +273,7 @@
     </div>
     <div class="footer__legal">
       <small>
-        &copy; <span data-year></span> GG Clan. Data from AoE2 Companion. Daily snapshot date shown beside each section.
+        &copy; <span data-year></span> GG Clan. Data from AoE2 Companion.
         Not affiliated with Microsoft, Xbox Game Studios, World's Edge or Forgotten Empires.
       </small>
     </div>

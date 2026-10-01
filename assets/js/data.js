@@ -10,10 +10,8 @@
 const CLAN = {
   name: "GG Clan",
   clanTag: "lggl",                          // the in-game clan tag the ladder is queried with
-  motto: "Let's call it a GG.",
-  lead: "Shape the battlefield. Build what lasts.",
   blurb:
-    "Competitive Age of Empires II, played with cooperation, defensive control and just enough cheek.",
+    "Age of Empires II. Team games, defensive craft and good company.",
   discord: "https://discord.gg/eZrvfwaJJM",
 
   /* Discord server id, used for the daily "who was online" panel above the

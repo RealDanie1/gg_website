@@ -275,19 +275,8 @@ h1, h2, h3 {
   width: 74px; height: 2px; background: var(--red);
   margin: 1.9rem 0 1.7rem;
 }
-.hero__lead {
-  font-family: var(--mono); font-size: clamp(0.88rem, 1.7vw, 1rem);
-  letter-spacing: 0.16em; text-transform: uppercase; color: var(--bone);
-}
-.hero__body { margin-top: 1.1rem; max-width: 44ch; color: var(--muted); }
+.hero__body { max-width: 44ch; color: var(--muted); }
 .hero__actions { margin-top: 2.4rem; display: flex; flex-wrap: wrap; gap: 0.9rem; }
-
-.hero__pulse {
-  position: absolute; left: var(--gutter); bottom: 2.2rem;
-  display: flex; align-items: center; gap: 0.65rem;
-  font-family: var(--mono); font-size: var(--fs-mini);
-  letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted);
-}
 
 /* embers */
 .hero__embers i {
@@ -433,8 +422,6 @@ h1, h2, h3 {
   letter-spacing: 0.01em;
   color: var(--bone);
 }
-.player__role { display: block; font-family: var(--mono); font-size: var(--fs-micro); letter-spacing: 0.1em; text-transform: uppercase; color: var(--red-bright); margin-top: 0.2rem; }
-.player__spec { display: block; font-size: var(--fs-small); color: var(--dim); margin-top: 0.1rem; }
 
 .player__country { display: flex; align-items: center; gap: 0.5rem; font-size: 0.88rem; color: var(--muted); }
 .player__country img { width: 20px; height: 15px; object-fit: cover; border: 1px solid var(--line); }
@@ -720,11 +707,6 @@ h1, h2, h3 {
   color: var(--muted); min-width: 2.6rem; text-align: right;
 }
 
-.footnote {
-  margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--line-soft);
-  font-size: var(--fs-small); color: var(--dim); line-height: 1.65;
-}
-
 /* ============================================================
    WAR LEDGER
    ============================================================ */
@@ -912,11 +894,6 @@ h1, h2, h3 {
 
 /* ---------- load more ---------- */
 .ledger__more { display: flex; justify-content: center; margin-top: 1.25rem; }
-.ledger__more-note {
-  margin: 0;
-  font-family: var(--mono); font-size: var(--fs-micro);
-  letter-spacing: 0.1em; text-transform: uppercase; color: var(--dim);
-}
 
 .duo__meta strong.good { color: var(--win); }
 .duo__meta strong.bad  { color: var(--loss); }
@@ -1012,17 +989,6 @@ h1, h2, h3 {
 .join h2 { font-size: clamp(2.6rem, 7vw, 5rem); }
 .join p { margin: 1.2rem auto 0; max-width: 48ch; color: var(--muted); }
 .join .button { margin-top: 2.3rem; }
-.join__link {
-  display: block; margin-top: 1.1rem;
-  font-family: var(--mono); font-size: var(--fs-small); letter-spacing: 0.1em; color: var(--dim);
-}
-.join__link:hover { color: var(--bone); }
-.join blockquote {
-  margin: 3rem auto 0; padding-top: 2rem; max-width: 34ch;
-  border-top: 1px solid var(--line);
-  font-family: var(--display); font-size: 1.35rem; letter-spacing: 0.08em; text-transform: uppercase;
-  color: var(--muted);
-}
 
 /* ---------- live Discord presence ---------- */
 .presence { margin-top: 1.7rem; display: grid; justify-items: center; gap: 0.85rem; }
@@ -1155,7 +1121,6 @@ h1, h2, h3 {
 @media (max-width: 560px) {
   .header__inner { height: 64px; }
   .nav { inset-block-start: 64px; }
-  .hero__pulse { font-size: var(--fs-micro); }
   .player__stats-cell { gap: 0.9rem; }
   .player__name-cell { gap: 0.6rem; }
   .avatar { width: 28px; height: 28px; }
@@ -1241,7 +1206,6 @@ h1, h2, h3 {
 .pair-detail a, [data-clear-pair] { text-decoration: underline; text-underline-offset: 4px; padding: 0.6rem 0; margin-right: 1rem; min-height: 40px; }
 .pair-scope { color: var(--muted); font-size: 0.875rem; margin-bottom: 1rem; }
 .ledger__more { flex-wrap: wrap; gap: 1rem; align-items: center; }
-.ledger__more-note { letter-spacing: 0; text-transform: none; font-family: var(--sans); font-size: 0.875rem; }
 #clanFeed { scroll-margin-top: 100px; }
 @media (max-width: 1050px) {
   .ledger__stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }

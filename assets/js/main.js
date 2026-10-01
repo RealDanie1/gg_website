@@ -20,11 +20,9 @@
      1. Static content from data.js
      ============================================================ */
   $("[data-blurb]").textContent = CLAN.blurb;
-  $("[data-lead]").textContent = CLAN.lead;
   $("[data-creed-title]").innerHTML = esc(CLAN.creedTitle) + '<span class="period">.</span>';
   $("[data-creed-lead]").textContent = CLAN.creedLead;
   $("[data-warcry]").textContent = CLAN.warcry;
-  $("[data-motto-quote]").textContent = CLAN.motto + " Shape the battlefield.";
   $("[data-clantag]").textContent = CLAN.clanTag;
   $("[data-year]").textContent = new Date().getFullYear();
 
@@ -33,8 +31,6 @@
     a.target = "_blank";
     a.rel = "noopener noreferrer";
   });
-  var discordLabel = $("[data-discord-label]");
-  if (discordLabel) discordLabel.textContent = CLAN.discord.replace(/^https?:\/\//, "");
 
   $("#values").innerHTML = CLAN.creed.map(function (row) {
     return '<article class="value"><span>' + esc(row[0]) + "</span>" +
@@ -268,7 +264,7 @@
   /* Snapshot dates reflect the daily server refresh. */
   function sourceLabel() {
     var meta = AOE.snapshotNow();
-    return meta && meta.updatedAt ? "Updated " + shortDate(meta.updatedAt) + " · Daily snapshot" : "Stored data unavailable";
+    return meta && meta.updatedAt ? "Updated " + shortDate(meta.updatedAt) : "Stored data unavailable";
   }
 
   function statusOK(el, text) {
@@ -326,9 +322,10 @@
     var start = periodStart();
     if (!start && state.games.length) start = Math.min.apply(null, state.games.map(function (g) { return new Date(g.date).getTime(); }));
     var range = start ? shortDate(start) + " – " + shortDate(state.asOf) : "All recorded history";
-    var status = state.feedExhausted && !state.feedHistoryComplete ? "Stored history is incomplete" : periodCovered() ? "Period loaded" : state.feedError ? "Incomplete period · could not load older games" : "Loading period…";
-    $("#ledgerCoverage").textContent = range + " · " + status;
-    $("#rosterCoverage").textContent = range + " · " + status + ". Rating and win rate are lifetime ladder figures; change and form follow this period and ladder. Change sums recorded Elo adjustments.";
+    var status = state.feedExhausted && !state.feedHistoryComplete ? "History incomplete" : periodCovered() ? "" : state.feedError ? "Incomplete period · could not load older games" : "Loading period…";
+    var coverage = range + (status ? " · " + status : "");
+    $("#ledgerCoverage").textContent = coverage;
+    $("#rosterCoverage").textContent = coverage;
     $$("[data-period-controls]").forEach(function (group) { group.setAttribute("aria-busy", String(state.feedLoading)); });
   }
   $$("[data-period-controls]").forEach(function (group) {
@@ -490,12 +487,11 @@
     var head =
       '<div class="roster__labels" aria-hidden="true">' +
         "<span></span><span>Player</span><span>Country</span>" +
-        "<span>Elo</span><span>Change</span><span>Win rate</span><span>Form · latest first</span>" +
+        "<span>Elo</span><span>Change</span><span>Win rate</span><span>Form</span>" +
       "</div>";
 
     var rows = players.map(function (player, i) {
       var stats = player.ladders[ladder];
-      var note = noteFor(player);
       var activity = activityFor(player);
       var open = state.openPlayer === player.profileId;
       var unranked = !stats || stats.rating == null;
@@ -511,8 +507,6 @@
             '<span class="player__ident">' +
               '<span class="player__name">' + esc(player.name) + "</span>" +
               '<span class="player__last">' + (activity.last ? 'Last played ' + esc(shortDate(activity.last)) : 'No activity in loaded history') + '</span>' +
-              (note.role ? '<span class="player__role">' + esc(note.role) + "</span>" : "") +
-              (note.specialty ? '<span class="player__spec">' + esc(note.specialty) + "</span>" : "") +
             "</span>" +
           "</span>" +
           '<span class="player__country">' + flag(player.country) +
@@ -728,6 +722,7 @@
             (note.role ? '<b>' + esc(note.role) + "</b>" : "") +
             (place ? '<span class="d-name__place">' + flag(player.country) + esc(place) + "</span>" : "") +
           "</p>" +
+          (note.specialty ? '<p class="d-name__bio">' + esc(note.specialty) + "</p>" : "") +
           (note.bio ? '<p class="d-name__bio">' + esc(note.bio) + "</p>" : "") +
         "</div>" +
       "</div>" +
@@ -1407,11 +1402,11 @@
   function renderLedgerMore() {
     var host = $("#ledgerMore");
     if (!host) return;
+    host.hidden = !state.feedError;
     if (state.feedError) {
-      host.innerHTML = '<p class="ledger__more-note">This period is incomplete. Showing the games available so far.</p><button type="button" class="button button--ghost" id="ledgerMoreBtn">Retry loading period</button>';
+      host.innerHTML = '<button type="button" class="button button--ghost" id="ledgerMoreBtn">Retry loading period</button>';
     } else {
-      var scope = state.feedExhausted && !state.feedHistoryComplete ? 'All stored games loaded; earlier history is incomplete' : periodCovered() ? 'Selected period loaded' : 'Loading selected period…';
-      host.innerHTML = '<p class="ledger__more-note">' + scope + ' · ' + state.games.length.toLocaleString("en-US") + ' unique matches available in this session.</p>';
+      host.innerHTML = "";
     }
   }
 
@@ -1476,7 +1471,7 @@
 
   function renderFeed() {
     var matches = feedMatches().slice(0, 10);
-    $("#feedScope").innerHTML = state.pair ? '<p class="pair-scope">Shared matches: ' + esc(state.pair.a) + " × " + esc(state.pair.b) + ' <button type="button" data-clear-pair>Show all clan matches</button></p>' : '<p class="panel-note">Latest 10 matches in the selected period and mode.</p>';
+    $("#feedScope").innerHTML = state.pair ? '<p class="pair-scope">Shared matches: ' + esc(state.pair.a) + " × " + esc(state.pair.b) + ' <button type="button" data-clear-pair>Show all clan matches</button></p>' : "";
     var host = $("#clanFeed");
 
     if (!matches.length) {
@@ -1651,13 +1646,7 @@
       return CLAN.hidden.indexOf(m.name) === -1;
     });
 
-    var ranked = state.roster.filter(function (m) {
-      return m.ladders.rm_team && m.ladders.rm_team.rating != null;
-    }).length;
-
     statusOK($("#rosterStatus"), sourceLabel());
-    $("#pulse").innerHTML = '<span class="dot dot--live"></span> ' +
-      state.roster.length + " roster accounts · " + ranked + " ranked in Team RM";
     renderRoster();
     loadCountryTotals();
     loadAvatars();
@@ -1665,25 +1654,11 @@
   }).catch(function () {
     statusFail($("#rosterStatus"), "Stored data unavailable");
     statusFail($("#ledgerStatus"), "Stored data unavailable");
-    $("#pulse").innerHTML = '<span class="dot dot--error"></span> Clan signal unavailable';
     $("#rosterTable").innerHTML =
       '<div class="state">The saved data is unavailable. Please try again later.</div>';
     $("#clanCivs").innerHTML = $("#clanMaps").innerHTML = $("#clanFeed").innerHTML =
       '<div class="state">Unavailable.</div>';
   });
-
-  /* Show the server refresh date alongside the stored match count. */
-  AOE.snapshot().then(function (meta) {
-    var host = $("[data-snapshot]");
-    if (!host || !meta || !meta.updatedAt) return;
-
-    var when = new Date(meta.updatedAt);
-    if (isNaN(when.getTime())) return;
-
-    host.textContent = " Snapshot archive: " +
-      Number(meta.matches).toLocaleString() + " unique matches, last updated " +
-      when.toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" }) + ".";
-  }).catch(function () { /* The main data panel already reports unavailable. */ });
 
   /* One request for the whole roster's stored identity cards — avatars, platform,
      all-time games and drops. Purely additive: if it fails the roster keeps
@@ -1802,7 +1777,7 @@
     DISCORD.fetchWidget(CLAN.discordGuildId).then(function (guild) {
       if (!guild.online) {
         host.innerHTML = '<p class="live-badge presence__count">' +
-          '<span class="dot"></span> Nobody online at the last update · ' + esc(shortDate(guild.updatedAt)) + '</p>';
+          '<span class="dot"></span> 0 online</p>';
         host.hidden = false;
         return;
       }
@@ -1821,7 +1796,7 @@
 
       host.innerHTML =
         '<p class="live-badge presence__count"><span class="dot dot--live"></span> ' +
-          guild.online + " online at update · " + esc(shortDate(guild.updatedAt)) + "</p>" +
+          guild.online + " online</p>" +
         (shown.length
           ? '<div class="presence__faces">' +
               shown.map(function (member) {
