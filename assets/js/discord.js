@@ -1,24 +1,8 @@
-/* ============================================================
-   GG CLAN — live Discord presence
-   ------------------------------------------------------------
-   Discord's guild widget endpoint is public and answers CORS with
-   whatever origin asks, so the browser reads it directly and the
-   site stays static — same deal as the ladder.
-
-   It only answers while "Enable Server Widget" is switched ON in
-   Discord → Server Settings → Widget. If that gets turned off the
-   request 403s, and the page hides the panel rather than guessing
-   a number.
-
-   Two things the widget deliberately does NOT give you: real member
-   ids (`id` is just a list index) and offline members. The list is
-   also capped at 100 online, which is why the headline count comes
-   from `presence_count` and not from the array length.
-   ============================================================ */
+/* GG CLAN — Discord's published widget snapshot.
+   Only the daily server job contacts Discord. This optional panel uses the
+   widget's own update date, which can be older than the ladder snapshot. */
 window.DISCORD = (function () {
   "use strict";
-
-  var API = "https://discord.com/api/guilds/";
 
   /* Sort order for the face strip — online first, greyed-out last. */
   var RANK = { online: 0, idle: 1, dnd: 2, offline: 3 };
@@ -30,12 +14,10 @@ window.DISCORD = (function () {
     if (!guildId) return Promise.reject(new Error("No Discord guild id configured"));
     if (pending) return pending;
 
-    pending = fetch(API + encodeURIComponent(guildId) + "/widget.json")
-      .then(function (response) {
-        if (!response.ok) throw new Error("Discord widget unavailable (" + response.status + ")");
-        return response.json();
-      })
-      .then(function (payload) {
+    pending = window.GG_SNAPSHOT.getJson("data/public/discord.json")
+      .then(function (snapshot) {
+        if (!snapshot || snapshot.guildId !== guildId || !snapshot.payload) throw new Error("Discord snapshot unavailable");
+        var payload = snapshot.payload;
         /* Only voice channels appear here, and only the ones the widget
            is allowed to show. Used to name where people are sitting. */
         var channelName = {};
@@ -57,6 +39,7 @@ window.DISCORD = (function () {
 
         return {
           name: payload.name || null,
+          updatedAt: snapshot.updatedAt,
           /* The widget's own invite. The site still links CLAN.discord —
              this is here so a mismatch is at least visible in the data. */
           invite: payload.instant_invite || null,

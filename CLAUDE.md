@@ -7,21 +7,23 @@ changing behaviour it describes.
 ## What this is
 
 A static site for the GG Age of Empires II clan (in-game tag `lggl`).
-**No build step, no dependencies, no backend, no package.json.** Every number on
-the page is fetched at runtime — either from a generated snapshot under
-`data/public/` or live from the AoE2 Companion public API.
+**No frontend build, no npm dependencies, no runtime backend.** SQLite is the
+durable store; GitHub Actions refreshes it daily and publishes JSON snapshots.
+Browsers read only `data/public/`; never add an external data API fallback.
 
 ## Commands
 
 ```bash
-node tools/update.mjs        # API -> data/raw   (the only thing that goes out; --full re-walks history)
-node tools/build.mjs         # data/raw -> data/public  (pure, offline, ~1s)
-python -m http.server 4173   # serve; or use the "gg-site" launch.json config (npx serve, port 4321)
+node tools/update.mjs        # server APIs -> SQLite (--full rechecks history)
+node tools/build.mjs         # SQLite -> data/public (offline; initializes from seed)
+node tools/package.mjs       # publishable files -> dist
+python3 -m http.server 4173 --directory dist # serve the packaged website
 ```
 
-Run `node tools/test-data.mjs` after building the snapshot. There is no linter
-or formatter. Verify UI changes by serving the site and looking at it. `index.html` also works opened directly over `file://`
-— that constraint is why the browser scripts are plain scripts, not ES modules.
+Use Node 24+. Run `node tools/test-data.mjs` after building the snapshot and
+`node tools/test-store.mjs --delay=0 --retries=0` for database/updater changes. There is no linter
+or formatter. Verify UI changes by serving the site and looking at it. Also verify opening `index.html` directly: generated script copies load the
+same snapshot over `file://`. Browser scripts remain plain scripts.
 
 ## Layout
 
@@ -29,26 +31,31 @@ or formatter. Verify UI changes by serving the site and looking at it. `index.ht
 index.html                page markup, all section ids the JS binds to
 assets/css/styles.css     all styling; tokens in :root at the top
 assets/js/data.js         global `CLAN` — the only content file
-assets/js/aoe.js          global `window.AOE` — all ladder/match data
-assets/js/discord.js      live "who's online" from the server widget
+assets/js/snapshot.js     shared JSON/file-preview snapshot reader
+assets/js/aoe.js          global `window.AOE` — stored ladder/match data
+assets/js/discord.js      stored Discord widget with its own timestamp
 assets/js/main.js         one IIFE, six numbered sections, all rendering
-tools/update.mjs          API -> data/raw
-tools/build.mjs           data/raw -> data/public
-data/raw/                 the store — COMMITTED, never served
-data/public/              generated, gitignored (un-ignore if Pages deploys from a branch)
+tools/update.mjs          server APIs -> SQLite
+tools/build.mjs           SQLite -> data/public
+tools/store.mjs           SQLite schema, migration and atomic writes
+tools/package.mjs         safe Pages artifact -> dist
+.github/workflows/pages.yml scheduled refresh, persistence and publication
+data/raw/                 initial seed — COMMITTED, never served
+data/gg.sqlite            local database — IGNORED; persisted on data-store branch
+data/public/              generated, gitignored; published only through dist/
 ```
 
 ## Conventions
 
 - **Browser JS is ES5 on purpose**: `var`, `function` expressions, no arrows, no
   `const`/`let`, no template literals, no modules. Match it. `tools/*.mjs` is
-  modern ESM (Node 18+, built-in `fetch`, zero deps) — keep it dependency-free.
+  modern ESM (Node 24+, built-in `fetch` and `node:sqlite`, zero deps) — keep it dependency-free.
 - Files carry a block comment at the top explaining *why* the thing works the
   way it does, and inline comments explain decisions rather than syntax. New
   code should read the same way; when you change a decision a comment records,
   update the comment.
 - `main.js` is organised as numbered sections (`1. Static content` …
-  `6. Live Discord presence`). Put new rendering in the section it belongs to.
+  `6. Stored Discord presence`). Put new rendering in the section it belongs to.
 - Escape anything interpolated into HTML with the local `esc()` in `main.js`.
 - Colours, spacing, fonts and the type floor are CSS custom properties at the
   top of `styles.css`. Change tokens, not call sites. `--dim` is held at 5.6:1+
@@ -61,13 +68,18 @@ data/public/              generated, gitignored (un-ignore if Pages deploys from
 fetchCountryTotal, fetchPlayerDetail, fetchFullHistory, warband, tally,
 durationStats, form, snapshot, snapshotNow}`.
 
-Every fetch goes through `preferSnapshot(fromFiles, fromApi)`: read
-`data/public/` first, fall back to the live API if the probe of
-`data/public/meta.json` fails, the snapshot is for a different clan tag, it
-predates a ladder change, or a file read throws. **Both paths must hand back
-identical shapes** — nothing downstream is allowed to know which one answered.
-When you add a snapshot-backed endpoint, add its live counterpart too; the live
-path is what runs on a fresh clone and over `file://`.
+Every data fetch reads `data/public/`. HTTP pages use JSON; direct `file://`
+previews load matching generated `.js` copies through `GG_SNAPSHOT`. Missing files, another clan tag or
+missing ladder coverage must fail or omit optional decoration locally. Never
+contact AoE2 Companion or Discord APIs from browser scripts, including retries,
+profile expansion and full-history controls. Only `tools/update.mjs` fetches
+upstream data. A refresh commits once after every required response succeeds;
+failed jobs preserve the existing database and live deployment.
+
+Only `dist/` is uploaded to Pages. Keep raw data, SQLite and tools out of it.
+The `data-store` branch retains the database between scheduled runs; do not
+replace it with an expiring cache. Source pushes publish without upstream
+refresh; daily and manual refresh jobs update the data on GitHub's server.
 
 `MATCH_PAGE = 300` in `aoe.js` and `PAGE_SIZE = 300` in `tools/build.mjs` must
 stay equal, or automatic period loading stops lining up with local pages.
@@ -75,7 +87,7 @@ stay equal, or automatic period loading stops lining up with local pages.
 ## Invariants — don't break these
 
 - Never hardcode statistics or convert unknown results to losses.
-- Keep snapshot and live player/clan result shapes identical; unknown is null.
+- Keep player/clan result shapes consistent; unknown is null.
 - Period labels must describe actual coverage. Label partial results and offer
   retry on failure. Read README → Data display before changing filters.
 - Match summaries and formats count unique matches. Civ/maps count member
@@ -90,7 +102,7 @@ stay equal, or automatic period loading stops lining up with local pages.
 Everything a non-developer would change lives in `assets/js/data.js`: `discord`,
 `discordGuildId`, `clanTag`, `notes` (keyed by exact in-game name), `hidden`,
 `cities`, `profileLinks`, `creed`, `warcry`, `motto`, `blurb`, `ladders`. Elo,
-ranks, wins and countries are live and must never be typed there.
+ranks, wins and countries are server-fetched and must never be typed there.
 
 ## Known dead ends
 

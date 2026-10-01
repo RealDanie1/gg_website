@@ -2,9 +2,9 @@
    GG CLAN — site content
    ------------------------------------------------------------
    This is the only file you need to edit. No build step.
-   The roster is LIVE: it comes from the AoE2 ladder for the clan
+   The roster is updated daily from the AoE2 ladder for the clan
    tag below, so new members appear on their own. Everything here
-   is flavour layered on top of that live data.
+   is flavour layered on top of that stored data.
    ============================================================ */
 
 const CLAN = {
@@ -16,7 +16,7 @@ const CLAN = {
     "Competitive Age of Empires II, played with cooperation, defensive control and just enough cheek.",
   discord: "https://discord.gg/eZrvfwaJJM",
 
-  /* Discord server id, used for the live "who's online" panel above the
+  /* Discord server id, used for the daily "who was online" panel above the
      join button. It reads the server's public widget, so it needs
      "Enable Server Widget" left ON in Server Settings -> Widget. Switch
      the widget off, or blank this out, and the panel simply disappears.
@@ -29,7 +29,7 @@ const CLAN = {
   /* ------------------------------------------------------------------
      PLAYER NOTES  — keyed by exact in-game name.
      Everything else (Elo, peak, wins, losses, country, rank, streak)
-     is fetched live and must NOT be typed here.
+     is fetched by the scheduled job and must NOT be typed here.
 
      Add a `role` and a `bio` for anyone you want to introduce. Leave a
      player out entirely and they still appear on the roster — just

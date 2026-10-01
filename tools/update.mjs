@@ -1,37 +1,39 @@
 #!/usr/bin/env node
 /* ============================================================
-   GG CLAN — snapshot updater  (API  ->  data/raw)
+   GG CLAN — database updater  (API  ->  SQLite)
    ------------------------------------------------------------
-   Pulls every match every clan member has ever played and keeps
-   it in a local store, so the site can render lifetime numbers
-   from disk instead of paying for them on every page load.
+   Fetches recorded clan history into SQLite on the server, so visitors
+   read published files instead of requesting source data on page load.
 
    Run it:
      node tools/update.mjs           incremental — page 1 per player,
-                                     stopping at the first game already
-                                     in the store (~1 request each)
+                                     stopping at a fully stored page
+                                     (~1 match request per inactive player)
      node tools/update.mjs --full    re-walk every player's whole history
 
-   The FIRST run is the expensive one: it pages each account back to
-   its first recorded game, roughly 16 pages for a 4,500-game account.
-   After that the store carries the weight and this is nearly free.
+   The committed seed makes the first database usable offline. New
+   players and --full runs walk history; routine refreshes are incremental.
 
-   Nothing here is clever about correctness: a match is stored under
-   its own id, so re-fetching a game overwrites rather than duplicates,
+   The database is changed in one transaction after the refresh succeeds.
+   A failed refresh leaves the last successful snapshot available.
+
+   A match is stored under its own id, so re-fetching a game overwrites rather than duplicates,
    and a game two members played together is stored once.
 
-   No dependencies. Node 18+ (fetch built in).
+   No dependencies. Node 24+ (fetch and SQLite built in).
    ============================================================ */
-import { readFile, writeFile, mkdir } from "node:fs/promises";
+import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const RAW = path.join(ROOT, "data", "raw");
+import { openStore, DATABASE_PATH } from "./store.mjs";
+let database;
+let requestFetch = fetch;
 
 const API = "https://data.aoe2companion.com/api";
 const MATCH_PAGE = 300;      // the largest page the service will serve
-const MAX_MATCH_PAGES = 40;  // guard, same as assets/js/aoe.js
+const MAX_MATCH_PAGES = 40;  // abort before committing if the upstream walk never ends
 
 const args = process.argv.slice(2);
 const FULL = args.includes("--full");
@@ -41,7 +43,9 @@ const RATE_LIMIT_WAIT = numberArg("--cooldown", 15000);  // ms to sit out a 429
 
 function numberArg(name, fallback) {
   const hit = args.find((a) => a.startsWith(name + "="));
-  return hit ? Number(hit.slice(name.length + 1)) : fallback;
+  const value = hit ? Number(hit.slice(name.length + 1)) : fallback;
+  if (!Number.isFinite(value) || value < 0 || !Number.isInteger(value)) throw new Error("Invalid " + name + " value");
+  return value;
 }
 
 /* ---------- plumbing ---------- */
@@ -54,7 +58,10 @@ async function api(url) {
     let wait = DELAY * attempt * 4;
     try {
       if (requests++) await sleep(DELAY);
-      const res = await fetch(url, { headers: { "user-agent": "gg-clan-site/snapshot" } });
+      const res = await requestFetch(url, {
+        headers: { "user-agent": "gg-clan-site/snapshot" },
+        signal: AbortSignal.timeout(30000)
+      });
       if (!res.ok) {
         /* 429 is the one worth waiting properly for. A full history walk is
            sixteen quick pages and the service will say when it has had
@@ -74,15 +81,8 @@ async function api(url) {
   }
 }
 
-async function readJson(file, fallback) {
-  try { return JSON.parse(await readFile(path.join(RAW, file), "utf8")); }
-  catch { return fallback; }
-}
-
-async function writeJson(file, value) {
-  const full = path.join(RAW, file);
-  await mkdir(path.dirname(full), { recursive: true });
-  await writeFile(full, JSON.stringify(value, null, 2) + "\n");
+function readJson(file, fallback) {
+  return database.getJson(file, fallback);
 }
 
 const log = (...parts) => console.log(...parts);
@@ -94,40 +94,8 @@ async function loadClan() {
   return new Function(src + "\nreturn CLAN;")();
 }
 
-/* ---------- the match store ----------
-   One match per line, newest first. Line-oriented so a day of new games
-   is a handful of added lines in a diff rather than a rewritten file,
-   and so the store stays greppable. Civ and map artwork is deduped into
-   images.json — the same two dozen URLs would otherwise repeat on every
-   one of twenty thousand rows. */
-
-async function loadMatches() {
-  const store = new Map();
-  let text = "";
-  try { text = await readFile(path.join(RAW, "matches.ndjson"), "utf8"); }
-  catch { return store; }
-
-  for (const line of text.split("\n")) {
-    if (!line.trim()) continue;
-    const match = JSON.parse(line);
-    store.set(String(match.matchId), match);
-  }
-  return store;
-}
-
-async function saveMatches(store) {
-  const rows = [...store.values()].sort(
-    (a, b) => dateOf(b) - dateOf(a) || String(b.matchId).localeCompare(String(a.matchId))
-  );
-  await mkdir(RAW, { recursive: true });
-  await writeFile(
-    path.join(RAW, "matches.ndjson"),
-    rows.map((m) => JSON.stringify(m)).join("\n") + "\n"
-  );
-  return rows.length;
-}
-
-const dateOf = (m) => new Date(m.finished || m.started || 0).getTime() || 0;
+/* Matches are keyed by ID in SQLite. Artwork stays in a separate document
+   so repeated URLs do not bloat every stored match. */
 
 /* An API match record, kept down to the fields the site actually reads.
    Mirrors the flattening in assets/js/aoe.js — teams collapse into one
@@ -180,11 +148,11 @@ async function pullRoster(clanTag, ladderIds) {
         API + "/leaderboards/" + id + "?clan=" + encodeURIComponent(clanTag) +
         "&page=1&per_page=100&language=en"
       );
-      players = payload.players || [];
+      if (!Array.isArray(payload.players)) throw new Error("Invalid leaderboard payload");
+      players = payload.players;
       reached++;
     } catch (err) {
-      log("  ! leaderboard " + id + " failed: " + err.message);
-      continue;
+      throw new Error("Leaderboard " + id + " failed: " + err.message);
     }
 
     for (const entry of players) {
@@ -216,7 +184,7 @@ async function pullRoster(clanTag, ladderIds) {
     }
   }
 
-  if (!reached) throw new Error("No ladder reachable — refusing to overwrite the store");
+  if (!reached || !members.size) throw new Error("Empty roster — refusing to overwrite the database");
   return [...members.values()];
 }
 
@@ -229,13 +197,14 @@ function avatarUrl(profile) {
   return "https://avatars.steamstatic.com/" + hash + "_full.jpg";
 }
 
-const toNumber = (v) => (isFinite(Number(v)) ? Number(v) : null);
+const toNumber = (v) => (v != null && v !== "" && isFinite(Number(v)) ? Number(v) : null);
 
 async function pullProfiles(ids) {
   const cards = {};
   if (!ids.length) return cards;
   const payload = await api(API + "/profiles?profile_ids=" + ids.join(",") + "&language=en");
-  for (const profile of payload.profiles || []) {
+  if (!Array.isArray(payload.profiles)) throw new Error("Invalid profile cards payload");
+  for (const profile of payload.profiles) {
     cards[profile.profileId] = {
       avatar: avatarUrl(profile),
       platform: profile.platformName || null,
@@ -243,6 +212,7 @@ async function pullProfiles(ids) {
       drops: toNumber(profile.drops)
     };
   }
+  if (ids.some(id => !cards[id])) throw new Error("Missing profile cards");
   return cards;
 }
 
@@ -252,6 +222,7 @@ async function pullProfiles(ids) {
 async function pullPlayerDetail(profileId) {
   const profile = await api(API + "/profiles/" + profileId + "?language=en&page=1");
 
+  if (!profile || !profile.name) throw new Error("Invalid player profile " + profileId);
   const historyByLadder = {};
   for (const entry of profile.ratings || []) {
     const points = entry.ratings || [];
@@ -291,15 +262,19 @@ async function pullPlayerDetail(profileId) {
 /* Walks one player's feed. The service reports no total, so the end of an
    account's history is a page that comes back short.
 
-   Incremental runs stop as soon as a page brings nothing new — the feed is
-   newest-first, so everything past that point is already stored. A player
-   whose history was never completed is walked to the end regardless, which
-   is what makes the first run the only slow one. */
-async function pullPlayerMatches(profileId, store, images, complete) {
+   Incremental runs stop on a page already complete before this refresh.
+   New players are walked to the recorded end; hitting the page guard
+   rejects the refresh instead of claiming that partial history is complete. */
+async function pullPlayerMatches(profileId, store, images, complete, knownStore) {
   let fresh = 0;
   let page = 0;
   let reachedEnd = false;
   let failed = null;
+  let stoppedAtKnown = false;
+  // Compare against this player's history before this run, not matches just
+  // fetched for another member. In-progress matches must be revisited.
+  const known = new Set([...knownStore.values()].filter(match => match.finished &&
+    match.players.some(player => player.profileId === profileId)).map(match => String(match.matchId)));
 
   while (page < MAX_MATCH_PAGES) {
     page++;
@@ -309,11 +284,10 @@ async function pullPlayerMatches(profileId, store, images, complete) {
         API + "/matches?profile_ids=" + profileId +
         "&language=en&page=" + page + "&per_page=" + MATCH_PAGE
       );
-      list = payload.matches || [];
+      if (!Array.isArray(payload.matches)) throw new Error("Invalid match payload");
+      list = payload.matches;
     } catch (err) {
-      /* Whatever this walk already put in the store stays there and is
-         reported. The player just keeps `historyComplete: false`, so the
-         next run walks them again instead of trusting a partial history. */
+      // The caller rejects the entire refresh before committing this store.
       failed = err.message;
       page--;
       break;
@@ -321,6 +295,7 @@ async function pullPlayerMatches(profileId, store, images, complete) {
 
     let newHere = 0;
     for (const match of list) {
+      if (match.matchId == null || !Array.isArray(match.teams)) throw new Error("Invalid match record");
       const key = String(match.matchId);
       if (!store.has(key)) newHere++;
       // Overwrite: a game stored while still in progress gains its `finished`.
@@ -329,10 +304,13 @@ async function pullPlayerMatches(profileId, store, images, complete) {
     fresh += newHere;
 
     if (list.length < MATCH_PAGE) { reachedEnd = true; break; }
-    if (!FULL && complete && newHere === 0) break;
+    if (!FULL && complete && list.every(match => known.has(String(match.matchId)))) {
+      stoppedAtKnown = true;
+      break;
+    }
   }
 
-  return { fresh, pages: page, complete: !failed && (complete || reachedEnd), failed };
+  return { fresh, pages: page, complete: !failed && (reachedEnd || stoppedAtKnown), failed };
 }
 
 /* National field sizes, so a rank can read "#19 of 875 in CZ". Cheap, and
@@ -359,89 +337,96 @@ async function pullCountryTotals(roster, ladderIds) {
 
 /* ---------- run ---------- */
 
-async function main() {
-  const started = Date.now();
-  const clan = await loadClan();
-  const ladderIds = clan.ladders.map((l) => l.id);
-
-  log("GG snapshot · clan " + clan.clanTag + (FULL ? " · FULL re-walk" : " · incremental"));
-
-  const meta = await readJson("meta.json", { players: {} });
-  const images = await readJson("images.json", { civs: {}, maps: {} });
-  const store = await loadMatches();
-  log("  store opened: " + store.size + " matches");
-
-  const roster = await pullRoster(clan.clanTag, ladderIds);
-  log("  roster: " + roster.length + " members");
-
-  const ids = roster.map((m) => m.profileId);
-  const profiles = await pullProfiles(ids).catch(() => ({}));
-
-  const players = {};
-  for (const member of roster) {
-    const was = meta.players ? meta.players[member.profileId] : null;
-    const complete = Boolean(was && was.historyComplete);
-
-    let detail = null;
-    try {
-      detail = await pullPlayerDetail(member.profileId);
-      await writeJson(path.join("players", member.profileId + ".json"), detail);
-    } catch (err) {
-      log("  ! profile " + member.name + " failed: " + err.message);
-    }
-
-    const walk = await pullPlayerMatches(member.profileId, store, images, complete);
-    if (walk.failed) log("  ! matches " + member.name + " stopped: " + walk.failed);
-
-    players[member.profileId] = {
-      name: member.name,
-      historyComplete: Boolean(walk.complete),
-      allTimeGames: detail ? detail.allTimeGames : was ? was.allTimeGames : null,
-      updatedAt: new Date().toISOString()
-    };
-
-    /* Flushed per player, not once at the end. The first run is a few
-       minutes of somebody else's rate limits; a failure eight players in
-       should cost the ninth, not the eight. Re-running picks up from the
-       stored history flags. */
-    await saveMatches(store);
-    await writeJson("images.json", images);
-    await writeJson("meta.json", {
-      clanTag: clan.clanTag,
-      ladders: clan.ladders,
-      updatedAt: new Date().toISOString(),
-      matches: store.size,
-      members: roster.length,
-      players: Object.assign({}, meta.players, players)
+/* Discord is optional. Keep its own timestamp when a transient failure
+   retains an older widget; a disabled widget clears the published panel. */
+async function pullDiscord(guildId) {
+  if (!guildId) return null;
+  try {
+    const response = await requestFetch("https://discord.com/api/guilds/" + encodeURIComponent(guildId) + "/widget.json", {
+      signal: AbortSignal.timeout(30000)
     });
-
-    log("  " + String(member.name).padEnd(18) + " +" + String(walk.fresh).padStart(5) + " new" +
-        "  (" + walk.pages + " page" + (walk.pages === 1 ? "" : "s") + ")" +
-        (walk.complete ? "" : "  [history incomplete]"));
+    if (response.status === 403 || response.status === 404) return { guildId, payload: null, updatedAt: new Date().toISOString() };
+    if (!response.ok) throw new Error("HTTP " + response.status);
+    const payload = await response.json();
+    if (!payload || !Array.isArray(payload.members)) throw new Error("Invalid Discord widget");
+    return { guildId, payload, updatedAt: new Date().toISOString() };
+  } catch (error) {
+    log("  ! Discord widget: " + error.message);
+    const previous = readJson("discord.json", null);
+    return previous && previous.guildId === guildId ? previous : null;
   }
-
-  const countryTotals = await pullCountryTotals(roster, ladderIds);
-
-  const total = await saveMatches(store);
-  await writeJson("roster.json", roster);
-  await writeJson("profiles.json", profiles);
-  await writeJson("images.json", images);
-  await writeJson("countries.json", countryTotals);
-  await writeJson("meta.json", {
-    clanTag: clan.clanTag,
-    ladders: clan.ladders,
-    updatedAt: new Date().toISOString(),
-    matches: total,
-    members: roster.length,
-    players
-  });
-
-  log("done · " + total + " matches · " + requests + " requests · " +
-      ((Date.now() - started) / 1000).toFixed(1) + "s");
-  log("next: node tools/build.mjs");
 }
 
-main().catch((err) => {
-  console.error("update failed: " + err.message);
-  process.exit(1);
-});
+/* No database writes happen during requests. The only commit is after all
+   required roster, profile and match requests succeed. */
+export async function main({ databasePath = DATABASE_PATH, fetcher = fetch } = {}) {
+  const started = Date.now();
+  requests = 0;
+  requestFetch = fetcher;
+  database = await openStore(databasePath);
+  try {
+    const clan = await loadClan();
+    const ladderIds = clan.ladders.map((l) => l.id);
+    log("GG database · clan " + clan.clanTag + (FULL ? " · FULL re-walk" : " · incremental"));
+
+    const meta = readJson("meta.json");
+    const images = readJson("images.json");
+    const store = database.loadMatches();
+    const knownStore = new Map(store);
+    log("  database opened: " + store.size + " matches");
+    if (meta.clanTag !== clan.clanTag) throw new Error("Database belongs to another clan");
+
+    const roster = await pullRoster(clan.clanTag, ladderIds);
+    log("  roster: " + roster.length + " members");
+    const ids = roster.map((m) => m.profileId);
+    const profiles = await pullProfiles(ids);
+    const documents = {};
+    const players = {};
+    for (const member of roster) {
+      const was = meta.players ? meta.players[member.profileId] : null;
+      const detail = await pullPlayerDetail(member.profileId);
+      documents["players/" + member.profileId + ".json"] = detail;
+      const walk = await pullPlayerMatches(member.profileId, store, images, Boolean(was && was.historyComplete), knownStore);
+      if (walk.failed) throw new Error("Matches for " + member.name + " failed: " + walk.failed);
+      if (!walk.complete) throw new Error("History page limit reached for " + member.name + "; database not changed");
+      players[member.profileId] = {
+        name: member.name,
+        historyComplete: walk.complete,
+        allTimeGames: detail.allTimeGames,
+        updatedAt: new Date().toISOString()
+      };
+      log("  " + member.name + " +" + walk.fresh + " new (" + walk.pages + " pages)");
+    }
+
+    const countryTotals = await pullCountryTotals(roster, ladderIds);
+
+    const total = store.size;
+    Object.assign(documents, {
+      "roster.json": roster,
+      "profiles.json": profiles,
+      "images.json": images,
+      "countries.json": countryTotals,
+      "discord.json": await pullDiscord(clan.discordGuildId),
+      "meta.json": {
+        clanTag: clan.clanTag,
+        ladders: clan.ladders,
+        updatedAt: new Date().toISOString(),
+        matches: total,
+        members: roster.length,
+        players
+      }
+    });
+    database.commit(documents, store);
+
+    log("done · " + total + " matches · " + requests + " requests · " +
+        ((Date.now() - started) / 1000).toFixed(1) + "s");
+    log("next: node tools/build.mjs");
+  } finally { database.close(); }
+}
+
+if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  main().catch((err) => {
+    console.error("update failed: " + err.message);
+    process.exitCode = 1;
+  });
+}

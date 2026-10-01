@@ -1,5 +1,7 @@
-# Snapshot output is rebuilt from the committed data/raw store.
+# Snapshot output is rebuilt from SQLite; data/raw is the initial seed.
 /data/public/
+/data/gg.sqlite*
+/dist/
 
 # Local macOS metadata.
 .DS_Store

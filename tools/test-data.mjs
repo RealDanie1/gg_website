@@ -4,10 +4,13 @@ import vm from 'node:vm';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { openStore } from './store.mjs';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const snapshotSource = await readFile(path.join(root, 'assets/js/snapshot.js'), 'utf8');
 const source = await readFile(path.join(root, 'assets/js/aoe.js'), 'utf8');
 function apiFor(fetcher) {
   const context = { window: {}, fetch: fetcher, console, Map, Set, Date };
+  vm.runInNewContext(snapshotSource, context);
   vm.runInNewContext(source, context);
   return context.window.AOE;
 }
@@ -48,7 +51,9 @@ for (let page = 1; page <= meta.pages; page++) {
 }
 assert.equal(all.length, meta.matches);
 assert.equal(new Set(all.map(g => g.matchId)).size, all.length, 'Snapshot pages contain unique matches');
-const raw = (await readFile(path.join(root, 'data/raw/matches.ndjson'), 'utf8')).trim().split('\n').map(JSON.parse);
+const database = await openStore();
+const raw = [...database.loadMatches().values()];
+database.close();
 for (const days of [30, 90, 365]) {
   const end = new Date('2026-09-05T00:00:00Z').getTime();
   const start = end - days * 86400000;
@@ -63,15 +68,70 @@ await assert.rejects(failedAPI.fetchClanFeed([1]), /Offline/, 'Failure must not 
 console.log('PASS: unknown results, pairs, AI exclusions, snapshot uniqueness, date totals, offline failure.');
 
 assert.equal(fixtureAPI.sourceNow(), 'snapshot');
-let useFiles = true;
-const mixedAPI = apiFor(async url => {
-  if (url.endsWith('meta.json')) return { ok: true, json: async () => ({ matches: 1 }) };
-  if (url.startsWith('data/public/') && !useFiles) throw new Error('Missing snapshot page');
-  return { ok: true, json: async () => ({ matches: [], exhausted: true }) };
+const requested = [];
+const missingAPI = apiFor(async url => {
+  requested.push(url);
+  if (!url.startsWith('data/public/')) throw new Error('Upstream request forbidden: ' + url);
+  if (url.endsWith('meta.json')) return { ok: true, json: async () => ({ matches: 1, pages: 2, clanTag: 'test', ladders: [{ id: 'rm_team' }] }) };
+  throw new Error('Missing snapshot file');
 });
-await mixedAPI.fetchClanFeed([1], 1);
-assert.equal(mixedAPI.sourceNow(), 'snapshot');
-useFiles = false;
-await mixedAPI.fetchClanFeed([1], 2);
-assert.equal(mixedAPI.sourceNow(), 'mixed', 'Snapshot fallback must not claim exclusively stored data');
-console.log('PASS: snapshot and mixed-source status.');
+await assert.rejects(missingAPI.fetchClanFeed([1], 1), /Missing snapshot/);
+await assert.rejects(missingAPI.fetchPlayerDetail(1), /Missing snapshot/);
+await assert.rejects(missingAPI.fetchFullHistory(1), /Missing snapshot/);
+await assert.rejects(missingAPI.fetchRoster('test', ['rm_team']), /Missing snapshot/);
+assert.equal(await missingAPI.fetchCountryTotal('rm_team', 'cz'), null);
+assert.equal((await missingAPI.fetchProfiles([1])).size, 0);
+await assert.rejects(missingAPI.fetchRoster('different', ['rm_team']), /another clan/);
+assert.ok(requested.every(url => url.startsWith('data/public/')), 'Failures and retries must never fetch external APIs');
+const dossier = await filesAPI.fetchPlayerDetail(roster[0].profileId);
+const history = await filesAPI.fetchFullHistory(roster[0].profileId);
+assert.equal(dossier.storedMatches, history.length);
+assert.equal(dossier.matches.length, Math.min(300, history.length));
+assert.ok(dossier.historyComplete, 'Seed player coverage stays available');
+assert.equal((await filesAPI.fetchClanFeed(roster.map(p => p.profileId), meta.pages + 1)).games.length, 0);
+const discordSource = await readFile(path.join(root, 'assets/js/discord.js'), 'utf8');
+const discordCalls = [];
+const discordContext = { window: {}, fetch: async url => {
+  discordCalls.push(url);
+  return { ok: true, json: async () => ({ guildId: 'test', updatedAt: '2026-09-04T00:00:00Z', payload: { members: [], presence_count: 2 } }) };
+}};
+vm.runInNewContext(snapshotSource, discordContext);
+vm.runInNewContext(discordSource, discordContext);
+assert.equal((await discordContext.window.DISCORD.fetchWidget('test')).online, 2);
+assert.deepEqual(discordCalls, ['data/public/discord.json'], 'Discord must also read only the published snapshot');
+console.log('PASS: stored dossiers, bounded pagination, and no upstream requests on missing data.');
+
+// Exercise the generated script copies with fetch disabled, as on file://.
+const localLoads = [];
+const localContext = { window: { location: { protocol: 'file:' } }, console, Map, Set, Date,
+  fetch: () => { throw new Error('File preview must not fetch JSON or upstream data'); }
+};
+localContext.document = {
+  createElement: () => ({}),
+  head: { appendChild(script) {
+    localLoads.push(script.src);
+    readFile(path.join(root, script.src), 'utf8').then(text => {
+      vm.runInNewContext(text, localContext);
+      script.onload();
+    }).catch(() => script.onerror());
+  } }
+};
+vm.runInNewContext(snapshotSource, localContext);
+vm.runInNewContext(source, localContext);
+vm.runInNewContext(discordSource, localContext);
+const localAPI = localContext.window.AOE;
+const localRoster = await localAPI.fetchRoster(meta.clanTag, meta.ladders.map(ladder => ladder.id));
+assert.deepEqual(JSON.parse(JSON.stringify(localRoster)), roster);
+let localMatches = 0;
+for (let page = 1; page <= meta.pages; page++) {
+  localMatches += (await localAPI.fetchClanFeed(localRoster.map(player => player.profileId), page)).games.length;
+}
+assert.equal(localMatches, meta.matches, 'Local script snapshots contain the same complete clan feed');
+const localDetail = await localAPI.fetchPlayerDetail(roster[0].profileId);
+const beforeFull = localLoads.length;
+assert.equal((await localAPI.fetchFullHistory(roster[0].profileId)).length, localDetail.storedMatches);
+assert.equal(localLoads.length, beforeFull, 'Full-history display reuses the saved player file');
+await assert.rejects(localContext.window.GG_SNAPSHOT.getJson('https://example.com/api.json'), /Invalid snapshot path/);
+await assert.rejects(localAPI.fetchPlayerDetail(999999999), /Stored snapshot file is unavailable/);
+assert.ok(localLoads.every(url => url.startsWith('data/public/') && url.endsWith('.js')));
+console.log('PASS: direct-file preview loads the same stored roster, feed and player history with fetch disabled.');

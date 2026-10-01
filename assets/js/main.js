@@ -210,7 +210,7 @@
   })();
 
   /* ============================================================
-     5. Live data
+     5. Stored data
      ============================================================ */
   var state = {
     roster: [],
@@ -239,7 +239,8 @@
     ledgerFilter: "ranked",    // which mode the war ledger is showing
     feedPage: 0,               // how deep into the clan feed we have walked
     feedLoading: false,
-    feedExhausted: false
+    feedExhausted: false,
+    feedHistoryComplete: true
   };
 
   var RANKED = ["rm_team", "rm_1v1"];
@@ -264,13 +265,10 @@
       esc(text) + "</p>";
   }
 
-  /* "Live" is only true when the page is talking to the ladder. Reading a
-     stored snapshot is the normal case now, and the pill should say so. */
+  /* Snapshot dates reflect the daily server refresh. */
   function sourceLabel() {
     var meta = AOE.snapshotNow();
-    var source = AOE.sourceNow();
-    if (source === "mixed") return "Snapshot + live fallback";
-    return source === "snapshot" && meta && meta.updatedAt ? "Updated " + shortDate(meta.updatedAt) + " · Snapshot" : "Live data";
+    return meta && meta.updatedAt ? "Updated " + shortDate(meta.updatedAt) + " · Daily snapshot" : "Stored data unavailable";
   }
 
   function statusOK(el, text) {
@@ -314,7 +312,7 @@
     return isFinite(date) && date >= periodStart() && date <= state.asOf;
   }
   function periodCovered() {
-    if (state.feedExhausted) return true;
+    if (state.feedExhausted && state.feedHistoryComplete) return true;
     if (state.period === "all" || !state.games.length) return false;
     return state.games.some(function (g) { return new Date(g.date).getTime() <= periodStart(); });
   }
@@ -328,7 +326,7 @@
     var start = periodStart();
     if (!start && state.games.length) start = Math.min.apply(null, state.games.map(function (g) { return new Date(g.date).getTime(); }));
     var range = start ? shortDate(start) + " – " + shortDate(state.asOf) : "All recorded history";
-    var status = periodCovered() ? "Period loaded" : state.feedError ? "Incomplete period · could not load older games" : "Loading period…";
+    var status = state.feedExhausted && !state.feedHistoryComplete ? "Stored history is incomplete" : periodCovered() ? "Period loaded" : state.feedError ? "Incomplete period · could not load older games" : "Loading period…";
     $("#ledgerCoverage").textContent = range + " · " + status;
     $("#rosterCoverage").textContent = range + " · " + status + ". Rating and win rate are lifetime ladder figures; change and form follow this period and ladder. Change sums recorded Elo adjustments.";
     $$("[data-period-controls]").forEach(function (group) { group.setAttribute("aria-busy", String(state.feedLoading)); });
@@ -342,7 +340,7 @@
       state.openMatch = null;
       state.feedError = false;
       renderPeriod(); renderRoster(); renderLedger();
-      if (!periodCovered() && !state.feedLoading && state.roster.length) loadFeed(state.feedPage + 1);
+      if (!periodCovered() && !state.feedExhausted && !state.feedLoading && state.roster.length) loadFeed(state.feedPage + 1);
       var again = group.querySelector('[data-period="' + state.period + '"]');
       if (again && e.detail === 0) again.focus();
     });
@@ -890,13 +888,12 @@
       "</section>";
   }
 
-  /* Lifetime IS reachable — the feed pages back to the account's first game
-     — but it is sixteen requests and roughly 12 MB for a five-thousand-game
-     player. So it is offered, not assumed. */
+  /* Dossier expansion reads the stored player file. Full-history controls
+     change the displayed scope without asking the source API for more. */
   function historyControlHTML(player, detail, full, loading) {
     if (full) {
       var held = (state.fullHistory.get(player.profileId) || []).length;
-      return '<span class="d-top__scope d-top__scope--full">full history · ' +
+      return '<span class="d-top__scope d-top__scope--full">' + (detail.historyComplete === false ? 'stored history (incomplete) · ' : 'stored history · ') +
              esc(held.toLocaleString("en-US")) +
              (held === 1 ? " game" : " games") + "</span>";
     }
@@ -906,9 +903,9 @@
              esc(seen.toLocaleString("en-US")) + " games</span>";
     }
 
-    var allTime = detail.allTimeGames;
+    var allTime = detail.storedMatches;
     return '<button type="button" class="link-button" data-full="' + player.profileId + '">' +
-      "Load all" + (allTime ? " " + allTime.toLocaleString("en-US") : "") + " games" +
+      "Show all stored" + (allTime ? " " + allTime.toLocaleString("en-US") : "") + " games" +
     "</button>";
   }
 
@@ -972,7 +969,7 @@
 
   function windowed(history, days) {
     if (!days) return history;
-    var cutoff = Date.now() - days * 86400000;
+    var cutoff = state.asOf - days * 86400000;
     return history.filter(function (p) { return new Date(p.date).getTime() >= cutoff; });
   }
 
@@ -1413,7 +1410,8 @@
     if (state.feedError) {
       host.innerHTML = '<p class="ledger__more-note">This period is incomplete. Showing the games available so far.</p><button type="button" class="button button--ghost" id="ledgerMoreBtn">Retry loading period</button>';
     } else {
-      host.innerHTML = '<p class="ledger__more-note">' + (periodCovered() ? 'Selected period loaded' : 'Loading selected period…') + ' · ' + state.games.length.toLocaleString("en-US") + ' unique matches available in this session.</p>';
+      var scope = state.feedExhausted && !state.feedHistoryComplete ? 'All stored games loaded; earlier history is incomplete' : periodCovered() ? 'Selected period loaded' : 'Loading selected period…';
+      host.innerHTML = '<p class="ledger__more-note">' + scope + ' · ' + state.games.length.toLocaleString("en-US") + ' unique matches available in this session.</p>';
     }
   }
 
@@ -1646,6 +1644,9 @@
   var ladderIds = CLAN.ladders.map(function (l) { return l.id; });
 
   AOE.fetchRoster(CLAN.clanTag, ladderIds).then(function (members) {
+    var meta = AOE.snapshotNow();
+    var updated = meta && new Date(meta.updatedAt).getTime();
+    if (isFinite(updated) && updated > 0) state.asOf = updated;
     state.roster = members.filter(function (m) {
       return CLAN.hidden.indexOf(m.name) === -1;
     });
@@ -1662,18 +1663,16 @@
     loadAvatars();
     return loadFeed();
   }).catch(function () {
-    statusFail($("#rosterStatus"), "Ladder offline");
-    statusFail($("#ledgerStatus"), "Ladder offline");
+    statusFail($("#rosterStatus"), "Stored data unavailable");
+    statusFail($("#ledgerStatus"), "Stored data unavailable");
     $("#pulse").innerHTML = '<span class="dot dot--error"></span> Clan signal unavailable';
     $("#rosterTable").innerHTML =
-      '<div class="state">The ladder service is not responding.</div>';
+      '<div class="state">The saved data is unavailable. Please try again later.</div>';
     $("#clanCivs").innerHTML = $("#clanMaps").innerHTML = $("#clanFeed").innerHTML =
       '<div class="state">Unavailable.</div>';
   });
 
-  /* The ledger footnote gains a sentence when the page is reading a stored
-     snapshot rather than the live ladder: those numbers were taken at a
-     moment, and the page has to say which one. Silent on the live path. */
+  /* Show the server refresh date alongside the stored match count. */
   AOE.snapshot().then(function (meta) {
     var host = $("[data-snapshot]");
     if (!host || !meta || !meta.updatedAt) return;
@@ -1684,9 +1683,9 @@
     host.textContent = " Snapshot archive: " +
       Number(meta.matches).toLocaleString() + " unique matches, last updated " +
       when.toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" }) + ".";
-  });
+  }).catch(function () { /* The main data panel already reports unavailable. */ });
 
-  /* One request for the whole roster's identity cards — avatars, platform,
+  /* One request for the whole roster's stored identity cards — avatars, platform,
      all-time games and drops. Purely additive: if it fails the roster keeps
      its initial tiles and nothing else on the page notices. */
   function loadAvatars() {
@@ -1714,6 +1713,7 @@
       state.feedLoading = false;
       state.feedPage = page;
       state.feedExhausted = Boolean(result.exhausted);
+      state.feedHistoryComplete = result.historyComplete !== false;
 
       if (page === 1) {
         state.feed = result.rows;
@@ -1746,7 +1746,7 @@
       /* Older pages complete the selected activity period and its rating changes. */
       renderRoster();
       renderLedger();
-      if (!periodCovered()) return loadFeed(state.feedPage + 1);
+      if (!periodCovered() && !state.feedExhausted) return loadFeed(state.feedPage + 1);
     }).catch(function () {
       state.feedLoading = false;
       state.feedError = true;
@@ -1782,7 +1782,7 @@
   }
 
   /* ============================================================
-     6. Live Discord presence on the join section
+     6. Stored Discord presence on the join section
      ------------------------------------------------------------
      Independent of the ladder: it has its own request and its own
      failure mode. If the widget is off the panel stays hidden and
@@ -1802,7 +1802,7 @@
     DISCORD.fetchWidget(CLAN.discordGuildId).then(function (guild) {
       if (!guild.online) {
         host.innerHTML = '<p class="live-badge presence__count">' +
-          '<span class="dot"></span> Nobody online right now</p>';
+          '<span class="dot"></span> Nobody online at the last update · ' + esc(shortDate(guild.updatedAt)) + '</p>';
         host.hidden = false;
         return;
       }
@@ -1821,7 +1821,7 @@
 
       host.innerHTML =
         '<p class="live-badge presence__count"><span class="dot dot--live"></span> ' +
-          guild.online + " online · Live Discord</p>" +
+          guild.online + " online at update · " + esc(shortDate(guild.updatedAt)) + "</p>" +
         (shown.length
           ? '<div class="presence__faces">' +
               shown.map(function (member) {

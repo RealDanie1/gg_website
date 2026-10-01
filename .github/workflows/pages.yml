@@ -1,0 +1,113 @@
+# GitHub's runner is the data-fetching server. Browser requests serve files.
+name: Publish website and refresh daily
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    # 05:17 Europe/Prague (06:17 during summer time). Avoid the busy hour.
+    - cron: '17 4 * * *'
+  workflow_dispatch:
+    inputs:
+      refresh:
+        description: Fetch fresh data before publishing
+        type: boolean
+        default: true
+      full:
+        description: Recheck all recorded match history (slower)
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+# A scheduled refresh and a source push must never race on the database.
+concurrency:
+  group: gg-pages-${{ github.event_name == 'pull_request' && github.ref || 'production' }}
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+      - name: Check browser and server JavaScript
+        run: |
+          for script in assets/js/*.js tools/*.mjs; do node --check "$script"; done
+      - name: Verify stored data and refresh failure behavior
+        run: |
+          node tools/build.mjs
+          node tools/test-data.mjs
+          node tools/test-store.mjs --delay=0 --retries=0
+          node tools/package.mjs
+
+  publish:
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    needs: verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    permissions:
+      contents: write
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+      - name: Restore durable database from its dedicated branch
+        shell: bash
+        run: |
+          stored_ref=$(git ls-remote --heads origin refs/heads/data-store)
+          if [ -n "$stored_ref" ]; then
+            git fetch --depth=1 origin refs/heads/data-store
+            git show FETCH_HEAD:gg.sqlite > data/gg.sqlite
+          fi
+      - name: Refresh database on the server
+        if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.refresh)
+        env:
+          FULL_REFRESH: ${{ github.event_name == 'workflow_dispatch' && inputs.full }}
+        run: |
+          if [ "$FULL_REFRESH" = 'true' ]; then
+            node tools/update.mjs --full
+          else
+            node tools/update.mjs
+          fi
+      - name: Build, check and package the publishable snapshot
+        run: |
+          node tools/build.mjs
+          node tools/test-data.mjs
+          node tools/package.mjs
+      - name: Save validated database for the next daily run
+        shell: bash
+        run: |
+          # This branch contains only the database, without rewriting main.
+          # Parent the new commit to its prior state to retain recoverable backups.
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          stored_ref=$(git ls-remote --heads origin refs/heads/data-store)
+          parent_args=()
+          if [ -n "$stored_ref" ]; then
+            git fetch --depth=1 origin refs/heads/data-store
+            parent_args=(-p "$(git rev-parse FETCH_HEAD)")
+          fi
+          database_blob=$(git hash-object -w data/gg.sqlite)
+          database_tree=$(printf '100644 blob %s\tgg.sqlite\n' "$database_blob" | git mktree)
+          database_commit=$(git commit-tree "$database_tree" "${parent_args[@]}" -m 'Save validated GG database')
+          git push origin "$database_commit:refs/heads/data-store"
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+      - name: Publish the new snapshot
+        id: deployment
+        uses: actions/deploy-pages@v5
