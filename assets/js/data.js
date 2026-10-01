@@ -11,7 +11,7 @@ const CLAN = {
   name: "GG Clan",
   clanTag: "lggl",                          // the in-game clan tag the ladder is queried with
   blurb:
-    "Age of Empires II. Team games, defensive craft and good company.",
+    "We are a Czechoslovakian Age of Empires II clan. If you don't rage or build a nice city, you're in the wrong place.",
   discord: "https://discord.gg/eZrvfwaJJM",
 
   /* Discord server id, used for the daily "who was online" panel above the
@@ -82,15 +82,16 @@ const CLAN = {
     { label: "AoE2 Insights", url: "https://www.aoe2insights.com/user/{id}/" }
   ],
 
-  /* The three values, shown in the Creed section. */
+  /* The four values, shown in the About us section. */
   creed: [
-    ["01", "Cooperation",     "Information shared. Armies synchronized. No flank left alone."],
-    ["02", "Defensive craft", "Castles, siege and choke points turn pressure into control."],
-    ["03", "Cheeky execution", "The plan is serious. The finishing move does not have to be."]
+    ["01", "The long run",    "The longer, the better. A nice city, fortified walls and efficient trade are golden."],
+    ["02", "Defensive craft", "One layer is never enough. Make it two or three, and throw in a few castles too."],
+    ["03", "Coordination",    "All information is shared, armies are synchronised and no flank is left alone."],
+    ["04", "Black Forest",    "Black Forest is our home map. Don't play it? Shame on you."]
   ],
-  creedTitle: "We win together",
+  creedTitle: "Teamplay is the best play",
   creedLead:
-    "GG Clan plays the long game: shared vision, patient defenses and decisive movement when the map finally breaks.",
+    "In GG Clan, we believe in the long game, where defence meets offence and strategic thinking and coordination truly shine.",
   warcry: "Deus Vult!",
 
   /* ------------------------------------------------------------------

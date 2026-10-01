@@ -54,9 +54,9 @@
     </a>
 
     <nav class="nav" id="nav" aria-label="Primary">
-      <a href="#creed">Creed</a>
+      <a href="#creed">About us</a>
       <a href="#roster">Roster</a>
-      <a href="#ledger">Ledger</a>
+      <a href="#ledger">The Clan</a>
       <a href="#cities">Cities</a>
       <a class="button" data-discord href="#join">Join Discord</a>
     </nav>
@@ -101,22 +101,19 @@
 
   </section>
 
-  <!-- ============================================================ CREED -->
-  <section class="section" id="creed">
-    <div class="wrap">
-      <p class="marker">Creed</p>
-      <div class="creed__grid">
-        <figure class="creed__map reveal">
-          <img src="assets/img/tactical-map.webp" width="1100" height="1100" loading="lazy"
-               alt="Illustrated defensive battle plan showing walls, siege positions and coordinated army routes">
-        </figure>
-        <div class="reveal">
-          <h2 data-creed-title></h2>
-          <p class="lead" data-creed-lead></p>
-          <div class="values" id="values"></div>
-          <blockquote class="warcry" data-warcry></blockquote>
-        </div>
+  <!-- ========================================================= ABOUT US -->
+  <section class="section about" id="creed" aria-labelledby="aboutTitle">
+    <div class="about__scene" aria-hidden="true">
+      <img src="assets/img/about-battle.webp" width="1920" height="1080" loading="lazy" decoding="async" alt="">
+    </div>
+    <div class="wrap about__content">
+      <div class="about__intro reveal">
+        <p class="marker">About us</p>
+        <h2 id="aboutTitle" data-creed-title></h2>
+        <p class="lead" data-creed-lead></p>
       </div>
+      <div class="values reveal" id="values"></div>
+      <blockquote class="warcry reveal" data-warcry></blockquote>
     </div>
   </section>
 
@@ -126,7 +123,7 @@
       <p class="marker">Roster</p>
       <div class="section-head">
         <div>
-          <h2 class="title">The lineup<span class="period">.</span></h2>
+          <h2 class="title">Our lineup<span class="period">.</span></h2>
         </div>
         <p class="live-badge" id="rosterStatus"><span class="dot"></span> Loading…</p>
       </div>
@@ -147,10 +144,10 @@
   <!-- ============================================================ LEDGER -->
   <section class="section" id="ledger">
     <div class="wrap">
-      <p class="marker">War ledger</p>
+      <p class="marker">The Clan</p>
       <div class="section-head">
         <div>
-          <h2 class="title">The clan in play<span class="period">.</span></h2>
+          <h2 class="title">Stats of the GG Clan<span class="period">.</span></h2>
         </div>
         <p class="live-badge" id="ledgerStatus"><span class="dot"></span> Loading…</p>
       </div>
@@ -164,7 +161,7 @@
 
       <div class="ledger__grid">
         <section class="ledger__panel ledger__panel--warband">
-          <p class="data-label data-label--ico"><svg class="ico" aria-hidden="true"><use href="#i-duo"></use></svg>The warband</p>
+          <p class="data-label data-label--ico"><svg class="ico" aria-hidden="true"><use href="#i-duo"></use></svg>The Duos</p>
           <p class="panel-note">Select a pair to see their shared games.</p>
           <div id="warband"><div class="state">Loading…</div></div>
           <div id="pairDetail" aria-live="polite"></div>
@@ -240,8 +237,8 @@
   <!-- ============================================================ JOIN -->
   <section class="section join" id="join">
     <div class="wrap">
-      <h2>The gate is open<span class="period">.</span></h2>
-      <p>Team games and good company. All ratings welcome.</p>
+      <h2>We Want you<span class="period">!</span></h2>
+      <p>Join GG Clan for Black Forest games, advanced defence tactics and someone to shout at you for building farms near your TC.</p>
       <a class="button" data-discord href="#">
         <svg class="arrow" aria-hidden="true" style="width:18px;height:18px" ><use href="#i-discord"></use></svg>
         Join Discord
@@ -264,17 +261,16 @@
         <span>GG Clan <em>/</em> <span data-clantag></span></span>
       </a>
       <nav aria-label="Footer">
-        <a href="#creed">Creed</a>
+        <a href="#creed">About us</a>
         <a href="#roster">Roster</a>
-        <a href="#ledger">Ledger</a>
+        <a href="#ledger">The Clan</a>
         <a href="#cities">Cities</a>
         <a data-discord href="#">Discord</a>
       </nav>
     </div>
     <div class="footer__legal">
       <small>
-        &copy; <span data-year></span> GG Clan. Data from AoE2 Companion.
-        Not affiliated with Microsoft, Xbox Game Studios, World's Edge or Forgotten Empires.
+        &copy; <span data-year></span> GG Clan.
       </small>
     </div>
   </div>

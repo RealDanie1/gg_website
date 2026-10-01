@@ -22,8 +22,8 @@ Use Node 24 or newer for the tools; SQLite and fetch are built in, with no npm i
 - **Roster:** choose a ladder and sort by rating, rating change or recent activity. Current rating and win rate are lifetime ladder figures. Change sums recorded Elo adjustments within the selected period/ladder, excluding AI and unknown results; it is not a difference between official rating snapshots. The sparkline shows up to 20 recent ratings. Last played uses the ladder last-match date with a loaded-feed fallback. Form follows the selected period and ladder, newest first. Missing change data displays a dash.
 - **Dossiers:** expand a player for their profile, linked accounts, peak, rating history and civ/map tables. Dossier mode and rating-chart controls are independent of the roster. Chart windows remain 1M / 6M / 1Y / All. Player tables initially cover their latest 300 matches; Show all stored games displays the saved history without an API request. Captions state the local coverage. Unknown results and AI games are excluded from result tables and duration summaries.
 - **Ledger:** the mode filter controls all panels. Summary cards show match win rate, unique matches, active roster accounts and average/median duration. Alternate accounts remain separate accounts. The previous sum of lifetime ladder games was removed from this period summary because it counted shared matches repeatedly.
-- **Civs/maps:** labelled tables with artwork, quiet volume bars, picks/appearances, percentages and W/L totals. Most played is the default. Highest win rate requires at least 10 appearances. Small sample means fewer than 10; the threshold is a browsing aid, not a confidence claim.
-- **Warband:** six most-played pairs appear first, with Show all pairs for the rest. Select a pair to see favourite shared maps and filter Latest games. Clear pair restores the clan feed. Other panels retain the clan-wide scope. Date/mode changes clear pair selection. Shared match lists include unknown results, while pair W/L totals require agreed recorded results.
+- **Civs/maps:** labelled tables with artwork, quiet volume bars, picks/appearances, percentages and W/L totals. Most played is the default. Highest win rate requires at least 10 appearances; the threshold is a browsing aid, not a confidence claim. Tables omit Small sample labels.
+- **The Duos:** six most-played pairs appear first, with Show all pairs for the rest. Select a pair to see favourite shared maps and filter Latest games. Clear pair restores the clan feed. Other panels retain the clan-wide scope. Date/mode changes clear pair selection. Shared match lists include unknown results, while pair W/L totals require agreed recorded results.
 - **Freshness:** the roster and ledger show the last successful server refresh date. Period and chart windows end at that date. Discord shows who was online at its own snapshot date, including bots exposed by the widget. If a transient widget failure retains an older snapshot, its original date is preserved; a disabled widget hides the panel.
 
 ## Counting rules
@@ -34,7 +34,7 @@ Use Node 24 or newer for the tools; SQLite and fetch are built in, with no npm i
 - Civ/map tables count non-AI member appearances with recorded results. Two members picking two civs contribute two picks. Player dossier tables count one player's games.
 - Formats count decided, balanced, two-sided matches once each.
 - Pair results require a known shared team and matching non-null results; AI games are excluded. Keys use profile IDs so name changes do not split partnerships. Pairs need two decided games to appear.
-- Opponent-country totals deduplicate profile IDs across selected games and exclude non-clan teammates, AI games, unknown teams and unknown countries. Captions identify known-country coverage.
+- Opponent-country totals deduplicate profile IDs across selected games and exclude non-clan teammates, AI games, unknown teams and unknown countries. The caption shows country and unique-opponent totals.
 - Latest games preserves unknown and split outcomes with neutral markers. Missing results remain null throughout clan and player data paths.
 
 ## Files and editable content
@@ -57,6 +57,8 @@ Use Node 24 or newer for the tools; SQLite and fetch are built in, with no npm i
 | `tools/test-data.mjs` | Offline regression checks |
 
 The visual identity uses black, bone and red, Bebas Neue headings, Inter body/data labels and selected IBM Plex Mono metadata. Win/loss indicators include W/L text. Gallery stories in `data.js` are flavour copy, not verified build credits.
+
+About us uses the supplied gameplay screenshot in `assets/img/about-battle.webp`, with a light CSS blur and dark fades behind the copy. The four values form open columns on desktop, a two-column layout on tablets and numbered rows on mobile.
 
 ## Database and daily refresh
 

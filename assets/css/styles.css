@@ -24,6 +24,7 @@
 
   --red:        #c52b30;
   --red-bright: #e13d42;
+  --red-light:  #ef7579;
   --green:      #4fd28a;
   --amber:      #e0a13c;
 
@@ -294,43 +295,49 @@ h1, h2, h3 {
 }
 
 /* ============================================================
-   CREED
+   ABOUT US
    ============================================================ */
-.creed__grid {
-  display: grid; grid-template-columns: 0.85fr 1fr;
-  gap: clamp(2rem, 6vw, 5rem); align-items: start;
-}
-.creed__map {
-  margin: 0; position: relative;
-  border: 1px solid var(--line);
+.about {
+  isolation: isolate;
   overflow: hidden;
+  padding-block: clamp(5rem, 8vw, 8rem);
 }
-.creed__map img { width: 100%; filter: saturate(0.86) contrast(1.04); }
-.creed__map::after {
-  content: ""; position: absolute; inset: 0;
-  background: linear-gradient(to top, rgba(5, 6, 7, 0.55), transparent 55%);
+/* Only the scene is softened. Directional fades keep the battle visible
+   beside the introduction and give the values a calm, readable backdrop. */
+.about__scene { position: absolute; inset: 0; z-index: -2; pointer-events: none; }
+.about__scene img {
+  width: 100%; height: 100%; max-width: none;
+  object-fit: cover; object-position: 65% center;
+  filter: blur(1px) saturate(0.78);
+  opacity: 0.8; transform: scale(1.015);
+}
+.about::before {
+  content: ""; position: absolute; inset: 0; z-index: -1;
+  background:
+    linear-gradient(180deg, var(--black), rgba(5, 6, 7, 0.08) 22%, rgba(5, 6, 7, 0.2) 45%, rgba(5, 6, 7, 0.88) 76%, var(--black)),
+    linear-gradient(90deg, rgba(5, 6, 7, 0.93), rgba(5, 6, 7, 0.74) 35%, rgba(5, 6, 7, 0.25) 72%, rgba(5, 6, 7, 0.35));
   pointer-events: none;
 }
-.creed h2 { font-size: clamp(2.4rem, 6vw, 4.4rem); }
+.about__intro { max-width: 38rem; }
+.about h2 { max-width: 12ch; font-size: clamp(3.4rem, 6.3vw, 6rem); line-height: 0.98; text-wrap: balance; }
+.about .lead { max-width: 44ch; margin-top: 1.8rem; color: var(--bone); font-size: clamp(1rem, 1.3vw, 1.15rem); line-height: 1.75; }
 
-.values { margin-top: 2.6rem; display: grid; gap: 1px; background: var(--line-soft); border-block: 1px solid var(--line); }
+.values { margin-top: clamp(3.5rem, 6vw, 5.5rem); display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 2.5rem; }
 .value {
-  display: grid; grid-template-columns: 3.2rem 1fr; gap: 1.4rem;
-  padding: 1.6rem 0.2rem;
-  background: var(--black);
-  align-items: start;
+  min-width: 0; padding-top: 1.4rem;
+  border-top: 1px solid var(--line-hard);
 }
 .value > span {
-  font-family: var(--mono); font-size: 0.84rem; color: var(--red); letter-spacing: 0.1em;
-  padding-top: 0.25rem;
+  display: block; margin-bottom: 1.3rem;
+  font-family: var(--mono); font-size: var(--fs-small); color: var(--red-light); letter-spacing: 0.15em;
 }
-.value h3 { font-size: 1.5rem; margin-bottom: 0.35rem; letter-spacing: 0.04em; }
-.value p { color: var(--muted); font-size: 1rem; }
+.value h3 { font-size: clamp(1.55rem, 2.1vw, 1.9rem); margin-bottom: 0.85rem; letter-spacing: 0.025em; line-height: 1.1; }
+.value p { color: var(--bone); font-size: 0.95rem; line-height: 1.75; }
 
 .warcry {
-  margin: 2.6rem 0 0; padding-left: 1.4rem;
+  margin: 3rem 0 0; padding-left: 1rem;
   border-left: 2px solid var(--red);
-  font-family: var(--display); font-size: 1.9rem;
+  font-family: var(--display); font-size: 1.5rem;
   letter-spacing: 0.06em; text-transform: uppercase;
 }
 
@@ -1070,7 +1077,8 @@ h1, h2, h3 {
 }
 
 @media (max-width: 940px) {
-  .creed__grid { grid-template-columns: 1fr; }
+  .values { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2rem 2.5rem; }
+  .about__scene { bottom: 18%; }
 
   /* Table collapses into stacked cards. */
   .roster__labels { display: none; }
@@ -1124,7 +1132,21 @@ h1, h2, h3 {
   .player__stats-cell { gap: 0.9rem; }
   .player__name-cell { gap: 0.6rem; }
   .avatar { width: 28px; height: 28px; }
-  .value { grid-template-columns: 2.4rem 1fr; gap: 0.9rem; }
+  .about { padding-block: 4.5rem; }
+  .about__scene { height: 42rem; bottom: auto; }
+  .about__scene img { object-position: 62% center; }
+  .about::before {
+    background:
+      linear-gradient(180deg, var(--black), rgba(5, 6, 7, 0.42) 14rem, var(--black) 40rem),
+      linear-gradient(90deg, rgba(5, 6, 7, 0.68), rgba(5, 6, 7, 0.28));
+  }
+  .about h2 { font-size: clamp(3.2rem, 12vw, 4.2rem); }
+  .about .lead { margin-top: 1.5rem; }
+  .values { grid-template-columns: 1fr; gap: 0; margin-top: 3rem; }
+  .value { display: grid; grid-template-columns: 2rem minmax(0, 1fr); gap: 1rem; padding-block: 1.5rem; }
+  .value > span { margin: 0; padding-top: 0.25rem; }
+  .value h3 { font-size: 1.65rem; margin-bottom: 0.5rem; }
+  .warcry { margin-top: 1.5rem; }
   .thumbs button { width: 84px; }
 
   /* The civ icon carries the same information as the name here. */

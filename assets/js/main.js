@@ -939,7 +939,7 @@
     return '<table class="stat-table"><thead><tr><th scope="col">' + esc(nameLabel) + '</th><th scope="col">' + esc(countLabel) + '</th><th scope="col">Win rate</th></tr></thead><tbody>' + rows.map(function (row) {
       return '<tr><th scope="row"><div class="stat-name">' +
         (row.image ? '<img src="' + esc(row.image) + '" loading="lazy" alt="">' : '') +
-        '<span>' + esc(row.name) + (row.games < 10 ? '<small>Small sample</small>' : '') + '</span></div></th>' +
+        '<span>' + esc(row.name) + '</span></div></th>' +
         '<td><span class="volume" style="--share:' + Math.round(row.games / most * 100) + '%">' + row.games + '</span></td>' +
         '<td><b>' + row.winRate + '%</b><small>' + row.wins + 'W · ' + (row.games - row.wins) + 'L</small></td></tr>';
     }).join('') + '</tbody></table>';
@@ -1392,7 +1392,7 @@
 
     $("#clanAtlas").innerHTML =
       '<p class="atlas__lead"><b>' + rows.length + "</b> countries · <b>" +
-        faced.size.toLocaleString("en-US") + "</b> unique opponents · known countries</p>" +
+        faced.size.toLocaleString("en-US") + "</b> unique opponents</p>" +
       '<div class="atlas">' + rows.slice(0, 18).map(function (row) {
         return '<span class="atlas__cell" title="' + esc(row.code.toUpperCase()) + " · " +
             row.games + (row.games === 1 ? " player" : " players") + '" ' +
