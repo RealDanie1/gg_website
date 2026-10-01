@@ -219,6 +219,7 @@
     feedError: false,
     feed: [],            // one row per clan-member appearance
     games: [],           // one row per match, with the members in it
+    periodCache: new Map(),    // date windows prepared from the complete feed
     ladder: CLAN.ladders[0].id,
     openPlayer: null,
     chartRange: null,          // null = let the chart pick its own window
@@ -233,9 +234,8 @@
     gamesById: new Map(),      // "match id" -> the game row, for the feed cards
     openMatch: null,
     ledgerFilter: "ranked",    // which mode the war ledger is showing
-    feedPage: 0,               // how deep into the clan feed we have walked
     feedLoading: false,
-    feedExhausted: false,
+    feedReady: false,
     feedHistoryComplete: true
   };
 
@@ -293,9 +293,8 @@
     loadCountryTotals();
   });
 
-  /* A date selection describes the data, never the number of pages fetched.
-     Load until the requested boundary is covered; changing the selection while
-     loading changes the next boundary, without starting a competing request. */
+  /* All date windows are prepared when the saved history arrives. Selecting
+     a period only renders that window; it never starts another data request. */
   var PERIODS = [{ key: "30", label: "30 days" }, { key: "90", label: "90 days" },
     { key: "365", label: "Year" }, { key: "all", label: "All recorded history" }];
 
@@ -303,14 +302,22 @@
     return new Date(date).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
   }
   function periodStart() { return state.period === "all" ? 0 : state.asOf - Number(state.period) * 86400000; }
-  function inPeriod(row) {
+  function inPeriod(row, start) {
     var date = new Date(row.date).getTime();
-    return isFinite(date) && date >= periodStart() && date <= state.asOf;
+    return isFinite(date) && date >= start && date <= state.asOf;
   }
-  function periodCovered() {
-    if (state.feedExhausted && state.feedHistoryComplete) return true;
-    if (state.period === "all" || !state.games.length) return false;
-    return state.games.some(function (g) { return new Date(g.date).getTime() <= periodStart(); });
+  function preparePeriods() {
+    state.periodCache.clear();
+    PERIODS.forEach(function (period) {
+      var start = period.key === "all" ? 0 : state.asOf - Number(period.key) * 86400000;
+      state.periodCache.set(period.key, {
+        rows: state.feed.filter(function (row) { return inPeriod(row, start); }),
+        games: state.games.filter(function (game) { return inPeriod(game, start); })
+      });
+    });
+  }
+  function periodData() {
+    return state.periodCache.get(state.period) || { rows: [], games: [] };
   }
   function renderPeriod() {
     $$("[data-period-controls]").forEach(function (group) {
@@ -322,7 +329,7 @@
     var start = periodStart();
     if (!start && state.games.length) start = Math.min.apply(null, state.games.map(function (g) { return new Date(g.date).getTime(); }));
     var range = start ? shortDate(start) + " – " + shortDate(state.asOf) : "All recorded history";
-    var status = state.feedExhausted && !state.feedHistoryComplete ? "History incomplete" : periodCovered() ? "" : state.feedError ? "Incomplete period · could not load older games" : "Loading period…";
+    var status = state.feedError ? "Match history unavailable" : !state.feedReady ? "Loading saved history…" : !state.feedHistoryComplete ? "History incomplete" : "";
     var coverage = range + (status ? " · " + status : "");
     $("#ledgerCoverage").textContent = coverage;
     $("#rosterCoverage").textContent = coverage;
@@ -335,9 +342,7 @@
       state.period = button.dataset.period;
       state.pair = null;
       state.openMatch = null;
-      state.feedError = false;
       renderPeriod(); renderRoster(); renderLedger();
-      if (!periodCovered() && !state.feedExhausted && !state.feedLoading && state.roster.length) loadFeed(state.feedPage + 1);
       var again = group.querySelector('[data-period="' + state.period + '"]');
       if (again && e.detail === 0) again.focus();
     });
@@ -351,7 +356,7 @@
   renderPeriod();
 
   function activityFor(player) {
-    var rows = state.feed.filter(function (m) { return m.profileId === player.profileId && m.ladder === state.ladder && inPeriod(m); });
+    var rows = periodData().rows.filter(function (m) { return m.profileId === player.profileId && m.ladder === state.ladder; });
     var rated = rows.filter(function (m) { return m.ratingDiff != null && isFinite(m.ratingDiff) && m.won != null && !m.vsAI; });
     var stats = player.ladders[state.ladder];
     return { rows: rows, change: rated.length ? rated.reduce(function (sum, m) { return sum + Number(m.ratingDiff); }, 0) : null,
@@ -407,8 +412,8 @@
   /* Recent results for one player, taken from the clan-wide feed. */
   function formFor(profileId, ladder) {
     ladder = ladder || state.ladder;
-    return state.feed
-      .filter(function (m) { return m.profileId === profileId && m.ladder === ladder && inPeriod(m) && !m.vsAI && m.won != null; })
+    return periodData().rows
+      .filter(function (m) { return m.profileId === profileId && m.ladder === ladder && !m.vsAI && m.won != null; })
       .slice(0, 5)
       .map(function (m) { return m.won ? "W" : "L"; });
   }
@@ -1173,11 +1178,11 @@
        a game two members played together sits in it twice — counting that
        put "279 games" on a tab covering 212. */
     var counts = {};
-    state.games.filter(inPeriod).forEach(function (game) {
+    periodData().games.forEach(function (game) {
       counts[game.ladder] = (counts[game.ladder] || 0) + 1;
     });
 
-    var rankedCount = state.games.filter(inPeriod).filter(function (game) {
+    var rankedCount = periodData().games.filter(function (game) {
       return RANKED.indexOf(game.ladder) !== -1;
     }).length;
 
@@ -1191,7 +1196,7 @@
   /* One row per member appearance, narrowed to the chosen mode. */
   function ledgerRows() {
     var filter = state.ledgerFilter;
-    return state.feed.filter(inPeriod).filter(function (row) {
+    return periodData().rows.filter(function (row) {
       return filter === "ranked"
         ? RANKED.indexOf(row.ladder) !== -1
         : row.ladder === filter;
@@ -1201,7 +1206,7 @@
   /* The same narrowing over whole matches, for the feed and the warband. */
   function ledgerGames() {
     var filter = state.ledgerFilter;
-    return state.games.filter(inPeriod).filter(function (game) {
+    return periodData().games.filter(function (game) {
       return filter === "ranked"
         ? RANKED.indexOf(game.ladder) !== -1
         : game.ladder === filter;
@@ -1263,9 +1268,10 @@
   }
 
   function renderLedger() {
-    if (!state.games.length && state.feedLoading) {
+    if (!state.feedReady) {
       ["#clanCivs", "#clanMaps", "#clanFeed", "#warband", "#clanFormats", "#clanAtlas"]
-        .forEach(function (id) { $(id).innerHTML = '<div class="state">Loading selected period…</div>'; });
+        .forEach(function (id) { $(id).innerHTML = '<div class="state">' + (state.feedError ? "Match history unavailable." : "Loading saved history…") + '</div>'; });
+      renderLedgerMore();
       return;
     }
 
@@ -1356,7 +1362,7 @@
 
   /* ---------- who the clan runs into ----------
      Opponents are kept on the line-up for exactly this. Everyone the clan has
-     faced, by country — 48 of them across 300 games. */
+     faced in the selected period, counted once per opposing account. */
   function renderAtlas(games) {
     var totals = new Map();
     var faced = new Set();
@@ -1398,13 +1404,13 @@
       }).join("") + "</div>";
   }
 
-  /* The clan feed is paged, so the section can reach further back on ask. */
+  /* Retry a missing saved history file without tying requests to a period. */
   function renderLedgerMore() {
     var host = $("#ledgerMore");
     if (!host) return;
     host.hidden = !state.feedError;
     if (state.feedError) {
-      host.innerHTML = '<button type="button" class="button button--ghost" id="ledgerMoreBtn">Retry loading period</button>';
+      host.innerHTML = '<button type="button" class="button button--ghost" id="ledgerMoreBtn">Retry loading history</button>';
     } else {
       host.innerHTML = "";
     }
@@ -1432,7 +1438,7 @@
   });
 
   $("#ledgerMore").addEventListener("click", function (e) {
-    if (e.target.closest("#ledgerMoreBtn")) { state.feedError = false; loadFeed(state.games.length ? state.feedPage + 1 : 1); }
+    if (e.target.closest("#ledgerMoreBtn")) loadFeed();
   });
 
   /* ---------- latest games, one expandable card each ---------- */
@@ -1674,62 +1680,33 @@
     });
   }
 
-  /* One request covers every member's recent games — it powers the ledger
-     and the form strips on the roster. */
-  function loadFeed(page) {
+  /* One initial request loads every stored clan game. Period windows are
+     prepared before rendering so all range switches use data already in memory. */
+  function loadFeed() {
     var ids = state.roster.map(function (m) { return m.profileId; });
-    if (!ids.length) return;
-
-    page = page || 1;
     if (state.feedLoading) return;
     state.feedLoading = true; state.feedError = false; renderLedgerMore(); renderPeriod();
+    renderLedger();
 
-    return AOE.fetchClanFeed(ids, page).then(function (result) {
+    return AOE.fetchClanFeed(ids).then(function (result) {
       state.feedLoading = false;
-      state.feedPage = page;
-      state.feedExhausted = Boolean(result.exhausted);
+      state.feedReady = true;
       state.feedHistoryComplete = result.historyComplete !== false;
-
-      if (page === 1) {
-        state.feed = result.rows;
-        state.games = result.games;
-      } else {
-        /* Games played between one request and the next shift the pages
-           under us, so both lists are merged on identity rather than
-           appended blind. */
-        var seenGames = new Set(state.games.map(function (g) { return String(g.matchId); }));
-        result.games.forEach(function (game) {
-          if (seenGames.has(String(game.matchId))) return;
-          seenGames.add(String(game.matchId));
-          state.games.push(game);
-        });
-
-        var seenRows = new Set(state.feed.map(function (r) { return r.matchId + "|" + r.profileId; }));
-        result.rows.forEach(function (row) {
-          var key = row.matchId + "|" + row.profileId;
-          if (seenRows.has(key)) return;
-          seenRows.add(key);
-          state.feed.push(row);
-        });
-        state.feed.sort(function (a, b) { return new Date(b.date) - new Date(a.date); });
-      }
+      state.feed = result.rows;
+      state.games = result.games;
+      preparePeriods();
 
       state.gamesById = new Map(state.games.map(function (game) {
         return [String(game.matchId), game];
       }));
 
-      /* Older pages complete the selected activity period and its rating changes. */
       renderRoster();
       renderLedger();
-      if (!periodCovered() && !state.feedExhausted) return loadFeed(state.feedPage + 1);
     }).catch(function () {
       state.feedLoading = false;
       state.feedError = true;
-      renderPeriod(); renderLedgerMore();
-      if (page > 1) { return; }   // keep what is already shown
+      renderPeriod(); renderLedger();
       statusFail($("#ledgerStatus"), "Feed unavailable");
-      $("#clanCivs").innerHTML = $("#clanMaps").innerHTML = $("#clanFeed").innerHTML =
-        $("#warband").innerHTML = '<div class="state">Match feed unavailable.</div>';
     });
   }
 

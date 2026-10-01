@@ -133,8 +133,7 @@ window.AOE = (function () {
               profileId: p.profileId,
               name: p.name,
               team: p.team,
-              /* Kept for the atlas: 48 countries turn up across 300 games,
-                 and every one of them already has a flag on this page. */
+              /* Opponent countries power the atlas for every period. */
               country: p.country,
               civ: p.civ,
               civImage: p.civImage,
@@ -153,17 +152,21 @@ window.AOE = (function () {
     return { rows: rows, games: games };
   }
 
-  function fetchClanFeed(profileIds, page) {
-    if (!profileIds.length) return Promise.resolve({ rows: [], games: [], exhausted: true });
+  /* Every period reads the same complete snapshot, loaded once on page open. */
+  function fetchClanFeed(profileIds) {
+    if (!profileIds.length) return Promise.resolve({ rows: [], games: [], historyComplete: true });
     var wanted = new Set(profileIds);
-    page = page || 1;
     return fromSnapshot(function (meta) {
-      if (page > meta.pages) return { rows: [], games: [], exhausted: true, historyComplete: meta.historyComplete };
-      return getJson(SNAPSHOT_BASE + "feed/" + page + ".json").then(function (file) {
-        var feed = feedFrom(file.matches || [], wanted);
-        feed.exhausted = Boolean(file.exhausted);
+      return getJson(SNAPSHOT_BASE + "feed.json").then(function (file) {
+        if (!file || !Array.isArray(file.matches) || file.matches.length !== meta.matches) {
+          throw new Error("Stored clan history is incomplete");
+        }
+        var feed = feedFrom(file.matches, wanted);
         feed.historyComplete = meta.historyComplete;
         return feed;
+      }).catch(function (error) {
+        cache.delete(SNAPSHOT_BASE + "feed.json");
+        throw error;
       });
     });
   }

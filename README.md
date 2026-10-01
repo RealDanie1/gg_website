@@ -18,7 +18,7 @@ Use Node 24 or newer for the tools; SQLite and fetch are built in, with no npm i
 
 ## Data display
 
-- **Period controls:** 30 days, 90 days, Year (365 days), All recorded history. Roster activity and the clan ledger share the period, ending at the server snapshot date. Pages load automatically until the selected boundary is covered or the source is exhausted. Changing period during loading changes the next boundary. Loaded pages are cached. Incomplete periods are labelled and failures offer a retry. All means all recorded history available from the source, not guaranteed complete career coverage.
+- **Period controls:** 30 days, 90 days, Year (365 days), All recorded history. Roster activity and the clan ledger share the period, ending at the server snapshot date. The complete saved clan feed loads once when the page opens, and all four date windows are prepared in memory. Switching periods shows the stored data immediately without another request or a period-loading state. A selection made during the initial history load is applied when that load finishes. Incomplete source history is labelled and a failed history load offers a retry. All means all recorded history available from the source, not guaranteed complete career coverage.
 - **Roster:** choose a ladder and sort by rating, rating change or recent activity. Current rating and win rate are lifetime ladder figures. Change sums recorded Elo adjustments within the selected period/ladder, excluding AI and unknown results; it is not a difference between official rating snapshots. The sparkline shows up to 20 recent ratings. Last played uses the ladder last-match date with a loaded-feed fallback. Form follows the selected period and ladder, newest first. Missing change data displays a dash.
 - **Dossiers:** expand a player for their profile, linked accounts, peak, rating history and civ/map tables. Dossier mode and rating-chart controls are independent of the roster. Chart windows remain 1M / 6M / 1Y / All. Player tables initially cover their latest 300 matches; Show all stored games displays the saved history without an API request. Captions state the local coverage. Unknown results and AI games are excluded from result tables and duration summaries.
 - **Ledger:** the mode filter controls all panels. Summary cards show match win rate, unique matches, active roster accounts and average/median duration. Alternate accounts remain separate accounts. The previous sum of lifetime ladder games was removed from this period summary because it counted shared matches repeatedly.
@@ -49,7 +49,7 @@ Use Node 24 or newer for the tools; SQLite and fetch are built in, with no npm i
 | `assets/js/main.js` | Rendering and interactions |
 | `assets/js/discord.js` | Stored Discord widget |
 | `tools/update.mjs` | Server-only incremental API -> SQLite; `--full` rechecks all history |
-| `tools/build.mjs` | SQLite -> public JSON, restoring artwork and paginating matches |
+| `tools/build.mjs` | SQLite -> public JSON, restoring artwork and exporting the complete clan feed |
 | `tools/store.mjs` | SQLite schema, seed migration and atomic commits |
 | `tools/package.mjs` | Publishable assets and JSON -> `dist/` |
 | `tools/test-store.mjs` | Offline refresh, failure and transaction checks |
@@ -70,7 +70,7 @@ node tools/package.mjs      # prepare the publishable website
 
 Updates fetch current ladders, cards and player details, then walk each account’s new matches until a previously saved, completed page is reached. New members get a complete recorded-history walk. Rate limits use retries and backoff; requests have timeouts. A missing required response, malformed payload or history page limit aborts the refresh before its single SQLite transaction. Optional country totals may be omitted and Discord can retain its separately dated snapshot. A failed scheduled run does not deploy, so visitors keep the previous successful site.
 
-`data/public/` contains JSON files and matching `.js` snapshot copies for direct-file previews. The browser loads only the files needed for the selected period or player. `data/public/` and `dist/` are generated and ignored by Git. Only `dist/` is published: it contains `index.html`, assets and public JSON, excluding the SQLite database, raw seed, source tools and Git files.
+`data/public/` contains JSON files and matching `.js` snapshot copies for direct-file previews. The browser loads `feed.json` once on page open so every period is ready; heavier individual player files remain deferred until a dossier opens. `data/public/` and `dist/` are generated and ignored by Git. Only `dist/` is published: it contains `index.html`, assets and public JSON, excluding the SQLite database, raw seed, source tools and Git files.
 
 ## GitHub Pages publication
 

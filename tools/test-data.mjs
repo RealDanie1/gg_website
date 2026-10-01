@@ -40,17 +40,19 @@ assert.equal(pairs.find(p => p.key === '2|3').games, 1, 'An unknown earlier team
 const tally = fixtureAPI.tally([{ civ: 'Malians', won: true }, { civ: 'Malians', won: null }, { civ: 'Malians', won: false }, { civ: 'Malians', won: true, vsAI: true }], 'civ', 'civImage', 8);
 assert.equal(tally[0].games, 2);
 assert.equal(tally[0].winRate, 50, 'AI and unknown results do not inflate the denominator');
-const filesAPI = apiFor(async url => ({ ok: true, json: async () => JSON.parse(await readFile(path.join(root, url), 'utf8')) }));
+const fileLoads = [];
+const filesAPI = apiFor(async url => {
+  fileLoads.push(url);
+  return { ok: true, json: async () => JSON.parse(await readFile(path.join(root, url), 'utf8')) };
+});
 const roster = JSON.parse(await readFile(path.join(root, 'data/public/roster.json'), 'utf8'));
 const meta = JSON.parse(await readFile(path.join(root, 'data/public/meta.json'), 'utf8'));
-const all = [];
-for (let page = 1; page <= meta.pages; page++) {
-  const result = await filesAPI.fetchClanFeed(roster.map(p => p.profileId), page);
-  all.push(...result.games);
-  assert.equal(result.exhausted, page === meta.pages);
-}
+const all = (await filesAPI.fetchClanFeed(roster.map(p => p.profileId))).games;
 assert.equal(all.length, meta.matches);
-assert.equal(new Set(all.map(g => g.matchId)).size, all.length, 'Snapshot pages contain unique matches');
+assert.equal(new Set(all.map(g => g.matchId)).size, all.length, 'Snapshot contains unique matches');
+assert.equal((await filesAPI.fetchClanFeed(roster.map(p => p.profileId))).games.length, meta.matches);
+assert.equal(fileLoads.filter(url => url.endsWith('/feed.json')).length, 1, 'Complete history is loaded once and cached');
+assert.ok(!fileLoads.some(url => url.includes('/feed/')), 'Periods do not walk feed pages');
 const database = await openStore();
 const raw = [...database.loadMatches().values()];
 database.close();
@@ -72,10 +74,10 @@ const requested = [];
 const missingAPI = apiFor(async url => {
   requested.push(url);
   if (!url.startsWith('data/public/')) throw new Error('Upstream request forbidden: ' + url);
-  if (url.endsWith('meta.json')) return { ok: true, json: async () => ({ matches: 1, pages: 2, clanTag: 'test', ladders: [{ id: 'rm_team' }] }) };
+  if (url.endsWith('meta.json')) return { ok: true, json: async () => ({ matches: 1, clanTag: 'test', ladders: [{ id: 'rm_team' }] }) };
   throw new Error('Missing snapshot file');
 });
-await assert.rejects(missingAPI.fetchClanFeed([1], 1), /Missing snapshot/);
+await assert.rejects(missingAPI.fetchClanFeed([1]), /Missing snapshot/);
 await assert.rejects(missingAPI.fetchPlayerDetail(1), /Missing snapshot/);
 await assert.rejects(missingAPI.fetchFullHistory(1), /Missing snapshot/);
 await assert.rejects(missingAPI.fetchRoster('test', ['rm_team']), /Missing snapshot/);
@@ -88,7 +90,16 @@ const history = await filesAPI.fetchFullHistory(roster[0].profileId);
 assert.equal(dossier.storedMatches, history.length);
 assert.equal(dossier.matches.length, Math.min(300, history.length));
 assert.ok(dossier.historyComplete, 'Seed player coverage stays available');
-assert.equal((await filesAPI.fetchClanFeed(roster.map(p => p.profileId), meta.pages + 1)).games.length, 0);
+assert.equal((await filesAPI.fetchClanFeed([])).games.length, 0);
+let truncated = true;
+const incompleteAPI = apiFor(async url => ({ ok: true, json: async () => url.endsWith('meta.json') ? { matches: 2 } : { matches: fixtures.slice(0, truncated ? 1 : 2) } }));
+await assert.rejects(incompleteAPI.fetchClanFeed([1]), /history is incomplete/, 'A truncated feed must not claim complete period coverage');
+truncated = false;
+assert.equal((await incompleteAPI.fetchClanFeed([1])).games.length, 2, 'Retry must reread a previously truncated snapshot');
+const partialAPI = apiFor(async url => ({ ok: true, json: async () => url.endsWith('meta.json') ? { matches: fixtures.length, historyComplete: false } : { matches: fixtures } }));
+assert.equal((await partialAPI.fetchClanFeed([1])).historyComplete, false, 'Incomplete source history stays labelled even after the saved feed is fully loaded');
+const emptyAPI = apiFor(async url => ({ ok: true, json: async () => url.endsWith('meta.json') ? { matches: 0, historyComplete: true } : { matches: [] } }));
+assert.equal((await emptyAPI.fetchClanFeed([1])).games.length, 0, 'An empty saved feed is valid');
 const discordSource = await readFile(path.join(root, 'assets/js/discord.js'), 'utf8');
 const discordCalls = [];
 const discordContext = { window: {}, fetch: async url => {
@@ -99,7 +110,7 @@ vm.runInNewContext(snapshotSource, discordContext);
 vm.runInNewContext(discordSource, discordContext);
 assert.equal((await discordContext.window.DISCORD.fetchWidget('test')).online, 2);
 assert.deepEqual(discordCalls, ['data/public/discord.json'], 'Discord must also read only the published snapshot');
-console.log('PASS: stored dossiers, bounded pagination, and no upstream requests on missing data.');
+console.log('PASS: complete history loaded once, honest coverage, stored dossiers, and no upstream requests on missing data.');
 
 // Exercise the generated script copies with fetch disabled, as on file://.
 const localLoads = [];
@@ -122,11 +133,9 @@ vm.runInNewContext(discordSource, localContext);
 const localAPI = localContext.window.AOE;
 const localRoster = await localAPI.fetchRoster(meta.clanTag, meta.ladders.map(ladder => ladder.id));
 assert.deepEqual(JSON.parse(JSON.stringify(localRoster)), roster);
-let localMatches = 0;
-for (let page = 1; page <= meta.pages; page++) {
-  localMatches += (await localAPI.fetchClanFeed(localRoster.map(player => player.profileId), page)).games.length;
-}
+const localMatches = (await localAPI.fetchClanFeed(localRoster.map(player => player.profileId))).games.length;
 assert.equal(localMatches, meta.matches, 'Local script snapshots contain the same complete clan feed');
+assert.equal(localLoads.filter(url => url.endsWith('/feed.js')).length, 1, 'Direct-file previews load the full feed in one script');
 const localDetail = await localAPI.fetchPlayerDetail(roster[0].profileId);
 const beforeFull = localLoads.length;
 assert.equal((await localAPI.fetchFullHistory(roster[0].profileId)).length, localDetail.storedMatches);

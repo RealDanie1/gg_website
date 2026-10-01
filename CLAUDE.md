@@ -81,8 +81,10 @@ The `data-store` branch retains the database between scheduled runs; do not
 replace it with an expiring cache. Source pushes publish without upstream
 refresh; daily and manual refresh jobs update the data on GitHub's server.
 
-`MATCH_PAGE = 300` in `aoe.js` and `PAGE_SIZE = 300` in `tools/build.mjs` must
-stay equal, or automatic period loading stops lining up with local pages.
+`feed.json` contains the complete saved clan history and loads once on page
+open. Period controls only render prepared date windows; never start a request
+when a period changes. `MATCH_PAGE = 300` in `aoe.js` only limits the initial
+match tables in an expanded player dossier.
 
 ## Invariants — don't break these
 

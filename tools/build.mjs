@@ -12,9 +12,8 @@
 
    Two things happen here rather than in the browser:
 
-   1. Paging. The clan feed is cut into pages of 300 in the same
-      order the API serves them, so "Load 300 more games" walks
-      local files and behaves exactly as it always did.
+   1. History. The complete clan feed is saved in one file so the
+      browser loads it once and can switch every period locally.
    2. Artwork. Civ and map image URLs are deduped in the store and
       pasted back on here, which keeps the store small without the
       page needing to know that happened.
@@ -27,8 +26,6 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 import { openStore } from "./store.mjs";
 let database;
 const PUBLIC = path.join(ROOT, "data", "public");
-
-const PAGE_SIZE = 300;   // matches assets/js/aoe.js MATCH_PAGE
 
 function readJson(file, fallback) {
   return database.getJson(file, fallback);
@@ -121,17 +118,7 @@ async function main() {
       .filter((m) => m.players.some((p) => memberIds.has(p.profileId)))
       .sort((a, b) => new Date(dateOf(b)) - new Date(dateOf(a)));
 
-    const pages = Math.max(1, Math.ceil(clanMatches.length / PAGE_SIZE));
-    for (let page = 1; page <= pages; page++) {
-      const slice = clanMatches.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
-      await writeJson(path.join("feed", page + ".json"), {
-        page,
-        pages,
-        // End of the stored feed; history coverage is reported separately.
-        exhausted: page === pages,
-        matches: slice.map((m) => hydrate(m, images))
-      });
-    }
+    await writeJson("feed.json", { matches: clanMatches.map((m) => hydrate(m, images)) });
 
     let playerFiles = 0;
     let deepest = { name: null, games: 0 };
@@ -163,15 +150,12 @@ async function main() {
          week-old snapshot look fresh. */
       updatedAt: meta.updatedAt,
       generatedAt: new Date().toISOString(),
-      pageSize: PAGE_SIZE,
-      pages,
       matches: clanMatches.length,
       members: roster.length,
       historyComplete: roster.every(member => meta.players && meta.players[member.profileId] && meta.players[member.profileId].historyComplete)
     });
 
-    console.log("built data/public · " + clanMatches.length + " clan matches in " + pages +
-                " page" + (pages === 1 ? "" : "s") + " · " + playerFiles + " player files" +
+    console.log("built data/public · " + clanMatches.length + " clan matches in one feed · " + playerFiles + " player files" +
                 (deepest.name ? " · deepest " + deepest.name + " " + deepest.games + " games" : ""));
     console.log("serve it: python -m http.server 4173");
     console.log("(" + ((Date.now() - started) / 1000).toFixed(1) + "s)");
