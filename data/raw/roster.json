@@ -1,0 +1,314 @@
+[
+  {
+    "profileId": 10718160,
+    "name": "gg_Danny",
+    "country": "cz",
+    "clan": "lggl",
+    "ladders": {
+      "rm_team": {
+        "rating": 1663,
+        "peak": 1694,
+        "rank": 1341,
+        "rankCountry": 20,
+        "wins": 493,
+        "losses": 414,
+        "games": 907,
+        "streak": -2,
+        "lastMatch": "2026-08-10T18:35:55.000Z",
+        "winRate": 54
+      },
+      "rm_1v1": {
+        "rating": 2036,
+        "peak": 2056,
+        "rank": 576,
+        "rankCountry": 10,
+        "wins": 1716,
+        "losses": 1657,
+        "games": 3373,
+        "streak": -1,
+        "lastMatch": "2026-08-25T10:49:44.000Z",
+        "winRate": 51
+      },
+      "unranked": {
+        "rating": 1348,
+        "peak": null,
+        "rank": 12911,
+        "rankCountry": 116,
+        "wins": 282,
+        "losses": 413,
+        "games": 695,
+        "streak": -3,
+        "lastMatch": "2026-08-18T11:58:29.000Z",
+        "winRate": 41
+      }
+    }
+  },
+  {
+    "profileId": 1192116,
+    "name": "gg_bohois",
+    "country": "cz",
+    "clan": "lggl",
+    "ladders": {
+      "rm_team": {
+        "rating": 1532,
+        "peak": 1635,
+        "rank": 3433,
+        "rankCountry": 47,
+        "wins": 647,
+        "losses": 570,
+        "games": 1217,
+        "streak": -2,
+        "lastMatch": "2026-08-29T20:19:23.000Z",
+        "winRate": 53
+      },
+      "rm_1v1": {
+        "rating": 1833,
+        "peak": 1840,
+        "rank": 1343,
+        "rankCountry": 19,
+        "wins": 281,
+        "losses": 237,
+        "games": 518,
+        "streak": 1,
+        "lastMatch": "2026-08-30T15:33:42.000Z",
+        "winRate": 54
+      },
+      "unranked": {
+        "rating": 1378,
+        "peak": null,
+        "rank": 9857,
+        "rankCountry": 85,
+        "wins": 332,
+        "losses": 318,
+        "games": 650,
+        "streak": 2,
+        "lastMatch": "2026-08-30T19:50:49.000Z",
+        "winRate": 51
+      }
+    }
+  },
+  {
+    "profileId": 5827518,
+    "name": "gg_Small_Head",
+    "country": "sk",
+    "clan": "lggl",
+    "ladders": {
+      "rm_team": {
+        "rating": 1415,
+        "peak": 1415,
+        "rank": 6863,
+        "rankCountry": 16,
+        "wins": 553,
+        "losses": 520,
+        "games": 1073,
+        "streak": 1,
+        "lastMatch": "2026-08-08T14:58:28.000Z",
+        "winRate": 52
+      },
+      "unranked": {
+        "rating": 1311,
+        "peak": null,
+        "rank": 17402,
+        "rankCountry": 45,
+        "wins": 33,
+        "losses": 39,
+        "games": 72,
+        "streak": -7,
+        "lastMatch": "2026-08-09T01:56:08.000Z",
+        "winRate": 46
+      }
+    }
+  },
+  {
+    "profileId": 1681765,
+    "name": "gg_Rastislav_III.",
+    "country": "sk",
+    "clan": "lggl",
+    "ladders": {
+      "rm_team": {
+        "rating": 1414,
+        "peak": 1528,
+        "rank": 6926,
+        "rankCountry": 17,
+        "wins": 282,
+        "losses": 227,
+        "games": 509,
+        "streak": 2,
+        "lastMatch": "2026-08-15T02:00:54.000Z",
+        "winRate": 55
+      },
+      "unranked": {
+        "rating": 1393,
+        "peak": null,
+        "rank": 8628,
+        "rankCountry": 23,
+        "wins": 251,
+        "losses": 186,
+        "games": 437,
+        "streak": -2,
+        "lastMatch": "2026-08-30T19:50:49.000Z",
+        "winRate": 57
+      }
+    }
+  },
+  {
+    "profileId": 24059813,
+    "name": "gg_Karlinx",
+    "country": "cz",
+    "clan": "lggl",
+    "ladders": {
+      "rm_team": {
+        "rating": 1373,
+        "peak": 1436,
+        "rank": 8671,
+        "rankCountry": 92,
+        "wins": 77,
+        "losses": 104,
+        "games": 181,
+        "streak": -4,
+        "lastMatch": "2026-08-31T10:38:42.000Z",
+        "winRate": 43
+      },
+      "rm_1v1": {
+        "rating": 1251,
+        "peak": 1283,
+        "rank": 10384,
+        "rankCountry": 116,
+        "wins": 161,
+        "losses": 144,
+        "games": 305,
+        "streak": 1,
+        "lastMatch": "2026-09-04T18:56:09.000Z",
+        "winRate": 53
+      },
+      "unranked": {
+        "rating": 1184,
+        "peak": null,
+        "rank": 40505,
+        "rankCountry": 407,
+        "wins": 110,
+        "losses": 156,
+        "games": 266,
+        "streak": -3,
+        "lastMatch": "2026-09-03T17:13:34.000Z",
+        "winRate": 41
+      }
+    }
+  },
+  {
+    "profileId": 6233638,
+    "name": "gg_Sasek",
+    "country": "sk",
+    "clan": "lggl",
+    "ladders": {
+      "rm_team": {
+        "rating": 1203,
+        "peak": 1203,
+        "rank": 19252,
+        "rankCountry": 43,
+        "wins": 81,
+        "losses": 70,
+        "games": 151,
+        "streak": 2,
+        "lastMatch": "2026-08-15T02:00:54.000Z",
+        "winRate": 54
+      },
+      "rm_1v1": {
+        "rating": 1186,
+        "peak": 1249,
+        "rank": 12957,
+        "rankCountry": 41,
+        "wins": 37,
+        "losses": 33,
+        "games": 70,
+        "streak": 1,
+        "lastMatch": "2026-08-09T19:59:45.000Z",
+        "winRate": 53
+      },
+      "unranked": {
+        "rating": 951,
+        "peak": null,
+        "rank": 166438,
+        "rankCountry": 262,
+        "wins": 5,
+        "losses": 24,
+        "games": 29,
+        "streak": 1,
+        "lastMatch": "2026-08-16T02:58:57.000Z",
+        "winRate": 17
+      }
+    }
+  },
+  {
+    "profileId": 2255239,
+    "name": "White Wolf",
+    "country": "mx",
+    "clan": "lggl",
+    "ladders": {
+      "rm_team": {
+        "rating": 636,
+        "peak": 806,
+        "rank": 64652,
+        "rankCountry": 2956,
+        "wins": 436,
+        "losses": 488,
+        "games": 924,
+        "streak": 2,
+        "lastMatch": "2026-09-04T19:36:44.000Z",
+        "winRate": 47
+      },
+      "unranked": {
+        "rating": 1068,
+        "peak": null,
+        "rank": 75978,
+        "rankCountry": 2689,
+        "wins": 5,
+        "losses": 8,
+        "games": 13,
+        "streak": 1,
+        "lastMatch": "2026-08-29T20:52:20.000Z",
+        "winRate": 38
+      }
+    }
+  },
+  {
+    "profileId": 1649738,
+    "name": "gg_Daniel!",
+    "country": "sk",
+    "clan": "lggl",
+    "ladders": {
+      "unranked": {
+        "rating": 1672,
+        "peak": null,
+        "rank": 618,
+        "rankCountry": 5,
+        "wins": 82,
+        "losses": 24,
+        "games": 106,
+        "streak": 1,
+        "lastMatch": "2026-08-16T02:58:57.000Z",
+        "winRate": 77
+      }
+    }
+  },
+  {
+    "profileId": 1922480,
+    "name": "gg_Teutones",
+    "country": "sk",
+    "clan": "lggl",
+    "ladders": {
+      "unranked": {
+        "rating": 1125,
+        "peak": null,
+        "rank": 55884,
+        "rankCountry": 118,
+        "wins": 33,
+        "losses": 35,
+        "games": 68,
+        "streak": 1,
+        "lastMatch": "2026-08-16T02:58:57.000Z",
+        "winRate": 49
+      }
+    }
+  }
+]

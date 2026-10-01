@@ -1,0 +1,5 @@
+# Snapshot output is rebuilt from the committed data/raw store.
+/data/public/
+
+# Local macOS metadata.
+.DS_Store

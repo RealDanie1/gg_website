@@ -1,0 +1,76 @@
+{
+  "clanTag": "lggl",
+  "ladders": [
+    {
+      "id": "rm_team",
+      "label": "Team RM"
+    },
+    {
+      "id": "rm_1v1",
+      "label": "1v1 RM"
+    },
+    {
+      "id": "unranked",
+      "label": "Unranked"
+    }
+  ],
+  "updatedAt": "2026-09-04T19:48:43.879Z",
+  "matches": 9038,
+  "members": 9,
+  "players": {
+    "1192116": {
+      "name": "gg_bohois",
+      "historyComplete": true,
+      "allTimeGames": 2424,
+      "updatedAt": "2026-09-04T19:48:35.762Z"
+    },
+    "1649738": {
+      "name": "gg_Daniel!",
+      "historyComplete": true,
+      "allTimeGames": 106,
+      "updatedAt": "2026-09-04T19:48:40.339Z"
+    },
+    "1681765": {
+      "name": "gg_Rastislav_III.",
+      "historyComplete": true,
+      "allTimeGames": 1113,
+      "updatedAt": "2026-09-04T19:48:37.742Z"
+    },
+    "1922480": {
+      "name": "gg_Teutones",
+      "historyComplete": true,
+      "allTimeGames": 69,
+      "updatedAt": "2026-09-04T19:48:40.982Z"
+    },
+    "2255239": {
+      "name": "White Wolf",
+      "historyComplete": true,
+      "allTimeGames": 952,
+      "updatedAt": "2026-09-04T19:48:39.698Z"
+    },
+    "5827518": {
+      "name": "gg_Small_Head",
+      "historyComplete": true,
+      "allTimeGames": 1166,
+      "updatedAt": "2026-09-04T19:48:36.414Z"
+    },
+    "6233638": {
+      "name": "gg_Sasek",
+      "historyComplete": true,
+      "allTimeGames": 269,
+      "updatedAt": "2026-09-04T19:48:39.063Z"
+    },
+    "10718160": {
+      "name": "gg_Danny",
+      "historyComplete": true,
+      "allTimeGames": 4988,
+      "updatedAt": "2026-09-04T19:48:35.061Z"
+    },
+    "24059813": {
+      "name": "gg_Karlinx",
+      "historyComplete": true,
+      "allTimeGames": 764,
+      "updatedAt": "2026-09-04T19:48:38.413Z"
+    }
+  }
+}

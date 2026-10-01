@@ -1,0 +1,46 @@
+{
+  "profileId": 1649738,
+  "name": "gg_Daniel!",
+  "country": "sk",
+  "countryName": "Slovakia",
+  "platform": "Steam",
+  "allTimeGames": 106,
+  "drops": 12,
+  "boards": {
+    "unranked": {
+      "rank": 618,
+      "rating": 1672,
+      "games": 106,
+      "total": 192625,
+      "label": "UNR"
+    }
+  },
+  "linked": [
+    {
+      "profileId": 5827518,
+      "name": "gg_Small_Head",
+      "games": 1166
+    },
+    {
+      "profileId": 3506441,
+      "name": "gg_Scarry Spotter",
+      "games": 5
+    }
+  ],
+  "historyByLadder": {
+    "unranked": [
+      {
+        "date": "2026-08-15T21:52:52.000Z",
+        "games": 105,
+        "rating": 1672,
+        "ratingDiff": null
+      },
+      {
+        "date": "2026-08-16T02:58:57.000Z",
+        "games": 106,
+        "rating": 1672,
+        "ratingDiff": 0
+      }
+    ]
+  }
+}

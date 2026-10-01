@@ -1,0 +1,4439 @@
+{
+  "profileId": 24059813,
+  "name": "gg_Karlinx",
+  "country": "cz",
+  "countryName": "Czechia",
+  "platform": "Steam",
+  "allTimeGames": 764,
+  "drops": 19,
+  "boards": {
+    "rm_1v1": {
+      "rank": 10384,
+      "rating": 1251,
+      "games": 305,
+      "total": 45644,
+      "label": "RM 1v1"
+    },
+    "rm_team": {
+      "rank": 8671,
+      "rating": 1373,
+      "games": 181,
+      "total": 69485,
+      "label": "RM Team"
+    },
+    "qp_rm_1v1": {
+      "rank": null,
+      "rating": 1062,
+      "games": 6,
+      "total": 4595,
+      "label": "QP 1v1"
+    },
+    "qp_rm_team": {
+      "rank": 2192,
+      "rating": 1248,
+      "games": 5,
+      "total": 8168,
+      "label": "QP Team"
+    },
+    "unranked": {
+      "rank": 40505,
+      "rating": 1184,
+      "games": 266,
+      "total": 192625,
+      "label": "UNR"
+    }
+  },
+  "linked": [],
+  "historyByLadder": {
+    "rm_1v1": [
+      {
+        "date": "2025-11-01T18:35:17.000Z",
+        "games": 10,
+        "rating": 1056,
+        "ratingDiff": null
+      },
+      {
+        "date": "2025-11-01T20:33:58.000Z",
+        "games": 11,
+        "rating": 1089,
+        "ratingDiff": 33
+      },
+      {
+        "date": "2025-11-01T21:09:51.000Z",
+        "games": 12,
+        "rating": 1062,
+        "ratingDiff": -27
+      },
+      {
+        "date": "2025-11-02T19:26:28.000Z",
+        "games": 13,
+        "rating": 1031,
+        "ratingDiff": -31
+      },
+      {
+        "date": "2025-11-02T20:05:46.000Z",
+        "games": 14,
+        "rating": 1005,
+        "ratingDiff": -26
+      },
+      {
+        "date": "2025-11-03T13:57:03.000Z",
+        "games": 15,
+        "rating": 1032,
+        "ratingDiff": 27
+      },
+      {
+        "date": "2025-11-03T18:34:22.000Z",
+        "games": 16,
+        "rating": 1010,
+        "ratingDiff": -22
+      },
+      {
+        "date": "2025-11-03T19:36:12.000Z",
+        "games": 17,
+        "rating": 990,
+        "ratingDiff": -20
+      },
+      {
+        "date": "2025-11-03T19:50:57.000Z",
+        "games": 18,
+        "rating": 970,
+        "ratingDiff": -20
+      },
+      {
+        "date": "2025-11-04T19:09:18.000Z",
+        "games": 19,
+        "rating": 951,
+        "ratingDiff": -19
+      },
+      {
+        "date": "2025-11-04T19:27:45.000Z",
+        "games": 20,
+        "rating": 969,
+        "ratingDiff": 18
+      },
+      {
+        "date": "2025-11-05T16:46:57.000Z",
+        "games": 21,
+        "rating": 952,
+        "ratingDiff": -17
+      },
+      {
+        "date": "2025-11-05T17:12:44.000Z",
+        "games": 22,
+        "rating": 935,
+        "ratingDiff": -17
+      },
+      {
+        "date": "2025-11-05T18:47:06.000Z",
+        "games": 23,
+        "rating": 949,
+        "ratingDiff": 14
+      },
+      {
+        "date": "2025-11-06T18:45:19.000Z",
+        "games": 24,
+        "rating": 964,
+        "ratingDiff": 15
+      },
+      {
+        "date": "2025-11-07T17:16:02.000Z",
+        "games": 25,
+        "rating": 980,
+        "ratingDiff": 16
+      },
+      {
+        "date": "2025-11-07T17:47:40.000Z",
+        "games": 26,
+        "rating": 995,
+        "ratingDiff": 15
+      },
+      {
+        "date": "2025-11-08T08:42:02.000Z",
+        "games": 27,
+        "rating": 978,
+        "ratingDiff": -17
+      },
+      {
+        "date": "2025-11-10T15:41:21.000Z",
+        "games": 28,
+        "rating": 993,
+        "ratingDiff": 15
+      },
+      {
+        "date": "2025-11-11T14:33:54.000Z",
+        "games": 29,
+        "rating": 1007,
+        "ratingDiff": 14
+      },
+      {
+        "date": "2025-11-12T20:39:51.000Z",
+        "games": 30,
+        "rating": 993,
+        "ratingDiff": -14
+      },
+      {
+        "date": "2025-12-28T18:25:57.000Z",
+        "games": 31,
+        "rating": 978,
+        "ratingDiff": -15
+      },
+      {
+        "date": "2025-12-28T18:46:32.000Z",
+        "games": 32,
+        "rating": 961,
+        "ratingDiff": -17
+      },
+      {
+        "date": "2026-01-01T17:17:39.000Z",
+        "games": 33,
+        "rating": 946,
+        "ratingDiff": -15
+      },
+      {
+        "date": "2026-01-03T18:00:51.000Z",
+        "games": 34,
+        "rating": 932,
+        "ratingDiff": -14
+      },
+      {
+        "date": "2026-01-03T18:33:57.000Z",
+        "games": 35,
+        "rating": 917,
+        "ratingDiff": -15
+      },
+      {
+        "date": "2026-01-03T19:40:59.000Z",
+        "games": 36,
+        "rating": 932,
+        "ratingDiff": 15
+      },
+      {
+        "date": "2026-01-04T12:25:11.000Z",
+        "games": 37,
+        "rating": 946,
+        "ratingDiff": 14
+      },
+      {
+        "date": "2026-01-04T12:54:29.000Z",
+        "games": 38,
+        "rating": 961,
+        "ratingDiff": 15
+      },
+      {
+        "date": "2026-01-05T13:38:16.000Z",
+        "games": 39,
+        "rating": 944,
+        "ratingDiff": -17
+      },
+      {
+        "date": "2026-01-05T14:01:59.000Z",
+        "games": 40,
+        "rating": 929,
+        "ratingDiff": -15
+      },
+      {
+        "date": "2026-01-05T14:19:30.000Z",
+        "games": 41,
+        "rating": 912,
+        "ratingDiff": -17
+      },
+      {
+        "date": "2026-01-05T14:49:36.000Z",
+        "games": 42,
+        "rating": 896,
+        "ratingDiff": -16
+      },
+      {
+        "date": "2026-01-05T15:10:31.000Z",
+        "games": 43,
+        "rating": 881,
+        "ratingDiff": -15
+      },
+      {
+        "date": "2026-01-05T15:51:16.000Z",
+        "games": 44,
+        "rating": 899,
+        "ratingDiff": 18
+      },
+      {
+        "date": "2026-01-05T17:11:59.000Z",
+        "games": 45,
+        "rating": 915,
+        "ratingDiff": 16
+      },
+      {
+        "date": "2026-01-06T13:25:47.000Z",
+        "games": 46,
+        "rating": 900,
+        "ratingDiff": -15
+      },
+      {
+        "date": "2026-01-06T13:55:21.000Z",
+        "games": 47,
+        "rating": 883,
+        "ratingDiff": -17
+      },
+      {
+        "date": "2026-01-06T14:34:51.000Z",
+        "games": 48,
+        "rating": 900,
+        "ratingDiff": 17
+      },
+      {
+        "date": "2026-01-07T07:22:21.000Z",
+        "games": 49,
+        "rating": 917,
+        "ratingDiff": 17
+      },
+      {
+        "date": "2026-01-07T07:43:38.000Z",
+        "games": 50,
+        "rating": 930,
+        "ratingDiff": 13
+      },
+      {
+        "date": "2026-01-07T08:16:08.000Z",
+        "games": 51,
+        "rating": 914,
+        "ratingDiff": -16
+      },
+      {
+        "date": "2026-01-07T09:13:48.000Z",
+        "games": 52,
+        "rating": 931,
+        "ratingDiff": 17
+      },
+      {
+        "date": "2026-01-07T12:47:22.000Z",
+        "games": 53,
+        "rating": 945,
+        "ratingDiff": 14
+      },
+      {
+        "date": "2026-01-07T15:20:32.000Z",
+        "games": 54,
+        "rating": 961,
+        "ratingDiff": 16
+      },
+      {
+        "date": "2026-01-07T19:42:26.000Z",
+        "games": 55,
+        "rating": 978,
+        "ratingDiff": 17
+      },
+      {
+        "date": "2026-01-08T09:12:59.000Z",
+        "games": 56,
+        "rating": 992,
+        "ratingDiff": 14
+      },
+      {
+        "date": "2026-01-09T16:04:53.000Z",
+        "games": 57,
+        "rating": 1008,
+        "ratingDiff": 16
+      },
+      {
+        "date": "2026-01-11T19:03:18.000Z",
+        "games": 58,
+        "rating": 1024,
+        "ratingDiff": 16
+      },
+      {
+        "date": "2026-01-12T10:04:48.000Z",
+        "games": 59,
+        "rating": 1009,
+        "ratingDiff": -15
+      },
+      {
+        "date": "2026-01-12T10:33:12.000Z",
+        "games": 60,
+        "rating": 995,
+        "ratingDiff": -14
+      },
+      {
+        "date": "2026-01-12T11:47:17.000Z",
+        "games": 61,
+        "rating": 1011,
+        "ratingDiff": 16
+      },
+      {
+        "date": "2026-01-12T15:34:33.000Z",
+        "games": 62,
+        "rating": 1026,
+        "ratingDiff": 15
+      },
+      {
+        "date": "2026-01-12T16:54:36.000Z",
+        "games": 63,
+        "rating": 1043,
+        "ratingDiff": 17
+      },
+      {
+        "date": "2026-01-12T18:40:56.000Z",
+        "games": 64,
+        "rating": 1062,
+        "ratingDiff": 19
+      },
+      {
+        "date": "2026-01-12T19:06:46.000Z",
+        "games": 65,
+        "rating": 1047,
+        "ratingDiff": -15
+      },
+      {
+        "date": "2026-01-13T09:41:45.000Z",
+        "games": 66,
+        "rating": 1065,
+        "ratingDiff": 18
+      },
+      {
+        "date": "2026-01-13T10:23:46.000Z",
+        "games": 67,
+        "rating": 1080,
+        "ratingDiff": 15
+      },
+      {
+        "date": "2026-01-13T11:23:57.000Z",
+        "games": 68,
+        "rating": 1065,
+        "ratingDiff": -15
+      },
+      {
+        "date": "2026-01-13T13:28:25.000Z",
+        "games": 69,
+        "rating": 1049,
+        "ratingDiff": -16
+      },
+      {
+        "date": "2026-01-13T13:37:47.000Z",
+        "games": 70,
+        "rating": 1033,
+        "ratingDiff": -16
+      },
+      {
+        "date": "2026-01-13T13:49:24.000Z",
+        "games": 71,
+        "rating": 1018,
+        "ratingDiff": -15
+      },
+      {
+        "date": "2026-01-13T13:55:15.000Z",
+        "games": 72,
+        "rating": 1032,
+        "ratingDiff": 14
+      },
+      {
+        "date": "2026-01-13T15:07:52.000Z",
+        "games": 73,
+        "rating": 1017,
+        "ratingDiff": -15
+      },
+      {
+        "date": "2026-01-13T15:37:40.000Z",
+        "games": 74,
+        "rating": 1001,
+        "ratingDiff": -16
+      },
+      {
+        "date": "2026-01-14T09:36:14.000Z",
+        "games": 75,
+        "rating": 1015,
+        "ratingDiff": 14
+      },
+      {
+        "date": "2026-01-14T10:10:13.000Z",
+        "games": 76,
+        "rating": 998,
+        "ratingDiff": -17
+      },
+      {
+        "date": "2026-01-14T11:58:15.000Z",
+        "games": 77,
+        "rating": 983,
+        "ratingDiff": -15
+      },
+      {
+        "date": "2026-01-14T14:44:57.000Z",
+        "games": 78,
+        "rating": 998,
+        "ratingDiff": 15
+      },
+      {
+        "date": "2026-01-14T15:20:40.000Z",
+        "games": 79,
+        "rating": 984,
+        "ratingDiff": -14
+      },
+      {
+        "date": "2026-01-14T15:57:42.000Z",
+        "games": 80,
+        "rating": 968,
+        "ratingDiff": -16
+      },
+      {
+        "date": "2026-01-14T18:29:22.000Z",
+        "games": 81,
+        "rating": 953,
+        "ratingDiff": -15
+      },
+      {
+        "date": "2026-01-14T18:59:29.000Z",
+        "games": 82,
+        "rating": 970,
+        "ratingDiff": 17
+      },
+      {
+        "date": "2026-01-14T19:45:15.000Z",
+        "games": 83,
+        "rating": 953,
+        "ratingDiff": -17
+      },
+      {
+        "date": "2026-01-15T12:19:40.000Z",
+        "games": 84,
+        "rating": 937,
+        "ratingDiff": -16
+      },
+      {
+        "date": "2026-01-15T13:07:04.000Z",
+        "games": 85,
+        "rating": 952,
+        "ratingDiff": 15
+      },
+      {
+        "date": "2026-01-15T16:04:01.000Z",
+        "games": 86,
+        "rating": 966,
+        "ratingDiff": 14
+      },
+      {
+        "date": "2026-01-15T16:45:58.000Z",
+        "games": 87,
+        "rating": 981,
+        "ratingDiff": 15
+      },
+      {
+        "date": "2026-01-16T09:32:33.000Z",
+        "games": 88,
+        "rating": 998,
+        "ratingDiff": 17
+      },
+      {
+        "date": "2026-01-16T10:07:00.000Z",
+        "games": 89,
+        "rating": 1016,
+        "ratingDiff": 18
+      },
+      {
+        "date": "2026-01-16T10:40:32.000Z",
+        "games": 90,
+        "rating": 1001,
+        "ratingDiff": -15
+      },
+      {
+        "date": "2026-01-17T10:41:18.000Z",
+        "games": 91,
+        "rating": 1016,
+        "ratingDiff": 15
+      },
+      {
+        "date": "2026-01-19T20:19:01.000Z",
+        "games": 92,
+        "rating": 1031,
+        "ratingDiff": 15
+      },
+      {
+        "date": "2026-01-20T14:31:45.000Z",
+        "games": 93,
+        "rating": 1046,
+        "ratingDiff": 15
+      },
+      {
+        "date": "2026-01-21T14:12:07.000Z",
+        "games": 94,
+        "rating": 1061,
+        "ratingDiff": 15
+      },
+      {
+        "date": "2026-01-21T14:49:54.000Z",
+        "games": 95,
+        "rating": 1075,
+        "ratingDiff": 14
+      },
+      {
+        "date": "2026-01-21T18:41:31.000Z",
+        "games": 96,
+        "rating": 1089,
+        "ratingDiff": 14
+      },
+      {
+        "date": "2026-01-21T19:08:42.000Z",
+        "games": 97,
+        "rating": 1075,
+        "ratingDiff": -14
+      },
+      {
+        "date": "2026-01-22T13:21:07.000Z",
+        "games": 98,
+        "rating": 1060,
+        "ratingDiff": -15
+      },
+      {
+        "date": "2026-01-22T17:44:33.000Z",
+        "games": 99,
+        "rating": 1077,
+        "ratingDiff": 17
+      },
+      {
+        "date": "2026-01-22T18:08:04.000Z",
+        "games": 100,
+        "rating": 1060,
+        "ratingDiff": -17
+      },
+      {
+        "date": "2026-01-22T18:35:05.000Z",
+        "games": 101,
+        "rating": 1044,
+        "ratingDiff": -16
+      },
+      {
+        "date": "2026-01-23T16:41:45.000Z",
+        "games": 102,
+        "rating": 1060,
+        "ratingDiff": 16
+      },
+      {
+        "date": "2026-01-24T10:36:06.000Z",
+        "games": 103,
+        "rating": 1043,
+        "ratingDiff": -17
+      },
+      {
+        "date": "2026-01-24T11:08:49.000Z",
+        "games": 104,
+        "rating": 1026,
+        "ratingDiff": -17
+      },
+      {
+        "date": "2026-01-24T11:35:17.000Z",
+        "games": 105,
+        "rating": 1011,
+        "ratingDiff": -15
+      },
+      {
+        "date": "2026-01-25T12:01:01.000Z",
+        "games": 106,
+        "rating": 997,
+        "ratingDiff": -14
+      },
+      {
+        "date": "2026-01-25T12:32:26.000Z",
+        "games": 107,
+        "rating": 1012,
+        "ratingDiff": 15
+      },
+      {
+        "date": "2026-01-25T16:07:39.000Z",
+        "games": 108,
+        "rating": 1027,
+        "ratingDiff": 15
+      },
+      {
+        "date": "2026-01-26T13:10:29.000Z",
+        "games": 109,
+        "rating": 1044,
+        "ratingDiff": 17
+      },
+      {
+        "date": "2026-01-26T14:03:25.000Z",
+        "games": 110,
+        "rating": 1030,
+        "ratingDiff": -14
+      },
+      {
+        "date": "2026-01-28T18:26:50.000Z",
+        "games": 111,
+        "rating": 1015,
+        "ratingDiff": -15
+      },
+      {
+        "date": "2026-01-30T07:43:19.000Z",
+        "games": 112,
+        "rating": 1000,
+        "ratingDiff": -15
+      },
+      {
+        "date": "2026-01-30T08:05:57.000Z",
+        "games": 113,
+        "rating": 983,
+        "ratingDiff": -17
+      },
+      {
+        "date": "2026-01-30T08:26:55.000Z",
+        "games": 114,
+        "rating": 999,
+        "ratingDiff": 16
+      },
+      {
+        "date": "2026-01-30T08:50:40.000Z",
+        "games": 115,
+        "rating": 984,
+        "ratingDiff": -15
+      },
+      {
+        "date": "2026-01-30T12:58:35.000Z",
+        "games": 116,
+        "rating": 966,
+        "ratingDiff": -18
+      },
+      {
+        "date": "2026-01-30T14:13:22.000Z",
+        "games": 117,
+        "rating": 984,
+        "ratingDiff": 18
+      },
+      {
+        "date": "2026-01-31T17:47:04.000Z",
+        "games": 118,
+        "rating": 969,
+        "ratingDiff": -15
+      },
+      {
+        "date": "2026-01-31T18:14:30.000Z",
+        "games": 119,
+        "rating": 952,
+        "ratingDiff": -17
+      },
+      {
+        "date": "2026-02-01T07:52:16.000Z",
+        "games": 120,
+        "rating": 936,
+        "ratingDiff": -16
+      },
+      {
+        "date": "2026-02-01T08:02:33.000Z",
+        "games": 121,
+        "rating": 951,
+        "ratingDiff": 15
+      },
+      {
+        "date": "2026-02-01T08:29:12.000Z",
+        "games": 122,
+        "rating": 965,
+        "ratingDiff": 14
+      },
+      {
+        "date": "2026-02-01T09:18:15.000Z",
+        "games": 123,
+        "rating": 979,
+        "ratingDiff": 14
+      },
+      {
+        "date": "2026-02-01T12:11:07.000Z",
+        "games": 124,
+        "rating": 994,
+        "ratingDiff": 15
+      },
+      {
+        "date": "2026-02-01T12:32:34.000Z",
+        "games": 125,
+        "rating": 1011,
+        "ratingDiff": 17
+      },
+      {
+        "date": "2026-02-01T14:49:10.000Z",
+        "games": 126,
+        "rating": 1026,
+        "ratingDiff": 15
+      },
+      {
+        "date": "2026-02-02T15:07:55.000Z",
+        "games": 127,
+        "rating": 1042,
+        "ratingDiff": 16
+      },
+      {
+        "date": "2026-02-02T15:44:04.000Z",
+        "games": 128,
+        "rating": 1026,
+        "ratingDiff": -16
+      },
+      {
+        "date": "2026-02-03T18:40:14.000Z",
+        "games": 129,
+        "rating": 1010,
+        "ratingDiff": -16
+      },
+      {
+        "date": "2026-02-04T09:32:29.000Z",
+        "games": 130,
+        "rating": 992,
+        "ratingDiff": -18
+      },
+      {
+        "date": "2026-02-04T09:51:49.000Z",
+        "games": 131,
+        "rating": 976,
+        "ratingDiff": -16
+      },
+      {
+        "date": "2026-02-04T10:28:11.000Z",
+        "games": 132,
+        "rating": 991,
+        "ratingDiff": 15
+      },
+      {
+        "date": "2026-02-04T11:33:41.000Z",
+        "games": 133,
+        "rating": 1007,
+        "ratingDiff": 16
+      },
+      {
+        "date": "2026-02-04T13:09:19.000Z",
+        "games": 134,
+        "rating": 1024,
+        "ratingDiff": 17
+      },
+      {
+        "date": "2026-02-05T11:10:38.000Z",
+        "games": 135,
+        "rating": 1038,
+        "ratingDiff": 14
+      },
+      {
+        "date": "2026-02-05T11:36:21.000Z",
+        "games": 136,
+        "rating": 1052,
+        "ratingDiff": 14
+      },
+      {
+        "date": "2026-02-06T14:51:50.000Z",
+        "games": 137,
+        "rating": 1070,
+        "ratingDiff": 18
+      },
+      {
+        "date": "2026-02-06T14:55:07.000Z",
+        "games": 138,
+        "rating": 1086,
+        "ratingDiff": 16
+      },
+      {
+        "date": "2026-02-06T15:26:47.000Z",
+        "games": 139,
+        "rating": 1072,
+        "ratingDiff": -14
+      },
+      {
+        "date": "2026-02-06T16:19:38.000Z",
+        "games": 140,
+        "rating": 1058,
+        "ratingDiff": -14
+      },
+      {
+        "date": "2026-02-06T18:36:09.000Z",
+        "games": 141,
+        "rating": 1043,
+        "ratingDiff": -15
+      },
+      {
+        "date": "2026-02-07T09:15:15.000Z",
+        "games": 142,
+        "rating": 1061,
+        "ratingDiff": 18
+      },
+      {
+        "date": "2026-02-07T17:29:17.000Z",
+        "games": 143,
+        "rating": 1078,
+        "ratingDiff": 17
+      },
+      {
+        "date": "2026-02-07T20:25:57.000Z",
+        "games": 144,
+        "rating": 1094,
+        "ratingDiff": 16
+      },
+      {
+        "date": "2026-02-07T21:15:33.000Z",
+        "games": 145,
+        "rating": 1077,
+        "ratingDiff": -17
+      },
+      {
+        "date": "2026-02-08T09:09:01.000Z",
+        "games": 146,
+        "rating": 1093,
+        "ratingDiff": 16
+      },
+      {
+        "date": "2026-02-08T09:26:45.000Z",
+        "games": 147,
+        "rating": 1108,
+        "ratingDiff": 15
+      },
+      {
+        "date": "2026-02-17T18:55:45.000Z",
+        "games": 148,
+        "rating": 1092,
+        "ratingDiff": -16
+      },
+      {
+        "date": "2026-02-19T18:34:52.000Z",
+        "games": 149,
+        "rating": 1107,
+        "ratingDiff": 15
+      },
+      {
+        "date": "2026-02-19T20:43:44.000Z",
+        "games": 150,
+        "rating": 1122,
+        "ratingDiff": 15
+      },
+      {
+        "date": "2026-02-23T18:50:55.000Z",
+        "games": 151,
+        "rating": 1105,
+        "ratingDiff": -17
+      },
+      {
+        "date": "2026-02-24T20:06:57.000Z",
+        "games": 152,
+        "rating": 1089,
+        "ratingDiff": -16
+      },
+      {
+        "date": "2026-02-25T18:55:01.000Z",
+        "games": 153,
+        "rating": 1072,
+        "ratingDiff": -17
+      },
+      {
+        "date": "2026-03-29T07:57:12.000Z",
+        "games": 154,
+        "rating": 1089,
+        "ratingDiff": 17
+      },
+      {
+        "date": "2026-03-29T15:50:14.000Z",
+        "games": 155,
+        "rating": 1073,
+        "ratingDiff": -16
+      },
+      {
+        "date": "2026-03-30T18:24:33.000Z",
+        "games": 156,
+        "rating": 1058,
+        "ratingDiff": -15
+      },
+      {
+        "date": "2026-03-31T14:40:29.000Z",
+        "games": 157,
+        "rating": 1041,
+        "ratingDiff": -17
+      },
+      {
+        "date": "2026-03-31T16:00:16.000Z",
+        "games": 158,
+        "rating": 1025,
+        "ratingDiff": -16
+      },
+      {
+        "date": "2026-03-31T16:53:38.000Z",
+        "games": 159,
+        "rating": 1042,
+        "ratingDiff": 17
+      },
+      {
+        "date": "2026-04-04T18:45:58.000Z",
+        "games": 160,
+        "rating": 1059,
+        "ratingDiff": 17
+      },
+      {
+        "date": "2026-04-05T18:20:17.000Z",
+        "games": 161,
+        "rating": 1042,
+        "ratingDiff": -17
+      },
+      {
+        "date": "2026-04-06T17:19:39.000Z",
+        "games": 162,
+        "rating": 1057,
+        "ratingDiff": 15
+      },
+      {
+        "date": "2026-04-08T10:06:24.000Z",
+        "games": 163,
+        "rating": 1073,
+        "ratingDiff": 16
+      },
+      {
+        "date": "2026-04-08T11:14:49.000Z",
+        "games": 164,
+        "rating": 1089,
+        "ratingDiff": 16
+      },
+      {
+        "date": "2026-04-08T11:23:22.000Z",
+        "games": 165,
+        "rating": 1105,
+        "ratingDiff": 16
+      },
+      {
+        "date": "2026-04-10T07:45:18.000Z",
+        "games": 166,
+        "rating": 1089,
+        "ratingDiff": -16
+      },
+      {
+        "date": "2026-04-10T08:14:51.000Z",
+        "games": 167,
+        "rating": 1073,
+        "ratingDiff": -16
+      },
+      {
+        "date": "2026-04-10T10:45:31.000Z",
+        "games": 168,
+        "rating": 1058,
+        "ratingDiff": -15
+      },
+      {
+        "date": "2026-04-10T11:09:23.000Z",
+        "games": 169,
+        "rating": 1073,
+        "ratingDiff": 15
+      },
+      {
+        "date": "2026-04-14T13:55:14.000Z",
+        "games": 170,
+        "rating": 1089,
+        "ratingDiff": 16
+      },
+      {
+        "date": "2026-04-14T18:34:54.000Z",
+        "games": 171,
+        "rating": 1105,
+        "ratingDiff": 16
+      },
+      {
+        "date": "2026-04-18T09:55:57.000Z",
+        "games": 172,
+        "rating": 1123,
+        "ratingDiff": 18
+      },
+      {
+        "date": "2026-04-18T10:31:34.000Z",
+        "games": 173,
+        "rating": 1108,
+        "ratingDiff": -15
+      },
+      {
+        "date": "2026-04-20T16:11:39.000Z",
+        "games": 174,
+        "rating": 1095,
+        "ratingDiff": -13
+      },
+      {
+        "date": "2026-04-21T13:03:17.000Z",
+        "games": 175,
+        "rating": 1080,
+        "ratingDiff": -15
+      },
+      {
+        "date": "2026-04-28T20:12:25.000Z",
+        "games": 176,
+        "rating": 1064,
+        "ratingDiff": -16
+      },
+      {
+        "date": "2026-04-29T13:04:08.000Z",
+        "games": 177,
+        "rating": 1081,
+        "ratingDiff": 17
+      },
+      {
+        "date": "2026-04-29T14:53:22.000Z",
+        "games": 178,
+        "rating": 1066,
+        "ratingDiff": -15
+      },
+      {
+        "date": "2026-04-29T19:45:02.000Z",
+        "games": 179,
+        "rating": 1050,
+        "ratingDiff": -16
+      },
+      {
+        "date": "2026-05-04T13:22:24.000Z",
+        "games": 180,
+        "rating": 1064,
+        "ratingDiff": 14
+      },
+      {
+        "date": "2026-05-04T13:41:08.000Z",
+        "games": 181,
+        "rating": 1080,
+        "ratingDiff": 16
+      },
+      {
+        "date": "2026-05-04T14:05:21.000Z",
+        "games": 182,
+        "rating": 1095,
+        "ratingDiff": 15
+      },
+      {
+        "date": "2026-05-04T14:25:46.000Z",
+        "games": 183,
+        "rating": 1109,
+        "ratingDiff": 14
+      },
+      {
+        "date": "2026-05-04T14:46:38.000Z",
+        "games": 184,
+        "rating": 1127,
+        "ratingDiff": 18
+      },
+      {
+        "date": "2026-05-04T15:13:51.000Z",
+        "games": 185,
+        "rating": 1142,
+        "ratingDiff": 15
+      },
+      {
+        "date": "2026-05-06T09:17:59.000Z",
+        "games": 186,
+        "rating": 1157,
+        "ratingDiff": 15
+      },
+      {
+        "date": "2026-05-11T19:46:02.000Z",
+        "games": 187,
+        "rating": 1142,
+        "ratingDiff": -15
+      },
+      {
+        "date": "2026-05-12T18:40:37.000Z",
+        "games": 188,
+        "rating": 1158,
+        "ratingDiff": 16
+      },
+      {
+        "date": "2026-05-12T19:09:17.000Z",
+        "games": 189,
+        "rating": 1173,
+        "ratingDiff": 15
+      },
+      {
+        "date": "2026-05-13T17:07:57.000Z",
+        "games": 190,
+        "rating": 1189,
+        "ratingDiff": 16
+      },
+      {
+        "date": "2026-05-13T17:33:24.000Z",
+        "games": 191,
+        "rating": 1205,
+        "ratingDiff": 16
+      },
+      {
+        "date": "2026-06-07T14:13:02.000Z",
+        "games": 192,
+        "rating": 1220,
+        "ratingDiff": 15
+      },
+      {
+        "date": "2026-06-09T17:54:41.000Z",
+        "games": 193,
+        "rating": 1235,
+        "ratingDiff": 15
+      },
+      {
+        "date": "2026-06-12T17:51:43.000Z",
+        "games": 194,
+        "rating": 1219,
+        "ratingDiff": -16
+      },
+      {
+        "date": "2026-06-20T11:17:33.000Z",
+        "games": 195,
+        "rating": 1238,
+        "ratingDiff": 19
+      },
+      {
+        "date": "2026-06-20T15:34:48.000Z",
+        "games": 196,
+        "rating": 1221,
+        "ratingDiff": -17
+      },
+      {
+        "date": "2026-06-23T06:17:19.000Z",
+        "games": 197,
+        "rating": 1206,
+        "ratingDiff": -15
+      },
+      {
+        "date": "2026-06-23T06:50:49.000Z",
+        "games": 198,
+        "rating": 1221,
+        "ratingDiff": 15
+      },
+      {
+        "date": "2026-06-23T07:23:14.000Z",
+        "games": 199,
+        "rating": 1206,
+        "ratingDiff": -15
+      },
+      {
+        "date": "2026-06-23T07:35:52.000Z",
+        "games": 200,
+        "rating": 1187,
+        "ratingDiff": -19
+      },
+      {
+        "date": "2026-06-23T07:53:08.000Z",
+        "games": 201,
+        "rating": 1202,
+        "ratingDiff": 15
+      },
+      {
+        "date": "2026-06-23T12:48:29.000Z",
+        "games": 202,
+        "rating": 1186,
+        "ratingDiff": -16
+      },
+      {
+        "date": "2026-06-23T13:21:28.000Z",
+        "games": 203,
+        "rating": 1201,
+        "ratingDiff": 15
+      },
+      {
+        "date": "2026-06-26T08:14:00.000Z",
+        "games": 204,
+        "rating": 1217,
+        "ratingDiff": 16
+      },
+      {
+        "date": "2026-06-26T08:38:39.000Z",
+        "games": 205,
+        "rating": 1199,
+        "ratingDiff": -18
+      },
+      {
+        "date": "2026-06-26T08:58:04.000Z",
+        "games": 206,
+        "rating": 1184,
+        "ratingDiff": -15
+      },
+      {
+        "date": "2026-06-26T09:17:01.000Z",
+        "games": 207,
+        "rating": 1201,
+        "ratingDiff": 17
+      },
+      {
+        "date": "2026-06-26T09:41:32.000Z",
+        "games": 208,
+        "rating": 1215,
+        "ratingDiff": 14
+      },
+      {
+        "date": "2026-06-27T14:28:32.000Z",
+        "games": 209,
+        "rating": 1230,
+        "ratingDiff": 15
+      },
+      {
+        "date": "2026-06-28T14:28:06.000Z",
+        "games": 210,
+        "rating": 1213,
+        "ratingDiff": -17
+      },
+      {
+        "date": "2026-06-29T09:48:31.000Z",
+        "games": 211,
+        "rating": 1196,
+        "ratingDiff": -17
+      },
+      {
+        "date": "2026-06-29T10:13:05.000Z",
+        "games": 212,
+        "rating": 1181,
+        "ratingDiff": -15
+      },
+      {
+        "date": "2026-06-29T17:27:50.000Z",
+        "games": 213,
+        "rating": 1166,
+        "ratingDiff": -15
+      },
+      {
+        "date": "2026-06-29T18:03:09.000Z",
+        "games": 214,
+        "rating": 1183,
+        "ratingDiff": 17
+      },
+      {
+        "date": "2026-06-29T18:28:10.000Z",
+        "games": 215,
+        "rating": 1167,
+        "ratingDiff": -16
+      },
+      {
+        "date": "2026-06-30T07:52:23.000Z",
+        "games": 216,
+        "rating": 1153,
+        "ratingDiff": -14
+      },
+      {
+        "date": "2026-06-30T08:31:59.000Z",
+        "games": 217,
+        "rating": 1135,
+        "ratingDiff": -18
+      },
+      {
+        "date": "2026-06-30T09:00:19.000Z",
+        "games": 218,
+        "rating": 1118,
+        "ratingDiff": -17
+      },
+      {
+        "date": "2026-06-30T12:47:42.000Z",
+        "games": 219,
+        "rating": 1135,
+        "ratingDiff": 17
+      },
+      {
+        "date": "2026-06-30T13:23:22.000Z",
+        "games": 220,
+        "rating": 1149,
+        "ratingDiff": 14
+      },
+      {
+        "date": "2026-07-01T09:07:09.000Z",
+        "games": 221,
+        "rating": 1165,
+        "ratingDiff": 16
+      },
+      {
+        "date": "2026-07-02T10:42:05.000Z",
+        "games": 222,
+        "rating": 1180,
+        "ratingDiff": 15
+      },
+      {
+        "date": "2026-07-03T09:57:49.000Z",
+        "games": 223,
+        "rating": 1197,
+        "ratingDiff": 17
+      },
+      {
+        "date": "2026-07-03T13:10:07.000Z",
+        "games": 224,
+        "rating": 1213,
+        "ratingDiff": 16
+      },
+      {
+        "date": "2026-07-03T21:28:42.000Z",
+        "games": 225,
+        "rating": 1228,
+        "ratingDiff": 15
+      },
+      {
+        "date": "2026-07-04T12:07:34.000Z",
+        "games": 226,
+        "rating": 1245,
+        "ratingDiff": 17
+      },
+      {
+        "date": "2026-07-05T08:45:50.000Z",
+        "games": 227,
+        "rating": 1229,
+        "ratingDiff": -16
+      },
+      {
+        "date": "2026-07-07T07:41:01.000Z",
+        "games": 228,
+        "rating": 1214,
+        "ratingDiff": -15
+      },
+      {
+        "date": "2026-07-07T08:54:39.000Z",
+        "games": 229,
+        "rating": 1198,
+        "ratingDiff": -16
+      },
+      {
+        "date": "2026-07-07T09:20:30.000Z",
+        "games": 230,
+        "rating": 1214,
+        "ratingDiff": 16
+      },
+      {
+        "date": "2026-07-07T09:41:23.000Z",
+        "games": 231,
+        "rating": 1200,
+        "ratingDiff": -14
+      },
+      {
+        "date": "2026-07-11T09:28:54.000Z",
+        "games": 232,
+        "rating": 1215,
+        "ratingDiff": 15
+      },
+      {
+        "date": "2026-07-12T19:04:53.000Z",
+        "games": 233,
+        "rating": 1199,
+        "ratingDiff": -16
+      },
+      {
+        "date": "2026-07-13T08:45:51.000Z",
+        "games": 234,
+        "rating": 1216,
+        "ratingDiff": 17
+      },
+      {
+        "date": "2026-07-14T09:27:08.000Z",
+        "games": 235,
+        "rating": 1196,
+        "ratingDiff": -20
+      },
+      {
+        "date": "2026-07-14T09:54:31.000Z",
+        "games": 236,
+        "rating": 1178,
+        "ratingDiff": -18
+      },
+      {
+        "date": "2026-07-14T10:05:00.000Z",
+        "games": 237,
+        "rating": 1164,
+        "ratingDiff": -14
+      },
+      {
+        "date": "2026-07-14T10:46:34.000Z",
+        "games": 238,
+        "rating": 1180,
+        "ratingDiff": 16
+      },
+      {
+        "date": "2026-07-14T18:20:24.000Z",
+        "games": 239,
+        "rating": 1165,
+        "ratingDiff": -15
+      },
+      {
+        "date": "2026-07-15T14:18:07.000Z",
+        "games": 240,
+        "rating": 1181,
+        "ratingDiff": 16
+      },
+      {
+        "date": "2026-07-15T14:54:42.000Z",
+        "games": 241,
+        "rating": 1165,
+        "ratingDiff": -16
+      },
+      {
+        "date": "2026-07-15T15:19:25.000Z",
+        "games": 242,
+        "rating": 1149,
+        "ratingDiff": -16
+      },
+      {
+        "date": "2026-07-15T17:47:57.000Z",
+        "games": 243,
+        "rating": 1130,
+        "ratingDiff": -19
+      },
+      {
+        "date": "2026-07-15T18:18:44.000Z",
+        "games": 244,
+        "rating": 1146,
+        "ratingDiff": 16
+      },
+      {
+        "date": "2026-07-15T18:52:43.000Z",
+        "games": 245,
+        "rating": 1129,
+        "ratingDiff": -17
+      },
+      {
+        "date": "2026-07-15T18:57:48.000Z",
+        "games": 246,
+        "rating": 1144,
+        "ratingDiff": 15
+      },
+      {
+        "date": "2026-07-16T09:04:39.000Z",
+        "games": 247,
+        "rating": 1125,
+        "ratingDiff": -19
+      },
+      {
+        "date": "2026-07-16T09:17:40.000Z",
+        "games": 248,
+        "rating": 1140,
+        "ratingDiff": 15
+      },
+      {
+        "date": "2026-07-16T09:44:12.000Z",
+        "games": 249,
+        "rating": 1123,
+        "ratingDiff": -17
+      },
+      {
+        "date": "2026-07-16T10:00:40.000Z",
+        "games": 250,
+        "rating": 1138,
+        "ratingDiff": 15
+      },
+      {
+        "date": "2026-07-16T11:07:44.000Z",
+        "games": 251,
+        "rating": 1157,
+        "ratingDiff": 19
+      },
+      {
+        "date": "2026-07-16T19:30:58.000Z",
+        "games": 252,
+        "rating": 1172,
+        "ratingDiff": 15
+      },
+      {
+        "date": "2026-07-17T06:48:43.000Z",
+        "games": 253,
+        "rating": 1185,
+        "ratingDiff": 13
+      },
+      {
+        "date": "2026-07-17T08:06:31.000Z",
+        "games": 254,
+        "rating": 1172,
+        "ratingDiff": -13
+      },
+      {
+        "date": "2026-07-17T08:27:27.000Z",
+        "games": 255,
+        "rating": 1157,
+        "ratingDiff": -15
+      },
+      {
+        "date": "2026-07-17T15:49:57.000Z",
+        "games": 256,
+        "rating": 1174,
+        "ratingDiff": 17
+      },
+      {
+        "date": "2026-07-17T16:37:06.000Z",
+        "games": 257,
+        "rating": 1191,
+        "ratingDiff": 17
+      },
+      {
+        "date": "2026-07-18T21:43:13.000Z",
+        "games": 258,
+        "rating": 1175,
+        "ratingDiff": -16
+      },
+      {
+        "date": "2026-07-21T20:09:46.000Z",
+        "games": 259,
+        "rating": 1189,
+        "ratingDiff": 14
+      },
+      {
+        "date": "2026-07-22T08:00:08.000Z",
+        "games": 260,
+        "rating": 1175,
+        "ratingDiff": -14
+      },
+      {
+        "date": "2026-07-22T11:34:35.000Z",
+        "games": 261,
+        "rating": 1160,
+        "ratingDiff": -15
+      },
+      {
+        "date": "2026-07-22T11:42:51.000Z",
+        "games": 262,
+        "rating": 1143,
+        "ratingDiff": -17
+      },
+      {
+        "date": "2026-07-22T17:29:29.000Z",
+        "games": 263,
+        "rating": 1127,
+        "ratingDiff": -16
+      },
+      {
+        "date": "2026-07-22T17:45:07.000Z",
+        "games": 264,
+        "rating": 1143,
+        "ratingDiff": 16
+      },
+      {
+        "date": "2026-07-22T18:00:44.000Z",
+        "games": 265,
+        "rating": 1159,
+        "ratingDiff": 16
+      },
+      {
+        "date": "2026-07-26T06:04:38.000Z",
+        "games": 266,
+        "rating": 1145,
+        "ratingDiff": -14
+      },
+      {
+        "date": "2026-07-26T06:51:24.000Z",
+        "games": 267,
+        "rating": 1128,
+        "ratingDiff": -17
+      },
+      {
+        "date": "2026-07-26T07:08:04.000Z",
+        "games": 268,
+        "rating": 1113,
+        "ratingDiff": -15
+      },
+      {
+        "date": "2026-07-26T10:01:10.000Z",
+        "games": 269,
+        "rating": 1128,
+        "ratingDiff": 15
+      },
+      {
+        "date": "2026-07-26T19:59:35.000Z",
+        "games": 270,
+        "rating": 1113,
+        "ratingDiff": -15
+      },
+      {
+        "date": "2026-07-26T20:14:47.000Z",
+        "games": 271,
+        "rating": 1128,
+        "ratingDiff": 15
+      },
+      {
+        "date": "2026-07-27T09:18:21.000Z",
+        "games": 272,
+        "rating": 1145,
+        "ratingDiff": 17
+      },
+      {
+        "date": "2026-07-28T12:16:34.000Z",
+        "games": 273,
+        "rating": 1160,
+        "ratingDiff": 15
+      },
+      {
+        "date": "2026-07-29T08:48:23.000Z",
+        "games": 274,
+        "rating": 1178,
+        "ratingDiff": 18
+      },
+      {
+        "date": "2026-07-31T06:55:23.000Z",
+        "games": 275,
+        "rating": 1194,
+        "ratingDiff": 16
+      },
+      {
+        "date": "2026-07-31T08:46:29.000Z",
+        "games": 276,
+        "rating": 1207,
+        "ratingDiff": null
+      },
+      {
+        "date": "2026-08-03T06:33:46.000Z",
+        "games": 277,
+        "rating": 1190,
+        "ratingDiff": -17
+      },
+      {
+        "date": "2026-08-03T06:54:02.000Z",
+        "games": 278,
+        "rating": 1204,
+        "ratingDiff": 14
+      },
+      {
+        "date": "2026-08-04T09:56:43.000Z",
+        "games": 279,
+        "rating": 1220,
+        "ratingDiff": 16
+      },
+      {
+        "date": "2026-08-05T07:43:22.000Z",
+        "games": 280,
+        "rating": 1235,
+        "ratingDiff": 15
+      },
+      {
+        "date": "2026-08-05T19:38:26.000Z",
+        "games": 281,
+        "rating": 1251,
+        "ratingDiff": 16
+      },
+      {
+        "date": "2026-08-06T10:32:07.000Z",
+        "games": 282,
+        "rating": 1237,
+        "ratingDiff": -14
+      },
+      {
+        "date": "2026-08-06T17:18:54.000Z",
+        "games": 283,
+        "rating": 1254,
+        "ratingDiff": 17
+      },
+      {
+        "date": "2026-08-06T17:46:38.000Z",
+        "games": 284,
+        "rating": 1238,
+        "ratingDiff": -16
+      },
+      {
+        "date": "2026-08-11T08:11:02.000Z",
+        "games": 285,
+        "rating": 1221,
+        "ratingDiff": -17
+      },
+      {
+        "date": "2026-08-14T21:40:54.000Z",
+        "games": 286,
+        "rating": 1236,
+        "ratingDiff": 15
+      },
+      {
+        "date": "2026-08-15T09:18:22.000Z",
+        "games": 287,
+        "rating": 1222,
+        "ratingDiff": -14
+      },
+      {
+        "date": "2026-08-15T14:47:39.000Z",
+        "games": 288,
+        "rating": 1237,
+        "ratingDiff": 15
+      },
+      {
+        "date": "2026-08-16T14:47:27.000Z",
+        "games": 289,
+        "rating": 1220,
+        "ratingDiff": -17
+      },
+      {
+        "date": "2026-08-17T09:54:21.000Z",
+        "games": 290,
+        "rating": 1205,
+        "ratingDiff": -15
+      },
+      {
+        "date": "2026-08-17T14:57:07.000Z",
+        "games": 291,
+        "rating": 1221,
+        "ratingDiff": 16
+      },
+      {
+        "date": "2026-08-17T18:09:45.000Z",
+        "games": 292,
+        "rating": 1236,
+        "ratingDiff": 15
+      },
+      {
+        "date": "2026-08-17T20:14:01.000Z",
+        "games": 293,
+        "rating": 1221,
+        "ratingDiff": -15
+      },
+      {
+        "date": "2026-08-18T17:56:45.000Z",
+        "games": 294,
+        "rating": 1237,
+        "ratingDiff": 16
+      },
+      {
+        "date": "2026-08-18T20:43:32.000Z",
+        "games": 295,
+        "rating": 1220,
+        "ratingDiff": -17
+      },
+      {
+        "date": "2026-08-19T07:30:05.000Z",
+        "games": 296,
+        "rating": 1237,
+        "ratingDiff": 17
+      },
+      {
+        "date": "2026-08-19T07:56:31.000Z",
+        "games": 297,
+        "rating": 1252,
+        "ratingDiff": 15
+      },
+      {
+        "date": "2026-08-19T11:50:31.000Z",
+        "games": 298,
+        "rating": 1268,
+        "ratingDiff": 16
+      },
+      {
+        "date": "2026-08-19T12:12:55.000Z",
+        "games": 299,
+        "rating": 1283,
+        "ratingDiff": 15
+      },
+      {
+        "date": "2026-08-19T12:36:20.000Z",
+        "games": 300,
+        "rating": 1268,
+        "ratingDiff": -15
+      },
+      {
+        "date": "2026-08-20T15:27:17.000Z",
+        "games": 301,
+        "rating": 1250,
+        "ratingDiff": -18
+      },
+      {
+        "date": "2026-09-01T19:07:49.000Z",
+        "games": 302,
+        "rating": 1265,
+        "ratingDiff": 15
+      },
+      {
+        "date": "2026-09-03T15:42:59.000Z",
+        "games": 303,
+        "rating": 1250,
+        "ratingDiff": -15
+      },
+      {
+        "date": "2026-09-04T16:43:18.000Z",
+        "games": 304,
+        "rating": 1236,
+        "ratingDiff": -14
+      },
+      {
+        "date": "2026-09-04T18:56:09.000Z",
+        "games": 305,
+        "rating": 1251,
+        "ratingDiff": 15
+      }
+    ],
+    "rm_team": [
+      {
+        "date": "2025-10-30T20:39:30.000Z",
+        "games": 10,
+        "rating": 1077,
+        "ratingDiff": null
+      },
+      {
+        "date": "2025-10-30T22:02:58.000Z",
+        "games": 11,
+        "rating": 1063,
+        "ratingDiff": -14
+      },
+      {
+        "date": "2025-11-01T19:16:13.000Z",
+        "games": 12,
+        "rating": 1047,
+        "ratingDiff": -16
+      },
+      {
+        "date": "2025-11-01T22:07:29.000Z",
+        "games": 13,
+        "rating": 1096,
+        "ratingDiff": 49
+      },
+      {
+        "date": "2025-11-01T22:41:03.000Z",
+        "games": 14,
+        "rating": 1077,
+        "ratingDiff": -19
+      },
+      {
+        "date": "2025-11-03T19:04:32.000Z",
+        "games": 15,
+        "rating": 1049,
+        "ratingDiff": -28
+      },
+      {
+        "date": "2025-11-04T20:19:31.000Z",
+        "games": 16,
+        "rating": 1039,
+        "ratingDiff": -10
+      },
+      {
+        "date": "2025-11-04T20:56:18.000Z",
+        "games": 17,
+        "rating": 1025,
+        "ratingDiff": -14
+      },
+      {
+        "date": "2025-11-04T21:35:39.000Z",
+        "games": 18,
+        "rating": 1049,
+        "ratingDiff": 24
+      },
+      {
+        "date": "2025-11-05T20:06:28.000Z",
+        "games": 19,
+        "rating": 1035,
+        "ratingDiff": -14
+      },
+      {
+        "date": "2025-11-05T20:39:21.000Z",
+        "games": 20,
+        "rating": 1022,
+        "ratingDiff": -13
+      },
+      {
+        "date": "2025-11-05T20:46:09.000Z",
+        "games": 21,
+        "rating": 1008,
+        "ratingDiff": -14
+      },
+      {
+        "date": "2025-11-06T19:41:02.000Z",
+        "games": 22,
+        "rating": 1000,
+        "ratingDiff": -8
+      },
+      {
+        "date": "2025-11-07T22:05:22.000Z",
+        "games": 23,
+        "rating": 992,
+        "ratingDiff": -8
+      },
+      {
+        "date": "2026-01-07T18:50:55.000Z",
+        "games": 24,
+        "rating": 984,
+        "ratingDiff": -8
+      },
+      {
+        "date": "2026-01-07T23:02:59.000Z",
+        "games": 25,
+        "rating": 980,
+        "ratingDiff": -4
+      },
+      {
+        "date": "2026-01-08T19:14:23.000Z",
+        "games": 26,
+        "rating": 975,
+        "ratingDiff": -5
+      },
+      {
+        "date": "2026-01-08T19:43:27.000Z",
+        "games": 27,
+        "rating": 999,
+        "ratingDiff": 24
+      },
+      {
+        "date": "2026-01-08T21:03:20.000Z",
+        "games": 28,
+        "rating": 992,
+        "ratingDiff": -7
+      },
+      {
+        "date": "2026-01-09T18:14:44.000Z",
+        "games": 29,
+        "rating": 1015,
+        "ratingDiff": 23
+      },
+      {
+        "date": "2026-01-09T18:47:22.000Z",
+        "games": 30,
+        "rating": 1007,
+        "ratingDiff": -8
+      },
+      {
+        "date": "2026-01-09T18:57:00.000Z",
+        "games": 31,
+        "rating": 1030,
+        "ratingDiff": 23
+      },
+      {
+        "date": "2026-01-09T19:30:54.000Z",
+        "games": 32,
+        "rating": 1055,
+        "ratingDiff": 25
+      },
+      {
+        "date": "2026-01-09T19:58:30.000Z",
+        "games": 33,
+        "rating": 1079,
+        "ratingDiff": 24
+      },
+      {
+        "date": "2026-01-09T20:13:33.000Z",
+        "games": 34,
+        "rating": 1104,
+        "ratingDiff": 25
+      },
+      {
+        "date": "2026-01-09T20:49:49.000Z",
+        "games": 35,
+        "rating": 1128,
+        "ratingDiff": 24
+      },
+      {
+        "date": "2026-01-10T23:32:38.000Z",
+        "games": 36,
+        "rating": 1149,
+        "ratingDiff": 21
+      },
+      {
+        "date": "2026-01-11T21:06:09.000Z",
+        "games": 37,
+        "rating": 1172,
+        "ratingDiff": 23
+      },
+      {
+        "date": "2026-01-13T19:17:46.000Z",
+        "games": 38,
+        "rating": 1164,
+        "ratingDiff": -8
+      },
+      {
+        "date": "2026-01-13T19:50:57.000Z",
+        "games": 39,
+        "rating": 1152,
+        "ratingDiff": -12
+      },
+      {
+        "date": "2026-01-13T19:57:58.000Z",
+        "games": 40,
+        "rating": 1174,
+        "ratingDiff": 22
+      },
+      {
+        "date": "2026-01-13T20:27:17.000Z",
+        "games": 41,
+        "rating": 1193,
+        "ratingDiff": 19
+      },
+      {
+        "date": "2026-01-13T21:02:59.000Z",
+        "games": 42,
+        "rating": 1180,
+        "ratingDiff": -13
+      },
+      {
+        "date": "2026-01-16T16:34:11.000Z",
+        "games": 43,
+        "rating": 1164,
+        "ratingDiff": -16
+      },
+      {
+        "date": "2026-01-16T17:08:18.000Z",
+        "games": 44,
+        "rating": 1157,
+        "ratingDiff": -7
+      },
+      {
+        "date": "2026-01-16T18:05:24.000Z",
+        "games": 45,
+        "rating": 1179,
+        "ratingDiff": 22
+      },
+      {
+        "date": "2026-01-16T20:06:32.000Z",
+        "games": 46,
+        "rating": 1165,
+        "ratingDiff": -14
+      },
+      {
+        "date": "2026-01-17T12:07:02.000Z",
+        "games": 47,
+        "rating": 1150,
+        "ratingDiff": -15
+      },
+      {
+        "date": "2026-01-17T12:23:15.000Z",
+        "games": 48,
+        "rating": 1133,
+        "ratingDiff": -17
+      },
+      {
+        "date": "2026-01-23T18:30:06.000Z",
+        "games": 49,
+        "rating": 1121,
+        "ratingDiff": -12
+      },
+      {
+        "date": "2026-01-24T17:11:56.000Z",
+        "games": 50,
+        "rating": 1109,
+        "ratingDiff": -12
+      },
+      {
+        "date": "2026-01-24T17:43:21.000Z",
+        "games": 51,
+        "rating": 1128,
+        "ratingDiff": 19
+      },
+      {
+        "date": "2026-01-24T18:56:44.000Z",
+        "games": 52,
+        "rating": 1150,
+        "ratingDiff": 22
+      },
+      {
+        "date": "2026-01-24T19:38:53.000Z",
+        "games": 53,
+        "rating": 1140,
+        "ratingDiff": -10
+      },
+      {
+        "date": "2026-01-24T20:28:57.000Z",
+        "games": 54,
+        "rating": 1130,
+        "ratingDiff": -10
+      },
+      {
+        "date": "2026-01-25T16:57:13.000Z",
+        "games": 55,
+        "rating": 1152,
+        "ratingDiff": 22
+      },
+      {
+        "date": "2026-01-25T17:28:54.000Z",
+        "games": 56,
+        "rating": 1144,
+        "ratingDiff": -8
+      },
+      {
+        "date": "2026-01-25T18:10:38.000Z",
+        "games": 57,
+        "rating": 1166,
+        "ratingDiff": 22
+      },
+      {
+        "date": "2026-01-25T19:10:44.000Z",
+        "games": 58,
+        "rating": 1182,
+        "ratingDiff": 16
+      },
+      {
+        "date": "2026-01-26T21:18:02.000Z",
+        "games": 59,
+        "rating": 1169,
+        "ratingDiff": -13
+      },
+      {
+        "date": "2026-01-27T20:32:15.000Z",
+        "games": 60,
+        "rating": 1159,
+        "ratingDiff": -10
+      },
+      {
+        "date": "2026-01-27T21:03:33.000Z",
+        "games": 61,
+        "rating": 1181,
+        "ratingDiff": 22
+      },
+      {
+        "date": "2026-01-28T18:53:56.000Z",
+        "games": 62,
+        "rating": 1165,
+        "ratingDiff": -16
+      },
+      {
+        "date": "2026-01-30T19:45:27.000Z",
+        "games": 63,
+        "rating": 1150,
+        "ratingDiff": -15
+      },
+      {
+        "date": "2026-01-30T19:51:13.000Z",
+        "games": 64,
+        "rating": 1172,
+        "ratingDiff": 22
+      },
+      {
+        "date": "2026-01-31T19:44:49.000Z",
+        "games": 65,
+        "rating": 1163,
+        "ratingDiff": -9
+      },
+      {
+        "date": "2026-01-31T19:56:13.000Z",
+        "games": 66,
+        "rating": 1152,
+        "ratingDiff": -11
+      },
+      {
+        "date": "2026-02-01T15:15:53.000Z",
+        "games": 67,
+        "rating": 1136,
+        "ratingDiff": -16
+      },
+      {
+        "date": "2026-02-03T19:52:30.000Z",
+        "games": 68,
+        "rating": 1128,
+        "ratingDiff": -8
+      },
+      {
+        "date": "2026-02-04T07:38:00.000Z",
+        "games": 69,
+        "rating": 1153,
+        "ratingDiff": 25
+      },
+      {
+        "date": "2026-02-06T12:08:34.000Z",
+        "games": 70,
+        "rating": 1143,
+        "ratingDiff": -10
+      },
+      {
+        "date": "2026-02-06T18:44:41.000Z",
+        "games": 71,
+        "rating": 1166,
+        "ratingDiff": 23
+      },
+      {
+        "date": "2026-02-06T19:16:18.000Z",
+        "games": 72,
+        "rating": 1158,
+        "ratingDiff": -8
+      },
+      {
+        "date": "2026-02-06T19:41:33.000Z",
+        "games": 73,
+        "rating": 1148,
+        "ratingDiff": -10
+      },
+      {
+        "date": "2026-02-15T19:26:06.000Z",
+        "games": 74,
+        "rating": 1133,
+        "ratingDiff": -15
+      },
+      {
+        "date": "2026-02-16T18:24:10.000Z",
+        "games": 75,
+        "rating": 1118,
+        "ratingDiff": -15
+      },
+      {
+        "date": "2026-02-16T19:30:04.000Z",
+        "games": 76,
+        "rating": 1100,
+        "ratingDiff": -18
+      },
+      {
+        "date": "2026-02-19T20:08:02.000Z",
+        "games": 77,
+        "rating": 1116,
+        "ratingDiff": 16
+      },
+      {
+        "date": "2026-02-20T18:47:23.000Z",
+        "games": 78,
+        "rating": 1108,
+        "ratingDiff": -8
+      },
+      {
+        "date": "2026-02-20T19:13:15.000Z",
+        "games": 79,
+        "rating": 1099,
+        "ratingDiff": -9
+      },
+      {
+        "date": "2026-02-21T18:52:39.000Z",
+        "games": 80,
+        "rating": 1091,
+        "ratingDiff": -8
+      },
+      {
+        "date": "2026-02-21T19:23:01.000Z",
+        "games": 81,
+        "rating": 1116,
+        "ratingDiff": 25
+      },
+      {
+        "date": "2026-03-28T21:26:58.000Z",
+        "games": 82,
+        "rating": 1112,
+        "ratingDiff": -4
+      },
+      {
+        "date": "2026-03-29T20:32:23.000Z",
+        "games": 83,
+        "rating": 1094,
+        "ratingDiff": -18
+      },
+      {
+        "date": "2026-03-31T18:42:58.000Z",
+        "games": 84,
+        "rating": 1118,
+        "ratingDiff": 24
+      },
+      {
+        "date": "2026-04-02T20:30:46.000Z",
+        "games": 85,
+        "rating": 1112,
+        "ratingDiff": -6
+      },
+      {
+        "date": "2026-04-05T20:22:39.000Z",
+        "games": 86,
+        "rating": 1108,
+        "ratingDiff": -4
+      },
+      {
+        "date": "2026-04-05T20:56:19.000Z",
+        "games": 87,
+        "rating": 1101,
+        "ratingDiff": -7
+      },
+      {
+        "date": "2026-04-06T20:04:08.000Z",
+        "games": 88,
+        "rating": 1084,
+        "ratingDiff": -17
+      },
+      {
+        "date": "2026-04-08T19:32:49.000Z",
+        "games": 89,
+        "rating": 1079,
+        "ratingDiff": -5
+      },
+      {
+        "date": "2026-04-12T15:58:28.000Z",
+        "games": 90,
+        "rating": 1090,
+        "ratingDiff": 11
+      },
+      {
+        "date": "2026-04-12T19:13:54.000Z",
+        "games": 91,
+        "rating": 1073,
+        "ratingDiff": -17
+      },
+      {
+        "date": "2026-04-12T19:37:16.000Z",
+        "games": 92,
+        "rating": 1059,
+        "ratingDiff": -14
+      },
+      {
+        "date": "2026-04-13T18:29:39.000Z",
+        "games": 93,
+        "rating": 1073,
+        "ratingDiff": 14
+      },
+      {
+        "date": "2026-04-17T21:20:45.000Z",
+        "games": 94,
+        "rating": 1098,
+        "ratingDiff": 25
+      },
+      {
+        "date": "2026-04-17T22:00:38.000Z",
+        "games": 95,
+        "rating": 1117,
+        "ratingDiff": 19
+      },
+      {
+        "date": "2026-04-19T19:14:27.000Z",
+        "games": 96,
+        "rating": 1141,
+        "ratingDiff": 24
+      },
+      {
+        "date": "2026-04-19T20:05:34.000Z",
+        "games": 97,
+        "rating": 1132,
+        "ratingDiff": -9
+      },
+      {
+        "date": "2026-04-20T19:31:29.000Z",
+        "games": 98,
+        "rating": 1156,
+        "ratingDiff": 24
+      },
+      {
+        "date": "2026-04-20T19:53:58.000Z",
+        "games": 99,
+        "rating": 1182,
+        "ratingDiff": 26
+      },
+      {
+        "date": "2026-04-22T18:41:12.000Z",
+        "games": 100,
+        "rating": 1169,
+        "ratingDiff": -13
+      },
+      {
+        "date": "2026-05-01T21:17:25.000Z",
+        "games": 101,
+        "rating": 1157,
+        "ratingDiff": -12
+      },
+      {
+        "date": "2026-05-02T19:51:19.000Z",
+        "games": 102,
+        "rating": 1182,
+        "ratingDiff": 25
+      },
+      {
+        "date": "2026-05-02T20:21:01.000Z",
+        "games": 103,
+        "rating": 1209,
+        "ratingDiff": 27
+      },
+      {
+        "date": "2026-05-02T20:50:11.000Z",
+        "games": 104,
+        "rating": 1234,
+        "ratingDiff": 25
+      },
+      {
+        "date": "2026-05-03T17:49:49.000Z",
+        "games": 105,
+        "rating": 1254,
+        "ratingDiff": 20
+      },
+      {
+        "date": "2026-05-03T18:12:31.000Z",
+        "games": 106,
+        "rating": 1241,
+        "ratingDiff": -13
+      },
+      {
+        "date": "2026-05-04T16:21:07.000Z",
+        "games": 107,
+        "rating": 1222,
+        "ratingDiff": -19
+      },
+      {
+        "date": "2026-05-06T09:45:31.000Z",
+        "games": 108,
+        "rating": 1245,
+        "ratingDiff": 23
+      },
+      {
+        "date": "2026-05-06T10:16:00.000Z",
+        "games": 109,
+        "rating": 1238,
+        "ratingDiff": -7
+      },
+      {
+        "date": "2026-05-06T11:08:53.000Z",
+        "games": 110,
+        "rating": 1226,
+        "ratingDiff": -12
+      },
+      {
+        "date": "2026-05-06T12:18:57.000Z",
+        "games": 111,
+        "rating": 1247,
+        "ratingDiff": 21
+      },
+      {
+        "date": "2026-06-06T14:24:33.000Z",
+        "games": 112,
+        "rating": 1239,
+        "ratingDiff": -8
+      },
+      {
+        "date": "2026-06-06T21:08:52.000Z",
+        "games": 113,
+        "rating": 1232,
+        "ratingDiff": -7
+      },
+      {
+        "date": "2026-06-09T18:37:38.000Z",
+        "games": 114,
+        "rating": 1220,
+        "ratingDiff": -12
+      },
+      {
+        "date": "2026-06-10T17:10:09.000Z",
+        "games": 115,
+        "rating": 1205,
+        "ratingDiff": -15
+      },
+      {
+        "date": "2026-06-12T19:57:35.000Z",
+        "games": 116,
+        "rating": 1222,
+        "ratingDiff": 17
+      },
+      {
+        "date": "2026-06-13T07:32:22.000Z",
+        "games": 117,
+        "rating": 1204,
+        "ratingDiff": -18
+      },
+      {
+        "date": "2026-06-13T12:40:52.000Z",
+        "games": 118,
+        "rating": 1190,
+        "ratingDiff": -14
+      },
+      {
+        "date": "2026-06-19T21:28:53.000Z",
+        "games": 119,
+        "rating": 1214,
+        "ratingDiff": 24
+      },
+      {
+        "date": "2026-06-19T21:35:27.000Z",
+        "games": 120,
+        "rating": 1236,
+        "ratingDiff": 22
+      },
+      {
+        "date": "2026-06-19T21:51:14.000Z",
+        "games": 121,
+        "rating": 1227,
+        "ratingDiff": -9
+      },
+      {
+        "date": "2026-06-20T19:19:14.000Z",
+        "games": 122,
+        "rating": 1218,
+        "ratingDiff": -9
+      },
+      {
+        "date": "2026-06-22T20:35:51.000Z",
+        "games": 123,
+        "rating": 1237,
+        "ratingDiff": 19
+      },
+      {
+        "date": "2026-06-22T21:06:34.000Z",
+        "games": 124,
+        "rating": 1226,
+        "ratingDiff": -11
+      },
+      {
+        "date": "2026-06-22T21:53:45.000Z",
+        "games": 125,
+        "rating": 1246,
+        "ratingDiff": 20
+      },
+      {
+        "date": "2026-06-23T09:45:00.000Z",
+        "games": 126,
+        "rating": 1265,
+        "ratingDiff": 19
+      },
+      {
+        "date": "2026-06-23T09:58:30.000Z",
+        "games": 127,
+        "rating": 1254,
+        "ratingDiff": -11
+      },
+      {
+        "date": "2026-06-23T19:10:16.000Z",
+        "games": 128,
+        "rating": 1242,
+        "ratingDiff": -12
+      },
+      {
+        "date": "2026-06-23T19:36:34.000Z",
+        "games": 129,
+        "rating": 1227,
+        "ratingDiff": -15
+      },
+      {
+        "date": "2026-06-24T19:46:38.000Z",
+        "games": 130,
+        "rating": 1213,
+        "ratingDiff": -14
+      },
+      {
+        "date": "2026-06-24T20:07:32.000Z",
+        "games": 131,
+        "rating": 1231,
+        "ratingDiff": 18
+      },
+      {
+        "date": "2026-06-26T21:08:08.000Z",
+        "games": 132,
+        "rating": 1251,
+        "ratingDiff": 20
+      },
+      {
+        "date": "2026-06-26T21:39:24.000Z",
+        "games": 133,
+        "rating": 1271,
+        "ratingDiff": 20
+      },
+      {
+        "date": "2026-06-28T16:36:57.000Z",
+        "games": 134,
+        "rating": 1257,
+        "ratingDiff": -14
+      },
+      {
+        "date": "2026-06-28T17:27:53.000Z",
+        "games": 135,
+        "rating": 1275,
+        "ratingDiff": 18
+      },
+      {
+        "date": "2026-06-28T18:14:05.000Z",
+        "games": 136,
+        "rating": 1291,
+        "ratingDiff": 16
+      },
+      {
+        "date": "2026-07-01T20:35:26.000Z",
+        "games": 137,
+        "rating": 1276,
+        "ratingDiff": -15
+      },
+      {
+        "date": "2026-07-01T20:41:28.000Z",
+        "games": 138,
+        "rating": 1291,
+        "ratingDiff": 15
+      },
+      {
+        "date": "2026-07-01T21:10:48.000Z",
+        "games": 139,
+        "rating": 1306,
+        "ratingDiff": 15
+      },
+      {
+        "date": "2026-07-05T21:15:34.000Z",
+        "games": 140,
+        "rating": 1323,
+        "ratingDiff": 17
+      },
+      {
+        "date": "2026-07-05T21:50:07.000Z",
+        "games": 141,
+        "rating": 1311,
+        "ratingDiff": -12
+      },
+      {
+        "date": "2026-07-16T12:17:58.000Z",
+        "games": 142,
+        "rating": 1301,
+        "ratingDiff": -10
+      },
+      {
+        "date": "2026-07-18T10:55:44.000Z",
+        "games": 143,
+        "rating": 1311,
+        "ratingDiff": 10
+      },
+      {
+        "date": "2026-07-18T11:42:39.000Z",
+        "games": 144,
+        "rating": 1320,
+        "ratingDiff": 9
+      },
+      {
+        "date": "2026-07-22T12:18:13.000Z",
+        "games": 145,
+        "rating": 1316,
+        "ratingDiff": -4
+      },
+      {
+        "date": "2026-07-22T13:13:08.000Z",
+        "games": 146,
+        "rating": 1332,
+        "ratingDiff": 16
+      },
+      {
+        "date": "2026-07-22T17:14:32.000Z",
+        "games": 147,
+        "rating": 1316,
+        "ratingDiff": -16
+      },
+      {
+        "date": "2026-07-28T18:58:57.000Z",
+        "games": 148,
+        "rating": 1300,
+        "ratingDiff": -16
+      },
+      {
+        "date": "2026-07-31T13:29:16.000Z",
+        "games": 149,
+        "rating": 1284,
+        "ratingDiff": -16
+      },
+      {
+        "date": "2026-07-31T13:44:29.000Z",
+        "games": 150,
+        "rating": 1298,
+        "ratingDiff": 14
+      },
+      {
+        "date": "2026-07-31T18:56:06.000Z",
+        "games": 151,
+        "rating": 1319,
+        "ratingDiff": 21
+      },
+      {
+        "date": "2026-07-31T19:44:16.000Z",
+        "games": 152,
+        "rating": 1311,
+        "ratingDiff": null
+      },
+      {
+        "date": "2026-08-04T15:20:27.000Z",
+        "games": 153,
+        "rating": 1332,
+        "ratingDiff": 21
+      },
+      {
+        "date": "2026-08-04T15:40:41.000Z",
+        "games": 154,
+        "rating": 1322,
+        "ratingDiff": -10
+      },
+      {
+        "date": "2026-08-04T16:19:04.000Z",
+        "games": 155,
+        "rating": 1345,
+        "ratingDiff": 23
+      },
+      {
+        "date": "2026-08-05T08:34:33.000Z",
+        "games": 156,
+        "rating": 1321,
+        "ratingDiff": -24
+      },
+      {
+        "date": "2026-08-05T09:48:16.000Z",
+        "games": 157,
+        "rating": 1332,
+        "ratingDiff": 11
+      },
+      {
+        "date": "2026-08-05T10:05:52.000Z",
+        "games": 158,
+        "rating": 1348,
+        "ratingDiff": 16
+      },
+      {
+        "date": "2026-08-05T10:38:15.000Z",
+        "games": 159,
+        "rating": 1368,
+        "ratingDiff": 20
+      },
+      {
+        "date": "2026-08-05T13:45:34.000Z",
+        "games": 160,
+        "rating": 1386,
+        "ratingDiff": 18
+      },
+      {
+        "date": "2026-08-05T14:12:58.000Z",
+        "games": 161,
+        "rating": 1400,
+        "ratingDiff": 14
+      },
+      {
+        "date": "2026-08-05T15:05:57.000Z",
+        "games": 162,
+        "rating": 1383,
+        "ratingDiff": -17
+      },
+      {
+        "date": "2026-08-05T21:39:00.000Z",
+        "games": 163,
+        "rating": 1364,
+        "ratingDiff": -19
+      },
+      {
+        "date": "2026-08-05T22:12:53.000Z",
+        "games": 164,
+        "rating": 1383,
+        "ratingDiff": 19
+      },
+      {
+        "date": "2026-08-05T23:21:11.000Z",
+        "games": 165,
+        "rating": 1368,
+        "ratingDiff": -15
+      },
+      {
+        "date": "2026-08-06T15:14:20.000Z",
+        "games": 166,
+        "rating": 1386,
+        "ratingDiff": 18
+      },
+      {
+        "date": "2026-08-06T16:09:44.000Z",
+        "games": 167,
+        "rating": 1374,
+        "ratingDiff": -12
+      },
+      {
+        "date": "2026-08-06T18:58:47.000Z",
+        "games": 168,
+        "rating": 1386,
+        "ratingDiff": 12
+      },
+      {
+        "date": "2026-08-06T20:25:33.000Z",
+        "games": 169,
+        "rating": 1399,
+        "ratingDiff": 13
+      },
+      {
+        "date": "2026-08-06T21:19:08.000Z",
+        "games": 170,
+        "rating": 1383,
+        "ratingDiff": -16
+      },
+      {
+        "date": "2026-08-06T22:28:58.000Z",
+        "games": 171,
+        "rating": 1365,
+        "ratingDiff": -18
+      },
+      {
+        "date": "2026-08-06T23:43:30.000Z",
+        "games": 172,
+        "rating": 1378,
+        "ratingDiff": 13
+      },
+      {
+        "date": "2026-08-15T19:16:39.000Z",
+        "games": 173,
+        "rating": 1392,
+        "ratingDiff": 14
+      },
+      {
+        "date": "2026-08-18T14:03:34.000Z",
+        "games": 174,
+        "rating": 1413,
+        "ratingDiff": 21
+      },
+      {
+        "date": "2026-08-18T14:45:19.000Z",
+        "games": 175,
+        "rating": 1432,
+        "ratingDiff": 19
+      },
+      {
+        "date": "2026-08-19T20:41:42.000Z",
+        "games": 176,
+        "rating": 1421,
+        "ratingDiff": -11
+      },
+      {
+        "date": "2026-08-20T19:42:59.000Z",
+        "games": 177,
+        "rating": 1436,
+        "ratingDiff": 15
+      },
+      {
+        "date": "2026-08-20T20:09:16.000Z",
+        "games": 178,
+        "rating": 1422,
+        "ratingDiff": -14
+      },
+      {
+        "date": "2026-08-22T15:13:51.000Z",
+        "games": 179,
+        "rating": 1406,
+        "ratingDiff": -16
+      },
+      {
+        "date": "2026-08-22T15:38:18.000Z",
+        "games": 180,
+        "rating": 1387,
+        "ratingDiff": -19
+      },
+      {
+        "date": "2026-08-31T10:38:42.000Z",
+        "games": 181,
+        "rating": 1373,
+        "ratingDiff": -14
+      }
+    ],
+    "qp_rm_1v1": [
+      {
+        "date": "2025-10-31T16:44:25.000Z",
+        "games": 1761929065,
+        "rating": 1000,
+        "ratingDiff": 43
+      },
+      {
+        "date": "2025-11-03T18:09:44.000Z",
+        "games": 1762193384,
+        "rating": 1043,
+        "ratingDiff": 48
+      },
+      {
+        "date": "2025-11-03T20:17:17.000Z",
+        "games": 1762201037,
+        "rating": 1091,
+        "ratingDiff": 52
+      },
+      {
+        "date": "2026-01-16T20:30:18.000Z",
+        "games": 1768595418,
+        "rating": 1143,
+        "ratingDiff": -41
+      },
+      {
+        "date": "2026-03-29T19:45:56.000Z",
+        "games": 1774813556,
+        "rating": 1102,
+        "ratingDiff": -40
+      },
+      {
+        "date": "2026-04-21T20:00:27.000Z",
+        "games": 1776801627,
+        "rating": 1062,
+        "ratingDiff": -48
+      }
+    ],
+    "qp_rm_team": [
+      {
+        "date": "2026-03-31T12:39:04.000Z",
+        "games": 1774960744,
+        "rating": 1000,
+        "ratingDiff": 66
+      },
+      {
+        "date": "2026-03-31T13:18:58.000Z",
+        "games": 1774963138,
+        "rating": 1066,
+        "ratingDiff": 63
+      },
+      {
+        "date": "2026-04-21T16:06:24.000Z",
+        "games": 1776787584,
+        "rating": 1129,
+        "ratingDiff": 56
+      },
+      {
+        "date": "2026-07-01T10:28:17.000Z",
+        "games": 1782901697,
+        "rating": 1185,
+        "ratingDiff": 63
+      },
+      {
+        "date": "2026-07-22T08:50:52.000Z",
+        "games": 1784710252,
+        "rating": 1248,
+        "ratingDiff": 25
+      }
+    ],
+    "unranked": [
+      {
+        "date": "2025-10-29T20:54:42.000Z",
+        "games": 10,
+        "rating": 1014,
+        "ratingDiff": null
+      },
+      {
+        "date": "2025-10-31T17:28:00.000Z",
+        "games": 11,
+        "rating": 1000,
+        "ratingDiff": -14
+      },
+      {
+        "date": "2025-10-31T20:32:20.000Z",
+        "games": 12,
+        "rating": 987,
+        "ratingDiff": -13
+      },
+      {
+        "date": "2025-10-31T21:09:17.000Z",
+        "games": 13,
+        "rating": 977,
+        "ratingDiff": -10
+      },
+      {
+        "date": "2025-11-01T21:38:54.000Z",
+        "games": 14,
+        "rating": 1011,
+        "ratingDiff": 34
+      },
+      {
+        "date": "2025-11-02T16:30:19.000Z",
+        "games": 15,
+        "rating": 997,
+        "ratingDiff": -14
+      },
+      {
+        "date": "2025-11-02T16:58:01.000Z",
+        "games": 16,
+        "rating": 985,
+        "ratingDiff": -12
+      },
+      {
+        "date": "2025-11-07T18:39:21.000Z",
+        "games": 17,
+        "rating": 1030,
+        "ratingDiff": 45
+      },
+      {
+        "date": "2025-11-07T19:07:18.000Z",
+        "games": 18,
+        "rating": 1067,
+        "ratingDiff": 37
+      },
+      {
+        "date": "2025-11-07T19:44:18.000Z",
+        "games": 19,
+        "rating": 1097,
+        "ratingDiff": 30
+      },
+      {
+        "date": "2025-11-07T20:18:02.000Z",
+        "games": 20,
+        "rating": 1086,
+        "ratingDiff": -11
+      },
+      {
+        "date": "2025-11-07T21:03:54.000Z",
+        "games": 21,
+        "rating": 1109,
+        "ratingDiff": 23
+      },
+      {
+        "date": "2026-01-03T21:06:37.000Z",
+        "games": 22,
+        "rating": 1097,
+        "ratingDiff": -12
+      },
+      {
+        "date": "2026-01-03T21:29:24.000Z",
+        "games": 23,
+        "rating": 1118,
+        "ratingDiff": 21
+      },
+      {
+        "date": "2026-01-08T18:42:47.000Z",
+        "games": 24,
+        "rating": 1103,
+        "ratingDiff": -15
+      },
+      {
+        "date": "2026-01-09T22:01:01.000Z",
+        "games": 25,
+        "rating": 1093,
+        "ratingDiff": -10
+      },
+      {
+        "date": "2026-01-09T22:43:05.000Z",
+        "games": 26,
+        "rating": 1084,
+        "ratingDiff": -9
+      },
+      {
+        "date": "2026-01-10T16:16:33.000Z",
+        "games": 27,
+        "rating": 1078,
+        "ratingDiff": -6
+      },
+      {
+        "date": "2026-01-10T19:20:58.000Z",
+        "games": 28,
+        "rating": 1068,
+        "ratingDiff": -10
+      },
+      {
+        "date": "2026-01-10T20:00:31.000Z",
+        "games": 29,
+        "rating": 1091,
+        "ratingDiff": 23
+      },
+      {
+        "date": "2026-01-10T20:23:48.000Z",
+        "games": 30,
+        "rating": 1082,
+        "ratingDiff": -9
+      },
+      {
+        "date": "2026-01-10T20:56:56.000Z",
+        "games": 31,
+        "rating": 1074,
+        "ratingDiff": -8
+      },
+      {
+        "date": "2026-01-10T21:39:21.000Z",
+        "games": 32,
+        "rating": 1067,
+        "ratingDiff": -7
+      },
+      {
+        "date": "2026-01-10T22:30:42.000Z",
+        "games": 33,
+        "rating": 1062,
+        "ratingDiff": -5
+      },
+      {
+        "date": "2026-01-11T19:44:34.000Z",
+        "games": 34,
+        "rating": 1054,
+        "ratingDiff": -8
+      },
+      {
+        "date": "2026-01-11T20:37:01.000Z",
+        "games": 35,
+        "rating": 1079,
+        "ratingDiff": 25
+      },
+      {
+        "date": "2026-01-12T19:56:15.000Z",
+        "games": 36,
+        "rating": 1101,
+        "ratingDiff": 22
+      },
+      {
+        "date": "2026-01-12T20:41:04.000Z",
+        "games": 37,
+        "rating": 1089,
+        "ratingDiff": -12
+      },
+      {
+        "date": "2026-01-13T17:37:51.000Z",
+        "games": 38,
+        "rating": 1082,
+        "ratingDiff": -7
+      },
+      {
+        "date": "2026-01-13T18:27:15.000Z",
+        "games": 39,
+        "rating": 1075,
+        "ratingDiff": -7
+      },
+      {
+        "date": "2026-01-15T20:20:28.000Z",
+        "games": 40,
+        "rating": 1068,
+        "ratingDiff": -7
+      },
+      {
+        "date": "2026-01-16T11:58:51.000Z",
+        "games": 41,
+        "rating": 1093,
+        "ratingDiff": 25
+      },
+      {
+        "date": "2026-01-16T12:41:26.000Z",
+        "games": 42,
+        "rating": 1084,
+        "ratingDiff": -9
+      },
+      {
+        "date": "2026-01-16T21:01:49.000Z",
+        "games": 43,
+        "rating": 1107,
+        "ratingDiff": 23
+      },
+      {
+        "date": "2026-01-18T19:08:50.000Z",
+        "games": 44,
+        "rating": 1096,
+        "ratingDiff": -11
+      },
+      {
+        "date": "2026-01-18T19:42:34.000Z",
+        "games": 45,
+        "rating": 1085,
+        "ratingDiff": -11
+      },
+      {
+        "date": "2026-01-20T20:59:52.000Z",
+        "games": 46,
+        "rating": 1085,
+        "ratingDiff": 0
+      },
+      {
+        "date": "2026-01-21T20:17:09.000Z",
+        "games": 47,
+        "rating": 1085,
+        "ratingDiff": 0
+      },
+      {
+        "date": "2026-01-21T20:46:37.000Z",
+        "games": 48,
+        "rating": 1085,
+        "ratingDiff": 0
+      },
+      {
+        "date": "2026-01-23T19:18:48.000Z",
+        "games": 49,
+        "rating": 1078,
+        "ratingDiff": -7
+      },
+      {
+        "date": "2026-01-23T19:51:59.000Z",
+        "games": 50,
+        "rating": 1070,
+        "ratingDiff": -8
+      },
+      {
+        "date": "2026-01-23T20:22:06.000Z",
+        "games": 51,
+        "rating": 1094,
+        "ratingDiff": 24
+      },
+      {
+        "date": "2026-01-23T20:51:22.000Z",
+        "games": 52,
+        "rating": 1086,
+        "ratingDiff": -8
+      },
+      {
+        "date": "2026-01-23T21:28:38.000Z",
+        "games": 53,
+        "rating": 1109,
+        "ratingDiff": 23
+      },
+      {
+        "date": "2026-01-23T22:02:00.000Z",
+        "games": 54,
+        "rating": 1130,
+        "ratingDiff": 21
+      },
+      {
+        "date": "2026-01-24T20:59:23.000Z",
+        "games": 55,
+        "rating": 1150,
+        "ratingDiff": 20
+      },
+      {
+        "date": "2026-01-26T20:40:31.000Z",
+        "games": 56,
+        "rating": 1138,
+        "ratingDiff": -12
+      },
+      {
+        "date": "2026-01-27T19:59:39.000Z",
+        "games": 57,
+        "rating": 1127,
+        "ratingDiff": -11
+      },
+      {
+        "date": "2026-01-28T19:54:02.000Z",
+        "games": 58,
+        "rating": 1148,
+        "ratingDiff": 21
+      },
+      {
+        "date": "2026-01-28T20:21:25.000Z",
+        "games": 59,
+        "rating": 1137,
+        "ratingDiff": -11
+      },
+      {
+        "date": "2026-01-28T21:01:56.000Z",
+        "games": 60,
+        "rating": 1126,
+        "ratingDiff": -11
+      },
+      {
+        "date": "2026-01-29T19:11:31.000Z",
+        "games": 61,
+        "rating": 1114,
+        "ratingDiff": -12
+      },
+      {
+        "date": "2026-01-29T19:53:36.000Z",
+        "games": 62,
+        "rating": 1109,
+        "ratingDiff": -5
+      },
+      {
+        "date": "2026-01-30T09:49:19.000Z",
+        "games": 65,
+        "rating": 1111,
+        "ratingDiff": null
+      },
+      {
+        "date": "2026-01-30T10:29:51.000Z",
+        "games": 66,
+        "rating": 1100,
+        "ratingDiff": -11
+      },
+      {
+        "date": "2026-01-30T11:18:52.000Z",
+        "games": 67,
+        "rating": 1122,
+        "ratingDiff": 22
+      },
+      {
+        "date": "2026-01-30T17:13:30.000Z",
+        "games": 68,
+        "rating": 1143,
+        "ratingDiff": 21
+      },
+      {
+        "date": "2026-01-30T18:00:47.000Z",
+        "games": 69,
+        "rating": 1126,
+        "ratingDiff": -17
+      },
+      {
+        "date": "2026-01-30T18:34:51.000Z",
+        "games": 70,
+        "rating": 1111,
+        "ratingDiff": -15
+      },
+      {
+        "date": "2026-01-30T19:11:20.000Z",
+        "games": 71,
+        "rating": 1129,
+        "ratingDiff": 18
+      },
+      {
+        "date": "2026-01-30T20:19:45.000Z",
+        "games": 72,
+        "rating": 1150,
+        "ratingDiff": 21
+      },
+      {
+        "date": "2026-02-01T19:29:25.000Z",
+        "games": 73,
+        "rating": 1143,
+        "ratingDiff": -7
+      },
+      {
+        "date": "2026-02-01T20:05:20.000Z",
+        "games": 74,
+        "rating": 1137,
+        "ratingDiff": -6
+      },
+      {
+        "date": "2026-02-01T20:21:16.000Z",
+        "games": 75,
+        "rating": 1131,
+        "ratingDiff": -6
+      },
+      {
+        "date": "2026-02-02T20:08:48.000Z",
+        "games": 76,
+        "rating": 1153,
+        "ratingDiff": 22
+      },
+      {
+        "date": "2026-02-02T20:45:39.000Z",
+        "games": 77,
+        "rating": 1142,
+        "ratingDiff": -11
+      },
+      {
+        "date": "2026-02-04T08:12:07.000Z",
+        "games": 78,
+        "rating": 1166,
+        "ratingDiff": 24
+      },
+      {
+        "date": "2026-02-06T10:23:53.000Z",
+        "games": 79,
+        "rating": 1185,
+        "ratingDiff": 19
+      },
+      {
+        "date": "2026-02-06T10:32:55.000Z",
+        "games": 80,
+        "rating": 1203,
+        "ratingDiff": 18
+      },
+      {
+        "date": "2026-02-14T22:10:51.000Z",
+        "games": 81,
+        "rating": 1187,
+        "ratingDiff": -16
+      },
+      {
+        "date": "2026-02-15T19:31:12.000Z",
+        "games": 82,
+        "rating": 1201,
+        "ratingDiff": 14
+      },
+      {
+        "date": "2026-02-16T20:56:39.000Z",
+        "games": 83,
+        "rating": 1188,
+        "ratingDiff": -13
+      },
+      {
+        "date": "2026-02-17T21:02:02.000Z",
+        "games": 84,
+        "rating": 1176,
+        "ratingDiff": -12
+      },
+      {
+        "date": "2026-02-18T20:06:02.000Z",
+        "games": 85,
+        "rating": 1162,
+        "ratingDiff": -14
+      },
+      {
+        "date": "2026-02-18T20:36:16.000Z",
+        "games": 86,
+        "rating": 1151,
+        "ratingDiff": -11
+      },
+      {
+        "date": "2026-02-18T21:08:39.000Z",
+        "games": 87,
+        "rating": 1172,
+        "ratingDiff": 21
+      },
+      {
+        "date": "2026-02-20T18:14:06.000Z",
+        "games": 88,
+        "rating": 1154,
+        "ratingDiff": -18
+      },
+      {
+        "date": "2026-02-20T19:46:55.000Z",
+        "games": 89,
+        "rating": 1176,
+        "ratingDiff": 22
+      },
+      {
+        "date": "2026-02-20T20:09:42.000Z",
+        "games": 90,
+        "rating": 1165,
+        "ratingDiff": -11
+      },
+      {
+        "date": "2026-02-20T20:38:01.000Z",
+        "games": 91,
+        "rating": 1186,
+        "ratingDiff": 21
+      },
+      {
+        "date": "2026-02-20T21:06:58.000Z",
+        "games": 92,
+        "rating": 1206,
+        "ratingDiff": 20
+      },
+      {
+        "date": "2026-02-20T21:38:55.000Z",
+        "games": 93,
+        "rating": 1224,
+        "ratingDiff": 18
+      },
+      {
+        "date": "2026-02-20T22:25:25.000Z",
+        "games": 94,
+        "rating": 1213,
+        "ratingDiff": -11
+      },
+      {
+        "date": "2026-02-21T10:18:52.000Z",
+        "games": 95,
+        "rating": 1226,
+        "ratingDiff": 13
+      },
+      {
+        "date": "2026-02-21T10:39:14.000Z",
+        "games": 96,
+        "rating": 1238,
+        "ratingDiff": 12
+      },
+      {
+        "date": "2026-02-21T12:45:39.000Z",
+        "games": 98,
+        "rating": 1268,
+        "ratingDiff": null
+      },
+      {
+        "date": "2026-02-21T13:03:25.000Z",
+        "games": 99,
+        "rating": 1249,
+        "ratingDiff": -19
+      },
+      {
+        "date": "2026-02-21T13:25:13.000Z",
+        "games": 100,
+        "rating": 1232,
+        "ratingDiff": -17
+      },
+      {
+        "date": "2026-02-21T18:03:38.000Z",
+        "games": 101,
+        "rating": 1252,
+        "ratingDiff": 20
+      },
+      {
+        "date": "2026-02-21T18:27:45.000Z",
+        "games": 102,
+        "rating": 1238,
+        "ratingDiff": -14
+      },
+      {
+        "date": "2026-02-21T19:54:16.000Z",
+        "games": 103,
+        "rating": 1254,
+        "ratingDiff": 16
+      },
+      {
+        "date": "2026-02-21T20:27:36.000Z",
+        "games": 104,
+        "rating": 1236,
+        "ratingDiff": -18
+      },
+      {
+        "date": "2026-02-21T20:40:04.000Z",
+        "games": 105,
+        "rating": 1252,
+        "ratingDiff": 16
+      },
+      {
+        "date": "2026-02-21T21:02:58.000Z",
+        "games": 106,
+        "rating": 1235,
+        "ratingDiff": -17
+      },
+      {
+        "date": "2026-02-22T18:02:16.000Z",
+        "games": 107,
+        "rating": 1222,
+        "ratingDiff": -13
+      },
+      {
+        "date": "2026-02-22T20:56:41.000Z",
+        "games": 108,
+        "rating": 1239,
+        "ratingDiff": 17
+      },
+      {
+        "date": "2026-02-23T20:13:46.000Z",
+        "games": 109,
+        "rating": 1254,
+        "ratingDiff": 15
+      },
+      {
+        "date": "2026-02-23T21:08:07.000Z",
+        "games": 110,
+        "rating": 1270,
+        "ratingDiff": 16
+      },
+      {
+        "date": "2026-03-03T19:54:44.000Z",
+        "games": 111,
+        "rating": 1253,
+        "ratingDiff": -17
+      },
+      {
+        "date": "2026-03-03T20:27:22.000Z",
+        "games": 112,
+        "rating": 1238,
+        "ratingDiff": -15
+      },
+      {
+        "date": "2026-03-28T19:57:25.000Z",
+        "games": 113,
+        "rating": 1253,
+        "ratingDiff": 15
+      },
+      {
+        "date": "2026-03-28T20:24:04.000Z",
+        "games": 114,
+        "rating": 1267,
+        "ratingDiff": 14
+      },
+      {
+        "date": "2026-03-28T20:59:06.000Z",
+        "games": 115,
+        "rating": 1248,
+        "ratingDiff": -19
+      },
+      {
+        "date": "2026-03-31T19:19:49.000Z",
+        "games": 116,
+        "rating": 1262,
+        "ratingDiff": 14
+      },
+      {
+        "date": "2026-04-01T09:51:18.000Z",
+        "games": 117,
+        "rating": 1247,
+        "ratingDiff": -15
+      },
+      {
+        "date": "2026-04-01T10:07:00.000Z",
+        "games": 118,
+        "rating": 1233,
+        "ratingDiff": -14
+      },
+      {
+        "date": "2026-04-01T10:32:17.000Z",
+        "games": 119,
+        "rating": 1221,
+        "ratingDiff": -12
+      },
+      {
+        "date": "2026-04-01T19:23:10.000Z",
+        "games": 120,
+        "rating": 1199,
+        "ratingDiff": -22
+      },
+      {
+        "date": "2026-04-01T19:45:38.000Z",
+        "games": 121,
+        "rating": 1211,
+        "ratingDiff": 12
+      },
+      {
+        "date": "2026-04-01T20:22:22.000Z",
+        "games": 122,
+        "rating": 1190,
+        "ratingDiff": -21
+      },
+      {
+        "date": "2026-04-03T19:40:10.000Z",
+        "games": 123,
+        "rating": 1178,
+        "ratingDiff": -12
+      },
+      {
+        "date": "2026-04-03T20:09:15.000Z",
+        "games": 124,
+        "rating": 1166,
+        "ratingDiff": -12
+      },
+      {
+        "date": "2026-04-03T20:48:16.000Z",
+        "games": 125,
+        "rating": 1187,
+        "ratingDiff": 21
+      },
+      {
+        "date": "2026-04-04T20:05:57.000Z",
+        "games": 126,
+        "rating": 1175,
+        "ratingDiff": -12
+      },
+      {
+        "date": "2026-04-04T20:29:56.000Z",
+        "games": 127,
+        "rating": 1162,
+        "ratingDiff": -13
+      },
+      {
+        "date": "2026-04-04T21:08:57.000Z",
+        "games": 128,
+        "rating": 1150,
+        "ratingDiff": -12
+      },
+      {
+        "date": "2026-04-07T18:04:32.000Z",
+        "games": 129,
+        "rating": 1136,
+        "ratingDiff": -14
+      },
+      {
+        "date": "2026-04-07T18:38:34.000Z",
+        "games": 130,
+        "rating": 1155,
+        "ratingDiff": 19
+      },
+      {
+        "date": "2026-04-07T19:28:36.000Z",
+        "games": 131,
+        "rating": 1173,
+        "ratingDiff": 18
+      },
+      {
+        "date": "2026-04-08T15:15:07.000Z",
+        "games": 132,
+        "rating": 1167,
+        "ratingDiff": -6
+      },
+      {
+        "date": "2026-04-08T15:42:29.000Z",
+        "games": 133,
+        "rating": 1161,
+        "ratingDiff": -6
+      },
+      {
+        "date": "2026-04-08T16:11:33.000Z",
+        "games": 134,
+        "rating": 1155,
+        "ratingDiff": -6
+      },
+      {
+        "date": "2026-04-09T16:14:07.000Z",
+        "games": 135,
+        "rating": 1139,
+        "ratingDiff": -16
+      },
+      {
+        "date": "2026-04-09T16:45:58.000Z",
+        "games": 136,
+        "rating": 1125,
+        "ratingDiff": -14
+      },
+      {
+        "date": "2026-04-09T17:12:43.000Z",
+        "games": 137,
+        "rating": 1112,
+        "ratingDiff": -13
+      },
+      {
+        "date": "2026-04-11T20:33:26.000Z",
+        "games": 138,
+        "rating": 1104,
+        "ratingDiff": -8
+      },
+      {
+        "date": "2026-04-14T16:34:57.000Z",
+        "games": 139,
+        "rating": 1089,
+        "ratingDiff": -15
+      },
+      {
+        "date": "2026-04-14T16:58:55.000Z",
+        "games": 140,
+        "rating": 1075,
+        "ratingDiff": -14
+      },
+      {
+        "date": "2026-04-14T17:32:03.000Z",
+        "games": 141,
+        "rating": 1095,
+        "ratingDiff": 20
+      },
+      {
+        "date": "2026-04-16T18:42:24.000Z",
+        "games": 142,
+        "rating": 1118,
+        "ratingDiff": 23
+      },
+      {
+        "date": "2026-04-16T19:14:47.000Z",
+        "games": 143,
+        "rating": 1107,
+        "ratingDiff": -11
+      },
+      {
+        "date": "2026-04-18T07:26:09.000Z",
+        "games": 144,
+        "rating": 1129,
+        "ratingDiff": 22
+      },
+      {
+        "date": "2026-04-21T18:26:02.000Z",
+        "games": 145,
+        "rating": 1111,
+        "ratingDiff": -18
+      },
+      {
+        "date": "2026-04-21T18:42:42.000Z",
+        "games": 146,
+        "rating": 1095,
+        "ratingDiff": -16
+      },
+      {
+        "date": "2026-04-21T19:03:45.000Z",
+        "games": 147,
+        "rating": 1080,
+        "ratingDiff": -15
+      },
+      {
+        "date": "2026-04-28T19:36:05.000Z",
+        "games": 148,
+        "rating": 1066,
+        "ratingDiff": -14
+      },
+      {
+        "date": "2026-04-29T17:57:32.000Z",
+        "games": 149,
+        "rating": 1063,
+        "ratingDiff": -3
+      },
+      {
+        "date": "2026-04-30T18:37:57.000Z",
+        "games": 150,
+        "rating": 1085,
+        "ratingDiff": 22
+      },
+      {
+        "date": "2026-04-30T19:07:28.000Z",
+        "games": 151,
+        "rating": 1074,
+        "ratingDiff": -11
+      },
+      {
+        "date": "2026-04-30T19:32:11.000Z",
+        "games": 152,
+        "rating": 1074,
+        "ratingDiff": 0
+      },
+      {
+        "date": "2026-05-01T09:46:22.000Z",
+        "games": 153,
+        "rating": 1060,
+        "ratingDiff": -14
+      },
+      {
+        "date": "2026-05-01T11:46:57.000Z",
+        "games": 154,
+        "rating": 1050,
+        "ratingDiff": -10
+      },
+      {
+        "date": "2026-05-01T18:42:57.000Z",
+        "games": 155,
+        "rating": 1050,
+        "ratingDiff": 0
+      },
+      {
+        "date": "2026-05-01T19:22:56.000Z",
+        "games": 156,
+        "rating": 1050,
+        "ratingDiff": 0
+      },
+      {
+        "date": "2026-05-02T17:50:27.000Z",
+        "games": 157,
+        "rating": 1076,
+        "ratingDiff": 26
+      },
+      {
+        "date": "2026-05-03T18:29:54.000Z",
+        "games": 158,
+        "rating": 1060,
+        "ratingDiff": -16
+      },
+      {
+        "date": "2026-05-03T18:49:53.000Z",
+        "games": 159,
+        "rating": 1077,
+        "ratingDiff": 17
+      },
+      {
+        "date": "2026-05-03T19:17:43.000Z",
+        "games": 160,
+        "rating": 1093,
+        "ratingDiff": 16
+      },
+      {
+        "date": "2026-05-03T19:35:22.000Z",
+        "games": 161,
+        "rating": 1107,
+        "ratingDiff": 14
+      },
+      {
+        "date": "2026-05-04T18:40:04.000Z",
+        "games": 162,
+        "rating": 1121,
+        "ratingDiff": 14
+      },
+      {
+        "date": "2026-05-04T19:17:14.000Z",
+        "games": 163,
+        "rating": 1102,
+        "ratingDiff": -19
+      },
+      {
+        "date": "2026-05-04T19:37:52.000Z",
+        "games": 164,
+        "rating": 1117,
+        "ratingDiff": 15
+      },
+      {
+        "date": "2026-05-04T20:09:57.000Z",
+        "games": 165,
+        "rating": 1136,
+        "ratingDiff": 19
+      },
+      {
+        "date": "2026-05-04T20:31:48.000Z",
+        "games": 166,
+        "rating": 1121,
+        "ratingDiff": -15
+      },
+      {
+        "date": "2026-05-04T20:51:06.000Z",
+        "games": 167,
+        "rating": 1108,
+        "ratingDiff": -13
+      },
+      {
+        "date": "2026-05-06T08:29:43.000Z",
+        "games": 168,
+        "rating": 1102,
+        "ratingDiff": -6
+      },
+      {
+        "date": "2026-05-10T14:03:41.000Z",
+        "games": 170,
+        "rating": 1122,
+        "ratingDiff": null
+      },
+      {
+        "date": "2026-05-10T14:42:26.000Z",
+        "games": 172,
+        "rating": 1157,
+        "ratingDiff": null
+      },
+      {
+        "date": "2026-05-10T19:32:04.000Z",
+        "games": 173,
+        "rating": 1171,
+        "ratingDiff": 14
+      },
+      {
+        "date": "2026-05-11T19:26:35.000Z",
+        "games": 174,
+        "rating": 1157,
+        "ratingDiff": -14
+      },
+      {
+        "date": "2026-05-12T19:37:10.000Z",
+        "games": 175,
+        "rating": 1150,
+        "ratingDiff": -7
+      },
+      {
+        "date": "2026-05-12T19:59:02.000Z",
+        "games": 176,
+        "rating": 1144,
+        "ratingDiff": -6
+      },
+      {
+        "date": "2026-06-08T18:27:17.000Z",
+        "games": 177,
+        "rating": 1131,
+        "ratingDiff": -13
+      },
+      {
+        "date": "2026-06-08T18:54:02.000Z",
+        "games": 178,
+        "rating": 1120,
+        "ratingDiff": -11
+      },
+      {
+        "date": "2026-06-08T19:14:19.000Z",
+        "games": 179,
+        "rating": 1109,
+        "ratingDiff": -11
+      },
+      {
+        "date": "2026-06-09T18:46:01.000Z",
+        "games": 180,
+        "rating": 1133,
+        "ratingDiff": 24
+      },
+      {
+        "date": "2026-06-09T19:07:24.000Z",
+        "games": 181,
+        "rating": 1153,
+        "ratingDiff": 20
+      },
+      {
+        "date": "2026-06-09T19:18:47.000Z",
+        "games": 182,
+        "rating": 1145,
+        "ratingDiff": -8
+      },
+      {
+        "date": "2026-06-09T19:47:22.000Z",
+        "games": 183,
+        "rating": 1167,
+        "ratingDiff": 22
+      },
+      {
+        "date": "2026-06-19T18:29:56.000Z",
+        "games": 184,
+        "rating": 1178,
+        "ratingDiff": 11
+      },
+      {
+        "date": "2026-06-19T18:59:31.000Z",
+        "games": 185,
+        "rating": 1156,
+        "ratingDiff": -22
+      },
+      {
+        "date": "2026-06-20T16:18:26.000Z",
+        "games": 186,
+        "rating": 1174,
+        "ratingDiff": 18
+      },
+      {
+        "date": "2026-06-20T16:51:13.000Z",
+        "games": 187,
+        "rating": 1159,
+        "ratingDiff": -15
+      },
+      {
+        "date": "2026-06-20T17:10:35.000Z",
+        "games": 188,
+        "rating": 1177,
+        "ratingDiff": 18
+      },
+      {
+        "date": "2026-06-21T20:15:01.000Z",
+        "games": 189,
+        "rating": 1195,
+        "ratingDiff": 18
+      },
+      {
+        "date": "2026-06-22T18:21:09.000Z",
+        "games": 190,
+        "rating": 1213,
+        "ratingDiff": 18
+      },
+      {
+        "date": "2026-06-22T18:48:35.000Z",
+        "games": 191,
+        "rating": 1197,
+        "ratingDiff": -16
+      },
+      {
+        "date": "2026-06-22T19:06:43.000Z",
+        "games": 192,
+        "rating": 1214,
+        "ratingDiff": 17
+      },
+      {
+        "date": "2026-06-22T20:13:27.000Z",
+        "games": 193,
+        "rating": 1233,
+        "ratingDiff": 19
+      },
+      {
+        "date": "2026-06-27T19:22:43.000Z",
+        "games": 194,
+        "rating": 1230,
+        "ratingDiff": -3
+      },
+      {
+        "date": "2026-06-28T20:05:08.000Z",
+        "games": 195,
+        "rating": 1216,
+        "ratingDiff": -14
+      },
+      {
+        "date": "2026-06-28T20:34:14.000Z",
+        "games": 196,
+        "rating": 1204,
+        "ratingDiff": -12
+      },
+      {
+        "date": "2026-06-29T20:04:08.000Z",
+        "games": 197,
+        "rating": 1194,
+        "ratingDiff": -10
+      },
+      {
+        "date": "2026-06-29T20:32:14.000Z",
+        "games": 198,
+        "rating": 1213,
+        "ratingDiff": 19
+      },
+      {
+        "date": "2026-07-01T12:30:11.000Z",
+        "games": 199,
+        "rating": 1205,
+        "ratingDiff": -8
+      },
+      {
+        "date": "2026-07-03T10:42:05.000Z",
+        "games": 200,
+        "rating": 1195,
+        "ratingDiff": -10
+      },
+      {
+        "date": "2026-07-03T10:53:54.000Z",
+        "games": 201,
+        "rating": 1186,
+        "ratingDiff": -9
+      },
+      {
+        "date": "2026-07-03T11:11:47.000Z",
+        "games": 202,
+        "rating": 1176,
+        "ratingDiff": -10
+      },
+      {
+        "date": "2026-07-04T18:08:27.000Z",
+        "games": 203,
+        "rating": 1201,
+        "ratingDiff": 25
+      },
+      {
+        "date": "2026-07-09T16:17:12.000Z",
+        "games": 204,
+        "rating": 1198,
+        "ratingDiff": -3
+      },
+      {
+        "date": "2026-07-09T16:22:48.000Z",
+        "games": 205,
+        "rating": 1206,
+        "ratingDiff": 8
+      },
+      {
+        "date": "2026-07-09T16:38:10.000Z",
+        "games": 206,
+        "rating": 1213,
+        "ratingDiff": 7
+      },
+      {
+        "date": "2026-07-09T21:40:44.000Z",
+        "games": 207,
+        "rating": 1202,
+        "ratingDiff": -11
+      },
+      {
+        "date": "2026-07-09T22:02:14.000Z",
+        "games": 208,
+        "rating": 1197,
+        "ratingDiff": -5
+      },
+      {
+        "date": "2026-07-13T19:41:38.000Z",
+        "games": 209,
+        "rating": 1219,
+        "ratingDiff": 22
+      },
+      {
+        "date": "2026-07-13T19:58:29.000Z",
+        "games": 210,
+        "rating": 1208,
+        "ratingDiff": -11
+      },
+      {
+        "date": "2026-07-13T20:20:20.000Z",
+        "games": 211,
+        "rating": 1197,
+        "ratingDiff": -11
+      },
+      {
+        "date": "2026-07-14T18:56:48.000Z",
+        "games": 212,
+        "rating": 1183,
+        "ratingDiff": -14
+      },
+      {
+        "date": "2026-07-14T19:05:01.000Z",
+        "games": 213,
+        "rating": 1196,
+        "ratingDiff": 13
+      },
+      {
+        "date": "2026-07-14T19:45:49.000Z",
+        "games": 214,
+        "rating": 1185,
+        "ratingDiff": -11
+      },
+      {
+        "date": "2026-07-17T19:41:38.000Z",
+        "games": 215,
+        "rating": 1202,
+        "ratingDiff": 17
+      },
+      {
+        "date": "2026-07-17T20:10:13.000Z",
+        "games": 216,
+        "rating": 1185,
+        "ratingDiff": -17
+      },
+      {
+        "date": "2026-07-18T19:26:34.000Z",
+        "games": 217,
+        "rating": 1204,
+        "ratingDiff": 19
+      },
+      {
+        "date": "2026-07-18T20:00:44.000Z",
+        "games": 218,
+        "rating": 1224,
+        "ratingDiff": 20
+      },
+      {
+        "date": "2026-07-18T21:19:03.000Z",
+        "games": 219,
+        "rating": 1217,
+        "ratingDiff": -7
+      },
+      {
+        "date": "2026-07-25T19:36:17.000Z",
+        "games": 220,
+        "rating": 1206,
+        "ratingDiff": -11
+      },
+      {
+        "date": "2026-07-26T12:55:56.000Z",
+        "games": 222,
+        "rating": 1225,
+        "ratingDiff": null
+      },
+      {
+        "date": "2026-07-26T13:04:20.000Z",
+        "games": 223,
+        "rating": 1234,
+        "ratingDiff": 9
+      },
+      {
+        "date": "2026-07-26T19:24:07.000Z",
+        "games": 224,
+        "rating": 1252,
+        "ratingDiff": 18
+      },
+      {
+        "date": "2026-07-26T19:41:28.000Z",
+        "games": 225,
+        "rating": 1268,
+        "ratingDiff": 16
+      },
+      {
+        "date": "2026-07-27T19:44:56.000Z",
+        "games": 226,
+        "rating": 1253,
+        "ratingDiff": -15
+      },
+      {
+        "date": "2026-07-27T20:12:06.000Z",
+        "games": 227,
+        "rating": 1242,
+        "ratingDiff": -11
+      },
+      {
+        "date": "2026-07-28T19:21:37.000Z",
+        "games": 228,
+        "rating": 1260,
+        "ratingDiff": 18
+      },
+      {
+        "date": "2026-07-28T19:43:32.000Z",
+        "games": 229,
+        "rating": 1247,
+        "ratingDiff": -13
+      },
+      {
+        "date": "2026-07-29T10:09:30.000Z",
+        "games": 230,
+        "rating": 1247,
+        "ratingDiff": 0
+      },
+      {
+        "date": "2026-07-29T12:39:30.000Z",
+        "games": 231,
+        "rating": 1233,
+        "ratingDiff": -14
+      },
+      {
+        "date": "2026-07-29T12:54:36.000Z",
+        "games": 232,
+        "rating": 1220,
+        "ratingDiff": -13
+      },
+      {
+        "date": "2026-07-29T14:55:19.000Z",
+        "games": 233,
+        "rating": 1235,
+        "ratingDiff": 15
+      },
+      {
+        "date": "2026-08-01T09:02:33.000Z",
+        "games": 234,
+        "rating": 1224,
+        "ratingDiff": -11
+      },
+      {
+        "date": "2026-08-01T09:18:32.000Z",
+        "games": 235,
+        "rating": 1214,
+        "ratingDiff": -10
+      },
+      {
+        "date": "2026-08-01T09:52:21.000Z",
+        "games": 236,
+        "rating": 1237,
+        "ratingDiff": 23
+      },
+      {
+        "date": "2026-08-01T10:34:29.000Z",
+        "games": 237,
+        "rating": 1224,
+        "ratingDiff": -13
+      },
+      {
+        "date": "2026-08-01T10:54:43.000Z",
+        "games": 238,
+        "rating": 1212,
+        "ratingDiff": -12
+      },
+      {
+        "date": "2026-08-01T15:22:19.000Z",
+        "games": 239,
+        "rating": 1200,
+        "ratingDiff": -12
+      },
+      {
+        "date": "2026-08-01T15:30:58.000Z",
+        "games": 240,
+        "rating": 1221,
+        "ratingDiff": 21
+      },
+      {
+        "date": "2026-08-01T15:56:24.000Z",
+        "games": 241,
+        "rating": 1208,
+        "ratingDiff": -13
+      },
+      {
+        "date": "2026-08-01T16:33:07.000Z",
+        "games": 242,
+        "rating": 1198,
+        "ratingDiff": -10
+      },
+      {
+        "date": "2026-08-01T19:08:24.000Z",
+        "games": 243,
+        "rating": 1217,
+        "ratingDiff": 19
+      },
+      {
+        "date": "2026-08-01T19:43:46.000Z",
+        "games": 244,
+        "rating": 1234,
+        "ratingDiff": null
+      },
+      {
+        "date": "2026-08-04T19:40:21.000Z",
+        "games": 245,
+        "rating": 1247,
+        "ratingDiff": 13
+      },
+      {
+        "date": "2026-08-04T20:03:15.000Z",
+        "games": 246,
+        "rating": 1259,
+        "ratingDiff": 12
+      },
+      {
+        "date": "2026-08-04T20:22:27.000Z",
+        "games": 247,
+        "rating": 1270,
+        "ratingDiff": 11
+      },
+      {
+        "date": "2026-08-05T18:21:40.000Z",
+        "games": 248,
+        "rating": 1272,
+        "ratingDiff": 2
+      },
+      {
+        "date": "2026-08-05T18:35:22.000Z",
+        "games": 249,
+        "rating": 1274,
+        "ratingDiff": 2
+      },
+      {
+        "date": "2026-08-05T18:48:29.000Z",
+        "games": 250,
+        "rating": 1276,
+        "ratingDiff": 2
+      },
+      {
+        "date": "2026-08-05T21:09:11.000Z",
+        "games": 251,
+        "rating": 1276,
+        "ratingDiff": 0
+      },
+      {
+        "date": "2026-08-06T12:43:46.000Z",
+        "games": 252,
+        "rating": 1276,
+        "ratingDiff": 0
+      },
+      {
+        "date": "2026-08-06T16:39:00.000Z",
+        "games": 253,
+        "rating": 1284,
+        "ratingDiff": 8
+      },
+      {
+        "date": "2026-08-07T16:23:05.000Z",
+        "games": 254,
+        "rating": 1294,
+        "ratingDiff": 10
+      },
+      {
+        "date": "2026-08-07T16:38:32.000Z",
+        "games": 255,
+        "rating": 1303,
+        "ratingDiff": 9
+      },
+      {
+        "date": "2026-08-07T16:59:34.000Z",
+        "games": 256,
+        "rating": 1280,
+        "ratingDiff": -23
+      },
+      {
+        "date": "2026-08-15T16:38:02.000Z",
+        "games": 257,
+        "rating": 1262,
+        "ratingDiff": -18
+      },
+      {
+        "date": "2026-08-16T18:06:04.000Z",
+        "games": 258,
+        "rating": 1240,
+        "ratingDiff": -22
+      },
+      {
+        "date": "2026-08-19T20:03:29.000Z",
+        "games": 259,
+        "rating": 1227,
+        "ratingDiff": -13
+      },
+      {
+        "date": "2026-08-21T17:41:36.000Z",
+        "games": 260,
+        "rating": 1213,
+        "ratingDiff": -14
+      },
+      {
+        "date": "2026-08-21T18:13:06.000Z",
+        "games": 261,
+        "rating": 1200,
+        "ratingDiff": -13
+      },
+      {
+        "date": "2026-08-21T20:08:10.000Z",
+        "games": 262,
+        "rating": 1217,
+        "ratingDiff": 17
+      },
+      {
+        "date": "2026-08-21T20:43:56.000Z",
+        "games": 263,
+        "rating": 1232,
+        "ratingDiff": 15
+      },
+      {
+        "date": "2026-08-31T19:12:05.000Z",
+        "games": 264,
+        "rating": 1204,
+        "ratingDiff": -28
+      },
+      {
+        "date": "2026-09-01T19:51:17.000Z",
+        "games": 265,
+        "rating": 1199,
+        "ratingDiff": -5
+      },
+      {
+        "date": "2026-09-03T17:13:34.000Z",
+        "games": 266,
+        "rating": 1184,
+        "ratingDiff": -15
+      }
+    ]
+  }
+}
