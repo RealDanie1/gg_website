@@ -213,6 +213,7 @@
     period: "30",
     asOf: Date.now(),
     rosterSort: "rating",
+    rosterSortDirection: "desc",
     chartSort: { civ: "volume", map: "volume" },
     showPairs: false,
     pair: null,
@@ -347,9 +348,6 @@
       if (again && e.detail === 0) again.focus();
     });
   });
-  $("#rosterSort").addEventListener("change", function (e) {
-    state.rosterSort = e.target.value; renderRoster();
-  });
   $$("[data-chart-sort]").forEach(function (select) {
     select.addEventListener("change", function () { state.chartSort[select.dataset.chartSort] = select.value; renderLedger(); });
   });
@@ -375,21 +373,58 @@
   /* ---------- helpers ---------- */
   function noteFor(player) { return CLAN.notes[player.name] || {}; }
 
+  var ROSTER_SORTS = {
+    name: { label: "Player", direction: "asc" },
+    country: { label: "Country", direction: "asc" },
+    rating: { label: "Elo", direction: "desc" },
+    change: { label: "Change", direction: "desc" },
+    winRate: { label: "Win rate", direction: "desc" }
+  };
+
+  function rosterSortValue(player) {
+    var stats = player.ladders[state.ladder] || {};
+    if (state.rosterSort === "name") return player.name;
+    if (state.rosterSort === "country") return player.country ? player.country.toUpperCase() : null;
+    if (state.rosterSort === "rating") return stats.rating;
+    if (state.rosterSort === "winRate") return stats.rating == null ? null : stats.winRate;
+    return activityFor(player).change;
+  }
+
+  function rosterSortOrder(key, direction) {
+    if (key === "name" || key === "country") return direction === "asc" ? "A to Z" : "Z to A";
+    return direction === "desc" ? "highest first" : "lowest first";
+  }
+
+  function rosterSortHeading(key) {
+    var sort = ROSTER_SORTS[key];
+    var active = state.rosterSort === key;
+    var next = active ? (state.rosterSortDirection === "desc" ? "asc" : "desc") : sort.direction;
+    var description = (active ? sort.label + ", " + rosterSortOrder(key, state.rosterSortDirection) + ". " : "") +
+      "Sort by " + sort.label + ", " + rosterSortOrder(key, next);
+    return '<button type="button" class="roster__sort" data-roster-sort="' + key + '" aria-pressed="' + active +
+      '" aria-label="' + esc(description) + '" title="' + esc(description) + '">' +
+      esc(sort.label) + '<span class="roster__sort-arrow" aria-hidden="true">' +
+      (active ? (state.rosterSortDirection === "desc" ? "↓" : "↑") : "↕") + '</span></button>';
+  }
+
   function sortedRoster() {
     var ladder = state.ladder;
     return state.roster.slice().sort(function (a, b) {
-      if (state.rosterSort !== "rating") {
-        var aa = activityFor(a), bb = activityFor(b);
-        var av = state.rosterSort === "change" ? aa.change : aa.last ? new Date(aa.last).getTime() : null;
-        var bv = state.rosterSort === "change" ? bb.change : bb.last ? new Date(bb.last).getTime() : null;
-        if (av !== bv) { if (av == null) return 1; if (bv == null) return -1; return bv - av; }
+      var av = rosterSortValue(a), bv = rosterSortValue(b);
+      // Missing values stay at the bottom in either direction; ties keep a stable rating/name order.
+      var aMissing = av == null || (typeof av === "number" && !isFinite(av));
+      var bMissing = bv == null || (typeof bv === "number" && !isFinite(bv));
+      if (aMissing !== bMissing) return aMissing ? 1 : -1;
+      if (!aMissing && av !== bv) {
+        var compared = typeof av === "string" ? av.localeCompare(bv) : av - bv;
+        if (compared) return state.rosterSortDirection === "asc" ? compared : -compared;
       }
       var ra = a.ladders[ladder] && a.ladders[ladder].rating;
       var rb = b.ladders[ladder] && b.ladders[ladder].rating;
       if (ra == null && rb == null) return a.name.localeCompare(b.name);
       if (ra == null) return 1;
       if (rb == null) return -1;
-      return rb - ra;
+      return rb - ra || a.name.localeCompare(b.name);
     });
   }
 
@@ -490,9 +525,11 @@
     }
 
     var head =
-      '<div class="roster__labels" aria-hidden="true">' +
-        "<span></span><span>Player</span><span>Country</span>" +
-        "<span>Elo</span><span>Change</span><span>Win rate</span><span>Form</span>" +
+      '<div class="roster__labels" role="group" aria-label="Sort lineup">' +
+        '<span class="roster__label-index" aria-hidden="true"></span>' +
+        rosterSortHeading("name") +
+        rosterSortHeading("country") + rosterSortHeading("rating") + rosterSortHeading("change") + rosterSortHeading("winRate") +
+        '<span class="roster__label-form">Form</span>' +
       "</div>";
 
     var rows = players.map(function (player, i) {
@@ -536,6 +573,18 @@
   }
 
   $("#rosterTable").addEventListener("click", function (e) {
+    var sort = e.target.closest("[data-roster-sort]");
+    if (sort) {
+      var key = sort.dataset.rosterSort;
+      state.rosterSortDirection = state.rosterSort === key
+        ? (state.rosterSortDirection === "desc" ? "asc" : "desc") : ROSTER_SORTS[key].direction;
+      state.rosterSort = key;
+      renderRoster();
+      $("#rosterSortStatus").textContent = "Sorted by " + ROSTER_SORTS[key].label + ", " + rosterSortOrder(key, state.rosterSortDirection) + ".";
+      // Rendering replaces the headings, so preserve the keyboard user's position.
+      if (e.detail === 0) $('#rosterTable [data-roster-sort="' + key + '"]').focus();
+      return;
+    }
     var row = e.target.closest("[data-player]");
     if (!row) return;
     var id = Number(row.dataset.player);

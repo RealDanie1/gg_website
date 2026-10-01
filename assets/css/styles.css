@@ -380,11 +380,23 @@ h1, h2, h3 {
   gap: 1rem; align-items: center;
 }
 .roster__labels {
-  padding: 0.85rem 1rem;
+  padding: 0.3rem 1rem;
   font-family: var(--mono); font-size: var(--fs-micro);
   letter-spacing: 0.14em; text-transform: uppercase; color: var(--dim);
   border-bottom: 1px solid var(--line);
 }
+/* Headings sort the values directly below them; on cards the same controls
+   wrap into a compact strip so sorting remains available at every width. */
+.roster__sort {
+  display: inline-flex; align-items: center; justify-content: flex-start; gap: 0.35rem;
+  min-height: 44px; padding: 0.3rem 0; text-align: left;
+  font: inherit; letter-spacing: 0.08em; text-transform: uppercase; white-space: nowrap;
+  color: var(--dim);
+}
+.roster__sort:hover { color: var(--bone); }
+.roster__sort[aria-pressed="true"] { color: var(--bone); }
+.roster__sort-arrow { letter-spacing: 0; color: var(--dim); }
+.roster__sort[aria-pressed="true"] .roster__sort-arrow { color: var(--red-light); }
 .player { border-bottom: 1px solid var(--line-soft); }
 .player__row {
   width: 100%; padding: 1.05rem 1rem; text-align: left;
@@ -1081,7 +1093,8 @@ h1, h2, h3 {
   .about__scene { bottom: 18%; }
 
   /* Table collapses into stacked cards. */
-  .roster__labels { display: none; }
+  .roster__labels { display: flex; flex-wrap: wrap; gap: 0.25rem 1rem; padding: 0.5rem 1rem; }
+  .roster__label-index, .roster__label-form { display: none; }
   .player__row {
     grid-template-columns: 1.6rem 1fr auto;
     grid-template-areas:
