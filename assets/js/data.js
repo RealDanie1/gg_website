@@ -117,8 +117,8 @@ const CLAN = {
 
   /* Which ladders to show, and what to call them. */
   ladders: [
-    { id: "rm_team",  label: "Team RM" },
-    { id: "rm_1v1",   label: "1v1 RM" },
+    { id: "rm_team",  label: "Team Ranked" },
+    { id: "rm_1v1",   label: "1v1 Ranked" },
     { id: "unranked", label: "Unranked" }
   ]
 };

@@ -216,6 +216,8 @@
     rosterSortDirection: "desc",
     chartSort: { civ: "volume", map: "volume" },
     showPairs: false,
+    duoSort: "volume",
+    duoPairs: [],
     pair: null,
     feedError: false,
     feed: [],            // one row per clan-member appearance
@@ -234,13 +236,11 @@
     countryTotals: new Map(),  // "rm_team|cz" -> 875
     gamesById: new Map(),      // "match id" -> the game row, for the feed cards
     openMatch: null,
-    ledgerFilter: "ranked",    // which mode the war ledger is showing
+    ledgerFilter: "rm_team",   // matches the roster's initial Team Ranked mode
     feedLoading: false,
     feedReady: false,
     feedHistoryComplete: true
   };
-
-  var RANKED = ["rm_team", "rm_1v1"];
 
   /* "#19 of 875 in CZ" reads better than "#19". */
   function countryStanding(country, ladder, rankCountry) {
@@ -297,7 +297,7 @@
   /* All date windows are prepared when the saved history arrives. Selecting
      a period only renders that window; it never starts another data request. */
   var PERIODS = [{ key: "30", label: "30 days" }, { key: "90", label: "90 days" },
-    { key: "365", label: "Year" }, { key: "all", label: "All recorded history" }];
+    { key: "365", label: "Year" }, { key: "all", label: "All" }];
 
   function shortDate(date) {
     return new Date(date).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
@@ -323,7 +323,7 @@
   function renderPeriod() {
     $$("[data-period-controls]").forEach(function (group) {
       if (!group.children.length) group.innerHTML = PERIODS.map(function (p) {
-        return '<button type="button" data-period="' + p.key + '" aria-pressed="' + (p.key === state.period) + '">' + p.label + '</button>';
+        return '<button type="button" data-period="' + p.key + '" aria-pressed="' + (p.key === state.period) + '"' + (p.key === "all" ? ' aria-label="All recorded history"' : '') + '>' + p.label + '</button>';
       }).join("");
     });
     $$("[data-period]").forEach(function (button) { button.setAttribute("aria-pressed", String(button.dataset.period === state.period)); });
@@ -340,10 +340,17 @@
     group.addEventListener("click", function (e) {
       var button = e.target.closest("[data-period]");
       if (!button) return;
+      var controlTop = group.getBoundingClientRect().top;
       state.period = button.dataset.period;
       state.pair = null;
       state.openMatch = null;
       renderPeriod(); renderRoster(); renderLedger();
+      // Changing the shared period can resize the roster above the clan
+      // controls. Keep the control the visitor used in the same position.
+      requestAnimationFrame(function () {
+        var controlShift = group.getBoundingClientRect().top - controlTop;
+        if (controlShift) window.scrollBy({ top: controlShift, behavior: "instant" });
+      });
       var again = group.querySelector('[data-period="' + state.period + '"]');
       if (again && e.detail === 0) again.focus();
     });
@@ -1220,35 +1227,19 @@
      Every panel below reads off one filtered set, so the mode strip at the
      top of the section moves all of them together. */
 
-  /* The modes worth offering, in a fixed order, plus however many games the
-     current feed holds for each. A mode with nothing in it is not offered. */
+  /* The same distinct ladders as the roster. A combined Ranked option
+     overlapped both ranked modes and duplicated the summary's game count. */
   function ledgerTabs() {
-    /* Counted over MATCHES. state.feed is one row per member appearance, so
-       a game two members played together sits in it twice — counting that
-       put "279 games" on a tab covering 212. */
-    var counts = {};
-    periodData().games.forEach(function (game) {
-      counts[game.ladder] = (counts[game.ladder] || 0) + 1;
+    return CLAN.ladders.map(function (ladder) {
+      return { id: ladder.id, label: ladder.label };
     });
-
-    var rankedCount = periodData().games.filter(function (game) {
-      return RANKED.indexOf(game.ladder) !== -1;
-    }).length;
-
-    var tabs = [{ id: "ranked", label: "Ranked", games: rankedCount }];
-    CLAN.ladders.forEach(function (l) {
-      tabs.push({ id: l.id, label: l.label, games: counts[l.id] || 0 });
-    });
-    return tabs;
   }
 
   /* One row per member appearance, narrowed to the chosen mode. */
   function ledgerRows() {
     var filter = state.ledgerFilter;
     return periodData().rows.filter(function (row) {
-      return filter === "ranked"
-        ? RANKED.indexOf(row.ladder) !== -1
-        : row.ladder === filter;
+      return row.ladder === filter;
     });
   }
 
@@ -1256,9 +1247,7 @@
   function ledgerGames() {
     var filter = state.ledgerFilter;
     return periodData().games.filter(function (game) {
-      return filter === "ranked"
-        ? RANKED.indexOf(game.ladder) !== -1
-        : game.ladder === filter;
+      return game.ladder === filter;
     });
   }
 
@@ -1301,22 +1290,18 @@
     var tabs = ledgerTabs();
     if (!tabs.length) { $("#ledgerTabs").innerHTML = ""; return; }
 
-    // A filter whose games all fell out of view falls back to the first tab.
+    // Keep a valid ladder selected even when its current period is empty.
     if (!tabs.some(function (t) { return t.id === state.ledgerFilter; })) {
       state.ledgerFilter = tabs[0].id;
     }
 
     $("#ledgerTabs").innerHTML = tabs.map(function (tab) {
-      return '<button type="button" role="tab" data-ledger="' + esc(tab.id) + '" ' +
-          'aria-selected="' + (tab.id === state.ledgerFilter) + '">' +
-        "<span>" + esc(tab.label) + "</span>" +
-        "<b>" + tab.games.toLocaleString("en-US") + "</b>" +
-        "<i>" + (tab.games === 1 ? "game" : "games") + "</i>" +
-      "</button>";
+      return '<button type="button" data-ledger="' + esc(tab.id) + '" aria-pressed="' + (tab.id === state.ledgerFilter) + '">' + esc(tab.label) + '</button>';
     }).join("");
   }
 
   function renderLedger() {
+    renderLedgerTabs();
     if (!state.feedReady) {
       ["#clanCivs", "#clanMaps", "#clanFeed", "#warband", "#clanFormats", "#clanAtlas"]
         .forEach(function (id) { $(id).innerHTML = '<div class="state">' + (state.feedError ? "Match history unavailable." : "Loading saved history…") + '</div>'; });
@@ -1324,7 +1309,6 @@
       return;
     }
 
-    renderLedgerTabs();
     renderPeriod();
 
     var rows = ledgerRows();
@@ -1333,23 +1317,19 @@
     var decided = decidedGames(games);
     var wins = decided.filter(function (game) { return game.won; }).length;
 
-    var active = new Set(rows.map(function (row) { return row.profileId; })).size;
     var lengths = AOE.durationStats(decided);
-    var excluded = games.length - decided.length;
     var tiles = [
-      ["hero", decided.length ? Math.round(wins / decided.length * 100) + "%" : "—", "Match win rate",
-        decided.length ? wins + "W · " + (decided.length - wins) + "L · " + decided.length + " decided" : "No decided matches"],
-      ["", games.length.toLocaleString("en-US"), "Unique matches", excluded + " excluded from win rate"],
-      ["", String(active), "Active accounts", "of " + state.roster.length + " roster accounts"],
-      ["", lengths ? fmtDuration(lengths.average) : "—", "Average length", lengths ? "Median " + fmtDuration(lengths.median) : "No timed matches"]
+      [games.length.toLocaleString("en-US"), "Games", ""],
+      [decided.length ? Math.round(wins / decided.length * 100) + "%" : "—", "Win rate",
+        decided.length ? wins + "W · " + (decided.length - wins) + "L" : ""],
+      [lengths ? fmtDuration(lengths.average) : "—", "Average length", lengths ? "Median " + fmtDuration(lengths.median) : ""]
     ];
 
 
     $("#ledgerStats").innerHTML = tiles.map(function (row) {
-      return '<div class="ledger__stat' + (row[0] ? " ledger__stat--hero" : "") + '">' +
-             "<strong>" + esc(row[1]) + "</strong>" +
-             '<span class="data-label">' + esc(row[2]) + "</span>" +
-             '<span class="sub">' + esc(row[3]) + "</span></div>";
+      return '<div class="ledger__stat"><strong>' + esc(row[0]) + '</strong>' +
+             '<span class="data-label">' + esc(row[1]) + '</span>' +
+             (row[2] ? '<span class="sub">' + esc(row[2]) + '</span>' : '') + '</div>';
     }).join("");
 
     $("#clanCivs").innerHTML = clanChart(rated, "civ", "civImage");
@@ -1525,7 +1505,14 @@
   }
 
   function renderFeed() {
-    var matches = feedMatches().slice(0, 10);
+    var allMatches = feedMatches();
+    var matches = allMatches.slice(0, 10);
+    // A dossier's recent decided game can sit below ten unknown-result
+    // entries. Keep a directly opened match visible without hiding those.
+    if (state.openMatch && !matches.some(function (game) { return String(game.matchId) === state.openMatch; })) {
+      var opened = allMatches.filter(function (game) { return String(game.matchId) === state.openMatch; })[0];
+      if (opened) matches.push(opened);
+    }
     $("#feedScope").innerHTML = state.pair ? '<p class="pair-scope">Shared matches: ' + esc(state.pair.a) + " × " + esc(state.pair.b) + ' <button type="button" data-clear-pair>Show all clan matches</button></p>' : "";
     var host = $("#clanFeed");
 
@@ -1648,45 +1635,119 @@
     }
   });
 
-  /* Pairs who queue on the same team — the clan's actual friendships,
-     measured. */
+  /* Partnership identities, form and combinations all come from the same
+     decided team games. Shared feed selection still includes unknown results.
+     Avatars are the existing stored profile cards, with distinct initials as
+     a fallback. The spotlight always rewards volume, regardless of sorting. */
+  function duoAvatarHTML(player) {
+    if (state.profileCards.get(player.profileId) && state.profileCards.get(player.profileId).avatar) return avatarHTML(player);
+    var name = String(player.name || "?").replace(/^gg[_\s]+/i, "");
+    return '<span class="avatar avatar--blank" aria-hidden="true">' + esc(Array.from(name).slice(0, 2).join("").toUpperCase()) + '</span>';
+  }
+  function duoIdentityHTML(pair) {
+    return '<span class="duo-identity"><span class="duo-avatars">' + pair.players.map(duoAvatarHTML).join("") + '</span>' +
+      '<span class="duo__names">' + pair.players.map(function (p) { return '<b>' + esc(p.name) + '</b>'; }).join("") + '</span></span>';
+  }
+  function duoFormHTML(pair) {
+    return '<span class="duo-form" aria-label="Last five decided shared games, newest first: ' + pair.form.join(", ") + '">' +
+      pair.form.map(function (result) { return '<span class="' + result.toLowerCase() + '" aria-hidden="true">' + result + '</span>'; }).join("") + '</span>';
+  }
+  function duoRecordHTML(pair) {
+    return '<span class="duo-record"><strong class="' + (pair.winRate > 50 ? "up" : pair.winRate < 50 ? "down" : "") + '">' + pair.winRate + '%</strong><small>Win rate</small>' +
+      '<span><b class="up">' + pair.wins + 'W</b> · <b class="down">' + (pair.games - pair.wins) + 'L</b></span></span>';
+  }
+  function duoArtHTML(image, kind) {
+    return image ? '<img src="' + esc(image) + '" width="64" height="40" loading="lazy" alt="">' :
+      '<svg class="ico" aria-hidden="true"><use href="#i-' + kind + '"></use></svg>';
+  }
+  function duoCardHTML(pair) {
+    var selected = Boolean(state.pair && state.pair.key === pair.key);
+    var map = pair.maps[0];
+    return '<button type="button" class="duo" data-pair="' + esc(pair.key) + '" aria-pressed="' + selected + '" aria-expanded="' + selected + '" aria-controls="pairDetail">' +
+      '<span class="duo__top">' + duoIdentityHTML(pair) + duoRecordHTML(pair) + '</span>' +
+      '<span class="duo__activity"><span>' + pair.games + ' games</span>' +
+        '<span class="duo__form-label">' + (state.duoSort === "run" ? pair.currentRun + 'W streak' : 'Last 5') + duoFormHTML(pair) + '</span></span>' +
+      '<span class="duo__battlefield">' + duoArtHTML(map && map.image, "map") + '<span><small>Most played map</small><b>' + esc(map ? map.name : "—") + '</b></span>' +
+        '<svg class="ico duo__arrow" aria-hidden="true"><use href="#i-arrow"></use></svg></span></button>';
+  }
+  function duoDetailHTML(pair) {
+    var maps = pair.maps.slice(0, 3).map(function (map) {
+      return '<li>' + duoArtHTML(map.image, "map") + '<span><b>' + esc(map.name) + '</b><small>' + map.wins + 'W · ' + (map.games - map.wins) + 'L</small></span>' +
+        '<span class="duo-detail__numbers"><b>' + map.games + ' games</b><small>' + map.winRate + '% win rate</small></span></li>';
+    }).join("");
+    var combinations = pair.combinations.slice(0, 3).map(function (combo) {
+      // Align crests and names with the same player order used in the identity.
+      var civs = pair.players.map(function (player) {
+        return combo.civs.filter(function (civ) { return civ.profileId === player.profileId; })[0];
+      });
+      return '<li class="duo-detail__combo"><span class="duo-civs">' + civs.map(function (civ) { return duoArtHTML(civ.image, "civ"); }).join("") + '</span>' +
+        '<span>' + civs.map(function (civ, index) { return '<b title="' + esc(pair.players[index].name) + '">' + esc(civ.name) + '</b>'; }).join("") + '</span>' +
+        '<span class="duo-detail__numbers"><b>' + combo.games + (combo.games === 1 ? ' game' : ' games') + '</b><small>' + combo.wins + 'W · ' + (combo.games - combo.wins) + 'L</small></span></li>';
+    }).join("");
+    var recent = pair.results.slice(0, 3).map(function (result) {
+      return '<li><span class="duo-form"><span class="' + (result.won ? 'w' : 'l') + '">' + (result.won ? 'W' : 'L') + '</span></span>' +
+        '<span><b>' + esc(result.map || "Map not recorded") + '</b><small>' + esc(shortDate(result.date)) + '</small></span>' +
+        '<button type="button" class="duo-match" data-duo-match="' + esc(result.matchId) + '" aria-label="Open shared match on ' + esc(result.map || "unrecorded map") + ', ' + esc(shortDate(result.date)) + '"><svg class="ico" aria-hidden="true"><use href="#i-arrow"></use></svg></button></li>';
+    }).join("");
+    return '<div class="pair-detail"><div class="duo-detail__heading"><h4>Duo stats</h4><button type="button" data-clear-pair>Close <span aria-hidden="true">×</span></button></div>' +
+      '<div class="duo-detail__summary">' + duoIdentityHTML(pair) + duoRecordHTML(pair) +
+        '<div class="duo-detail__run"><strong>' + pair.bestRun + '</strong><span>Best win streak</span></div></div>' +
+      '<div class="duo-detail__columns"><section><h5>Maps</h5><ul>' + (maps || '<li class="chart-empty">No map data.</li>') + '</ul></section>' +
+        '<section><h5>Civ combinations</h5><ul>' + (combinations || '<li class="chart-empty">No civ data.</li>') + '</ul></section>' +
+        '<section><h5>Recent games</h5><ul>' + recent + '</ul><a class="duo-detail__feed-link" href="#clanFeed">See games ↓</a></section></div></div>';
+  }
   function renderWarband() {
     var pairs = AOE.warband(ledgerGames(), 2);
+    state.duoPairs = pairs;
     if (state.pair) state.pair = pairs.filter(function (p) { return p.key === state.pair.key; })[0] || null;
     var host = $("#warband");
     if (!pairs.length) {
-      host.innerHTML = '<p class="chart-empty">No pairs with at least two decided games together in this selection.</p>';
+      host.innerHTML = '<p class="chart-empty">No duos to show.</p>';
       $("#pairDetail").innerHTML = "";
       return;
     }
-    host.innerHTML = '<div class="warband__grid">' + (state.showPairs ? pairs : pairs.slice(0, 6)).map(function (p) {
-      return '<button type="button" class="duo" data-pair="' + esc(p.key) + '" aria-pressed="' + Boolean(state.pair && state.pair.key === p.key) + '">' +
-        '<span class="duo__names"><b>' + esc(p.a) + '</b><i>×</i><b>' + esc(p.b) + '</b></span>' +
-        '<span class="duo__meta"><em>' + p.games + ' together</em><strong>' + p.winRate + '%</strong></span>' +
-        '<span class="duo__result">' + p.wins + 'W · ' + (p.games - p.wins) + 'L' + (p.games < 10 ? ' · Small sample' : '') + '</span></button>';
-    }).join('') + '</div>' + (pairs.length > 6 ? '<button type="button" class="pair-toggle" data-toggle-pairs aria-expanded="' + state.showPairs + '">' + (state.showPairs ? 'Show fewer pairs' : 'Show all ' + pairs.length + ' pairs') + '</button>' : '');
+    var spotlight = pairs[0];
+    var spotlightSelected = Boolean(state.pair && state.pair.key === spotlight.key);
+    var listed = pairs.slice();
+    if (state.duoSort === "win") listed = listed.filter(function (p) { return p.games >= 10; }).sort(function (a, b) { return b.winRate - a.winRate || b.games - a.games; });
+    if (state.duoSort === "run") listed.sort(function (a, b) { return b.currentRun - a.currentRun || b.games - a.games; });
+    host.innerHTML = '<div class="duo-spotlight"><div class="duo-spotlight__intro"><span class="duo-spotlight__label">Most played duo</span>' +
+      duoIdentityHTML(spotlight) + '</div>' + duoRecordHTML(spotlight) +
+      '<button type="button" class="duo-spotlight__action" data-pair="' + esc(spotlight.key) + '" aria-expanded="' + spotlightSelected + '" aria-controls="pairDetail">' + (spotlightSelected ? 'Close stats' : 'See stats') +
+        '<svg class="ico" aria-hidden="true"><use href="#i-arrow"></use></svg></button></div>' +
+      '<div class="warband__grid">' + (state.showPairs ? listed : listed.slice(0, 6)).map(duoCardHTML).join("") + '</div>' +
+      (!listed.length ? '<p class="chart-empty">No duos with 10+ games.</p>' : '') +
+      (listed.length > 6 ? '<button type="button" class="pair-toggle" data-toggle-pairs aria-expanded="' + state.showPairs + '">' + (state.showPairs ? 'Show fewer pairs ↑' : 'Show all ' + listed.length + ' pairs ↓') + '</button>' : '');
     var detail = $("#pairDetail");
     if (!state.pair) { detail.innerHTML = ""; return; }
-    var maps = new Map();
-    pairGames().forEach(function (g) { if (g.map) maps.set(g.map, (maps.get(g.map) || 0) + 1); });
-    var favourites = Array.from(maps.entries()).sort(function (a, b) { return b[1] - a[1]; }).slice(0, 3);
-    detail.innerHTML = '<div class="pair-detail"><b>' + esc(state.pair.a) + ' × ' + esc(state.pair.b) + '</b><p>Favourite shared maps: ' + favourites.map(function (m) { return esc(m[0]) + ' (' + m[1] + ')'; }).join(' · ') + '</p><a href="#clanFeed">View shared matches ↓</a> <button type="button" data-clear-pair>Clear pair</button></div>';
+    detail.innerHTML = duoDetailHTML(state.pair);
   }
+  $("#duoSort").addEventListener("change", function (e) { state.duoSort = e.target.value; state.showPairs = false; renderWarband(); });
   $("#warband").addEventListener("click", function (e) {
     if (e.target.closest("[data-toggle-pairs]")) { state.showPairs = !state.showPairs; renderWarband(); var toggle = $("[data-toggle-pairs]"); if (toggle) toggle.focus(); return; }
     var button = e.target.closest("[data-pair]");
     if (!button) return;
     var key = button.dataset.pair;
-    state.pair = state.pair && state.pair.key === key ? null : AOE.warband(ledgerGames(), 2).filter(function (p) { return p.key === key; })[0] || null;
+    state.pair = state.pair && state.pair.key === key ? null : state.duoPairs.filter(function (p) { return p.key === key; })[0] || null;
     state.openMatch = null;
     renderWarband(); renderFeed();
-    var again = $('#warband [data-pair="' + key + '"]');
+    var again = $('#warband .duo[data-pair="' + key + '"]') || $('#warband [data-pair="' + key + '"]');
     if (again && e.detail === 0) again.focus();
+    if (state.pair) $("#pairDetail").scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "nearest" });
   });
   $("#ledger").addEventListener("click", function (e) {
+    var match = e.target.closest("[data-duo-match]");
+    if (match) {
+      state.openMatch = match.dataset.duoMatch;
+      renderFeed();
+      var row = $('#clanFeed [data-match="' + state.openMatch + '"]');
+      if (row) { row.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "center" }); row.focus({ preventScroll: true }); }
+      return;
+    }
     if (!e.target.closest("[data-clear-pair]")) return;
+    var previous = state.pair && state.pair.key;
     state.pair = null; state.openMatch = null; renderWarband(); renderFeed();
-    if (e.detail === 0) { var first = $('#warband [data-pair]'); if (first) first.focus(); }
+    if (e.detail === 0) { var first = $('#warband .duo[data-pair="' + previous + '"]') || $('#warband [data-pair]'); if (first) first.focus(); }
   });
 
 
@@ -1726,6 +1787,7 @@
       if (!cards.size) return;
       state.profileCards = cards;
       renderRoster();
+      if (state.feedReady) renderWarband();
     });
   }
 
@@ -1751,6 +1813,19 @@
 
       renderRoster();
       renderLedger();
+      // Saved roster data and webfonts change the height above this deep link.
+      // Align after both have rendered so the panel title clears the header.
+      if (window.location.hash === "#duos") {
+        var alignDuos = function () {
+          requestAnimationFrame(function () { $("#duos").scrollIntoView({ behavior: "instant", block: "start" }); });
+        };
+        var afterFonts = function () {
+          if (document.readyState === "complete") alignDuos();
+          else window.addEventListener("load", alignDuos, { once: true });
+        };
+        if (document.fonts) document.fonts.ready.then(afterFonts);
+        else afterFonts();
+      }
     }).catch(function () {
       state.feedLoading = false;
       state.feedError = true;

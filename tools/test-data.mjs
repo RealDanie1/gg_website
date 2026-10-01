@@ -5,6 +5,7 @@ import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { openStore } from './store.mjs';
+import './test-duos.mjs';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const snapshotSource = await readFile(path.join(root, 'assets/js/snapshot.js'), 'utf8');
 const source = await readFile(path.join(root, 'assets/js/aoe.js'), 'utf8');

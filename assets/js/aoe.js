@@ -179,12 +179,16 @@ window.AOE = (function () {
 
   /* ------------------------------------------------------------
      Pairs of members who queued on the SAME team, with how that
-     went. This is the one view no public site can show you.
+     went. Every result, map and civ combination uses the same decided
+     human-team sample. Player IDs keep partnerships and civ assignments
+     stable when names change; chronology drives form and recorded runs.
      ------------------------------------------------------------ */
   function warband(games, minGames) {
     var pairs = new Map();
 
-    games.forEach(function (game) {
+    games.slice().sort(function (a, b) {
+      return new Date(b.date || 0) - new Date(a.date || 0) || b.matchId - a.matchId;
+    }).forEach(function (game) {
       if (game.vsAI || game.members.length < 2) return;
       for (var i = 0; i < game.members.length; i++) {
         for (var j = i + 1; j < game.members.length; j++) {
@@ -192,12 +196,37 @@ window.AOE = (function () {
           if (a.team == null || a.team !== b.team) continue;
           if (a.won == null || b.won == null || a.won !== b.won) continue;
 
-          var names = [a.name, b.name].sort();
-          var ids = [a.profileId, b.profileId].sort(function (x, y) { return x - y; });
+          var players = [a, b].sort(function (x, y) { return x.profileId - y.profileId; });
+          var named = players.slice().sort(function (x, y) { return x.name.localeCompare(y.name); });
+          var ids = players.map(function (p) { return p.profileId; });
           var key = ids.join("|");
-          var row = pairs.get(key) || { key: key, ids: ids, a: names[0], b: names[1], games: 0, wins: 0 };
+          var row = pairs.get(key) || {
+            key: key, ids: ids, a: named[0].name, b: named[1].name,
+            players: named.map(function (p) { return { profileId: p.profileId, name: p.name }; }),
+            games: 0, wins: 0, results: [], maps: new Map(), combinations: new Map()
+          };
           row.games += 1;
           if (a.won) row.wins += 1;
+          row.results.push({ matchId: game.matchId, date: game.date, won: a.won, map: game.map });
+          if (game.map) {
+            var map = row.maps.get(game.map) || { name: game.map, image: game.mapImage, games: 0, wins: 0 };
+            map.games += 1;
+            if (a.won) map.wins += 1;
+            row.maps.set(game.map, map);
+          }
+          var civs = players.map(function (p) {
+            return (game.lineup || []).filter(function (q) { return q.profileId === p.profileId; })[0] || p;
+          });
+          if (civs.every(function (p) { return Boolean(p.civ); })) {
+            var comboKey = JSON.stringify(civs.map(function (p) { return p.civ; }));
+            var combo = row.combinations.get(comboKey) || {
+              civs: civs.map(function (p) { return { profileId: p.profileId, name: p.civ, image: p.civImage }; }),
+              games: 0, wins: 0
+            };
+            combo.games += 1;
+            if (a.won) combo.wins += 1;
+            row.combinations.set(comboKey, combo);
+          }
           pairs.set(key, row);
         }
       }
@@ -207,6 +236,23 @@ window.AOE = (function () {
       .filter(function (row) { return row.games >= (minGames || 2); })
       .map(function (row) {
         row.winRate = Math.round((row.wins / row.games) * 100);
+        row.form = row.results.slice(0, 5).map(function (result) { return result.won ? "W" : "L"; });
+        row.currentRun = 0;
+        row.bestRun = 0;
+        var run = 0;
+        row.results.forEach(function (result, index) {
+          run = result.won ? run + 1 : 0;
+          row.bestRun = Math.max(row.bestRun, run);
+          if (result.won && index === row.currentRun) row.currentRun += 1;
+        });
+        function ranked(items) {
+          return Array.from(items.values()).map(function (item) {
+            item.winRate = Math.round(item.wins / item.games * 100);
+            return item;
+          }).sort(function (x, y) { return y.games - x.games || y.wins - x.wins; });
+        }
+        row.maps = ranked(row.maps);
+        row.combinations = ranked(row.combinations);
         return row;
       })
       .sort(function (x, y) { return y.games - x.games || y.winRate - x.winRate; });

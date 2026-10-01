@@ -22,7 +22,7 @@
   <link rel="preload" as="image" href="assets/img/hero-castle.webp">
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="assets/css/styles.css">
+  <link rel="stylesheet" href="assets/css/styles.css?v=20261002">
 </head>
 <body>
 
@@ -128,10 +128,10 @@
         <p class="live-badge" id="rosterStatus"><span class="dot"></span> Loading…</p>
       </div>
 
-      <div class="roster-toolbar">
-        <div class="segmented" id="ladderSwitch" role="group" aria-label="Choose ladder"></div>
+      <div class="stats-toolbar">
+        <div class="segmented" id="ladderSwitch" role="group" aria-label="Choose game mode"></div>
+        <div class="segmented period-controls" data-period-controls role="group" aria-label="Roster activity period"></div>
       </div>
-      <div class="period-controls" data-period-controls role="group" aria-label="Roster activity period"></div>
       <p class="coverage" id="rosterCoverage" aria-live="polite"></p>
       <p class="sr-only" id="rosterSortStatus" role="status"></p>
 
@@ -152,20 +152,15 @@
         <p class="live-badge" id="ledgerStatus"><span class="dot"></span> Loading…</p>
       </div>
 
-      <div class="period-controls" data-period-controls role="group" aria-label="Clan statistics period"></div>
+      <div class="stats-toolbar">
+        <div class="segmented" id="ledgerTabs" role="group" aria-label="Choose game mode"></div>
+        <div class="segmented period-controls" data-period-controls role="group" aria-label="Clan statistics period"></div>
+      </div>
       <p class="coverage" id="ledgerCoverage" aria-live="polite"></p>
       <!-- Every panel below answers to the same date and mode filters. -->
-      <div class="tabs" id="ledgerTabs" role="tablist" aria-label="Filter by mode"></div>
-
       <div class="ledger__stats" id="ledgerStats"></div>
 
       <div class="ledger__grid">
-        <section class="ledger__panel ledger__panel--warband">
-          <p class="data-label data-label--ico"><svg class="ico" aria-hidden="true"><use href="#i-duo"></use></svg>The Duos</p>
-          <p class="panel-note">Select a pair to see their shared games.</p>
-          <div id="warband"><div class="state">Loading…</div></div>
-          <div id="pairDetail" aria-live="polite"></div>
-        </section>
         <section class="ledger__panel ledger__panel--civs">
           <div class="panel-heading"><p class="data-label">Civilisations</p><label class="select-control"><span class="sr-only">Sort civilisations</span><select data-chart-sort="civ"><option value="volume">Most played</option><option value="win">Highest win rate · 10+ picks</option></select></label></div>
           <div id="clanCivs"><div class="state">Loading…</div></div>
@@ -173,6 +168,14 @@
         <section class="ledger__panel ledger__panel--maps">
           <div class="panel-heading"><p class="data-label">Maps</p><label class="select-control"><span class="sr-only">Sort maps</span><select data-chart-sort="map"><option value="volume">Most played</option><option value="win">Highest win rate · 10+ appearances</option></select></label></div>
           <div id="clanMaps"><div class="state">Loading…</div></div>
+        </section>
+        <section class="ledger__panel ledger__panel--warband" id="duos" aria-labelledby="duosTitle">
+          <div class="duos-heading">
+            <div class="duos-heading__title"><svg class="ico" aria-hidden="true"><use href="#i-duo"></use></svg><h3 id="duosTitle">The Duos</h3></div>
+            <label class="select-control"><span class="sr-only">Sort duos</span><select id="duoSort"><option value="volume">Most played</option><option value="win">Highest win rate · 10+ games</option><option value="run">Win streak</option></select></label>
+          </div>
+          <div id="warband"><div class="state">Loading…</div></div>
+          <div id="pairDetail" aria-live="polite"></div>
         </section>
         <section class="ledger__panel ledger__panel--feed">
           <p class="data-label data-label--ico"><svg class="ico" aria-hidden="true"><use href="#i-clock"></use></svg>Latest games</p>

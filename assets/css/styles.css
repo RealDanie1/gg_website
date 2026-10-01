@@ -569,12 +569,6 @@ h1, h2, h3 {
    so the panel and the dead space under its three rows are both gone. */
 .tabs, .d-modes { display: flex; flex-wrap: wrap; gap: 1px; background: var(--line-soft); }
 .d-modes--empty { display: none; }
-/* The ledger's strip is a standalone block, so it carries its own frame;
-   the dossier's sits inside the panel grid and inherits one. */
-#ledgerTabs {
-  border: 1px solid var(--line);
-  margin-bottom: 1.25rem;
-}
 .tabs button, .d-modes button {
   flex: 1 1 8rem;
   display: flex; flex-direction: column; align-items: flex-start; gap: 0.1rem;
@@ -730,19 +724,12 @@ h1, h2, h3 {
    WAR LEDGER
    ============================================================ */
 .ledger__stats {
-  display: grid; grid-template-columns: 1.35fr repeat(4, 1fr);
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 1px; background: var(--line-soft);
   border: 1px solid var(--line);
   margin-bottom: 1.25rem;
 }
 .ledger__stat { background: var(--panel); padding: 1.5rem 1.4rem; }
-/* Hierarchy: five identical tiles gave the eye nowhere to land, and the win
-   rate is the number somebody scanning this section came for. */
-.ledger__stat--hero {
-  background: var(--panel-2);
-  border-left: 3px solid var(--red);
-}
-.ledger__stat--hero strong { font-size: clamp(2.6rem, 5.4vw, 3.8rem); color: var(--bone); }
 .ledger__stat strong {
   display: block;
   font-family: var(--display); font-size: clamp(2.1rem, 4.6vw, 3.1rem);
@@ -1084,8 +1071,6 @@ h1, h2, h3 {
   .ledger__panel--atlas   { grid-column: span 3; }
 
   /* The hero keeps the full width; the other four pair up beneath it. */
-  .ledger__stats { grid-template-columns: repeat(2, 1fr); }
-  .ledger__stat--hero { grid-column: 1 / -1; }
 }
 
 @media (max-width: 940px) {
@@ -1188,22 +1173,24 @@ h1, h2, h3 {
 /* Period controls and readable data tables keep the clan's visual identity
    while giving analytical controls and sample sizes a quieter hierarchy. */
 #ledger .title { font-size: clamp(2.4rem, 5vw, 4rem); }
-#ledger .section-head { margin-bottom: 1.5rem; }
-.roster-toolbar, .panel-heading { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
-.roster-toolbar .segmented { margin-bottom: 0; }
-.roster-toolbar { margin-bottom: 1rem; }
+#roster .section-head, #ledger .section-head { margin-bottom: 1.5rem; }
+.panel-heading { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
 .select-control { display: flex; gap: 0.6rem; align-items: center; font-size: 0.875rem; color: var(--muted); min-width: 0; }
 .select-control select { font: inherit; color: var(--bone); background: var(--panel-2); border: 1px solid var(--line-hard); padding: 0.55rem 0.6rem; max-width: 100%; border-radius: 2px; color-scheme: dark; cursor: pointer; }
-.period-controls { display: flex; flex-wrap: wrap; gap: 0.4rem; }
-.period-controls button { min-height: 42px; padding: 0.5rem 0.9rem; border: 1px solid var(--line); color: var(--muted); font-size: 0.9rem; }
-.period-controls button:hover { border-color: var(--line-hard); color: var(--bone); }
-.period-controls button[aria-pressed="true"] { color: var(--bone); background: var(--panel-2); border-color: var(--bone); box-shadow: inset 0 -2px var(--red); }
 .coverage { font-size: 0.875rem; color: var(--muted); margin: 0.8rem 0 1.4rem; max-width: 90ch; }
+/* Roster and clan controls share one layout: modes left, periods right,
+   with the same segmented buttons and stacked rows on mobile. */
+.stats-toolbar { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; }
+.stats-toolbar .segmented { max-width: 100%; }
+.stats-toolbar .segmented button { min-height: 44px; }
+.stats-toolbar .period-controls button { padding-inline: 0.95rem; letter-spacing: 0.06em; }
+#rosterCoverage, #ledgerCoverage { margin-block: 0.65rem 1.1rem; font-size: var(--fs-mini); }
+.ledger__stats:empty { display: none; }
 .player__last { display: block; font: 0.75rem/1.5 var(--sans); letter-spacing: 0; color: var(--dim); margin-top: 0.25rem; }
 .player__name { overflow-wrap: anywhere; }
 .sparkline { display: block; width: 76px; height: 22px; margin-top: 0.25rem; color: var(--muted); }
 .sparkline polyline { fill: none; stroke: currentColor; stroke-width: 1.5; }
-.ledger__stats { grid-template-columns: 1.35fr repeat(3, minmax(0, 1fr)); }
+.ledger__stats { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .ledger__stat .data-label, .ledger__panel .data-label { font-family: var(--sans); font-size: 0.95rem; letter-spacing: 0; text-transform: none; }
 .ledger__panel .data-label { font-size: 1.1rem; font-weight: 600; margin-bottom: 0.7rem; }
 .ledger__stat .sub { font-family: var(--sans); font-size: 0.875rem; }
@@ -1230,22 +1217,104 @@ h1, h2, h3 {
 .volume { display: inline-block; min-width: 75%; position: relative; isolation: isolate; padding: 0.25rem 0.4rem; }
 .volume::before { content: ''; position: absolute; inset: 0 auto 0 0; z-index: -1; width: var(--share); background: rgba(240,238,232,0.08); border-bottom: 2px solid rgba(240,238,232,0.28); }
 .warband__grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.65rem; }
-.duo { display: block; width: 100%; text-align: left; border: 1px solid var(--line); background: rgba(5,6,7,0.4); padding: 1rem; transition: border-color 0.2s; }
-.duo:hover { border-color: var(--line-hard); }
-.duo[aria-pressed="true"] { border-color: var(--bone); background: var(--panel-2); }
-.duo__names { display: flex; flex-wrap: wrap; justify-content: flex-start; gap: 0.3rem; font-family: var(--sans); font-size: 0.9rem; letter-spacing: 0; overflow-wrap: anywhere; }
-.duo__meta { display: flex; justify-content: space-between; align-items: baseline; margin-top: 0.7rem; font-family: var(--sans); font-size: 0.875rem; letter-spacing: 0; text-transform: none; }
-.duo__result { display: block; color: var(--muted); font-size: 0.8rem; }
-.pair-detail { margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--line); font-size: 0.9rem; overflow-wrap: anywhere; }
-.pair-detail p { color: var(--muted); margin: 0.5rem 0; }
-.pair-detail a, [data-clear-pair] { text-decoration: underline; text-underline-offset: 4px; padding: 0.6rem 0; margin-right: 1rem; min-height: 40px; }
+/* Duos use paired portraits and actual map/civ artwork to make each
+   partnership recognisable. Square frames, open dossier columns and the
+   existing outcome colours keep this inside the clan's visual system. */
+#duos, #pairDetail { scroll-margin-top: 90px; }
+.duos-heading { display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; margin-bottom: 1.25rem; }
+.duos-heading__title { display: flex; align-items: center; gap: 0.9rem; }
+.duos-heading__title > .ico { width: 38px; height: 38px; color: var(--red-light); }
+.duos-heading h3 { font-size: 2.4rem; }
+.duos-heading .select-control { font-size: var(--fs-small); }
+.duos-heading select { max-width: 100%; }
+.duo-identity { display: flex; align-items: center; gap: 0.85rem; min-width: 0; }
+.duo-avatars { display: flex; align-items: center; flex: none; }
+.duo-avatars .avatar { width: 40px; height: 40px; border: 1px solid var(--line-hard); border-radius: 0; background: var(--panel-2); }
+.duo-avatars .avatar + .avatar { margin-left: -8px; transform: translateY(6px); }
+.duo-avatars .avatar--blank { font-family: var(--display); font-size: 1.15rem; color: var(--bone); }
+.duo-avatars .avatar + .avatar.avatar--blank { background: #262023; color: var(--red-light); }
+.duo__names { display: flex; flex-direction: column; align-items: flex-start; gap: 0.15rem; min-width: 0; font-family: var(--sans); font-size: var(--fs-small); line-height: 1.45; letter-spacing: 0; overflow-wrap: anywhere; }
+.duo__names b { font-weight: 600; }
+.duo-record { display: flex; flex-direction: column; flex: none; align-items: flex-end; line-height: 1.25; }
+.duo-record > strong { font-family: var(--display); font-size: 2.25rem; font-weight: 400; }
+.duo-record > small { display: none; }
+.duo-record > span { font-size: var(--fs-micro); color: var(--dim); white-space: nowrap; }
+.duo-record b { font-weight: 500; }
+.duo-record .up { color: var(--win); }
+.duo-record .down { color: var(--red-light); }
+.duo-spotlight { position: relative; isolation: isolate; overflow: hidden; display: flex; align-items: center; gap: 2rem; padding: 1.25rem; margin-bottom: 1rem; border: 1px solid var(--line-hard); background: var(--black-2); }
+/* Preserve the supplied cover; tone it down with CSS so the original
+   artwork stays intact and the names and result remain readable. */
+.duo-spotlight::before { content: ""; position: absolute; inset: 0; z-index: -1; background: linear-gradient(90deg, rgba(5,6,7,0.9), rgba(5,6,7,0.7) 50%, rgba(5,6,7,0.62)), url("../img/duos-cover.png") center 42% / cover; filter: saturate(0.65); }
+.duo-spotlight__intro { flex: 1; min-width: 0; }
+.duo-spotlight__label { display: block; font-family: var(--display); font-size: 1.2rem; letter-spacing: 0.08em; color: var(--red-light); margin-bottom: 0.7rem; }
+.duo-spotlight .duo__names { font-size: 1rem; }
+.duo-spotlight .duo-avatars .avatar { width: 52px; height: 52px; }
+.duo-spotlight .duo-record { padding-inline: 2rem; border-left: 1px solid var(--line-hard); align-items: flex-start; }
+.duo-spotlight .duo-record > strong { font-size: 3.5rem; }
+.duo-spotlight .duo-record > span { font-size: var(--fs-small); }
+.duo-spotlight .duo-record > small { display: block; color: var(--muted); font-family: var(--display); font-size: 1rem; letter-spacing: 0.06em; margin-bottom: 0.35rem; }
+.duo-spotlight__action { display: flex; align-items: center; justify-content: center; gap: 1rem; flex: none; min-height: 44px; padding: 0.65rem 1rem; border: 1px solid var(--red); background: rgba(5,6,7,0.65); color: var(--bone); font-size: var(--fs-small); transition: background 0.2s; }
+.duo-spotlight__action:hover { background: var(--red); }
+.duo { display: block; width: 100%; text-align: left; border: 1px solid var(--line); background: rgba(5,6,7,0.4); padding: 1rem; transition: border-color 0.2s, background 0.2s; }
+.duo:hover { border-color: var(--line-hard); background: var(--panel-2); }
+.duo[aria-pressed="true"] { border-color: var(--red-bright); background: var(--panel-2); }
+.duo__top { display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; }
+.duo__activity { display: flex; align-items: flex-start; justify-content: space-between; gap: 0.5rem; color: var(--muted); font-size: var(--fs-micro); margin-top: 0.9rem; margin-bottom: 0.7rem; }
+.duo__form-label { display: flex; flex-direction: column; align-items: flex-end; gap: 0.3rem; line-height: 1.25; }
+.duo-form { display: flex; gap: 4px; }
+.duo-form > span { display: grid; place-items: center; width: 22px; height: 23px; border: 1px solid; font-family: var(--mono); font-size: var(--fs-micro); }
+.duo-form .w { color: var(--win); background: rgba(79,210,138,0.13); border-color: rgba(79,210,138,0.4); }
+.duo-form .l { color: var(--red-light); background: rgba(197,43,48,0.13); border-color: rgba(197,43,48,0.5); }
+.duo__battlefield { display: flex; align-items: center; gap: 0.7rem; padding-top: 0.8rem; border-top: 1px solid var(--line); }
+.duo__battlefield > img { width: 65px; height: 46px; object-fit: contain; }
+.duo__battlefield > .ico:not(.duo__arrow) { width: 65px; height: 42px; padding: 0.5rem; color: var(--dim); }
+.duo__battlefield > span { flex: 1; min-width: 0; line-height: 1.5; }
+.duo__battlefield small { display: block; color: var(--muted); font-size: var(--fs-micro); }
+.duo__battlefield b { display: block; font-size: var(--fs-small); font-weight: 500; overflow-wrap: anywhere; }
+.duo__arrow { width: 16px; color: var(--dim); }
+.pair-toggle { display: block; width: 100%; min-height: 44px; padding: 0.6rem; margin-top: 0.75rem; font-size: var(--fs-small); color: var(--red-light); border-block: 1px solid var(--line-soft); }
+.pair-toggle:hover { color: var(--bone); }
+.pair-detail { margin-top: 1.25rem; padding: 1.25rem; border: 1px solid var(--red); background: rgba(5,6,7,0.45); overflow-wrap: anywhere; }
+.duo-detail__heading { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+.duo-detail__heading h4 { font-family: var(--display); font-size: 1.7rem; font-weight: 400; margin: 0; line-height: 1.15; }
+.duo-detail__heading [data-clear-pair] { display: flex; align-items: center; gap: 0.7rem; min-height: 44px; padding-inline: 0.6rem; font-size: var(--fs-small); color: var(--muted); }
+.duo-detail__heading [data-clear-pair]:hover { color: var(--bone); }
+.duo-detail__heading [data-clear-pair] span { font-size: 1.4rem; }
+.duo-detail__summary { display: flex; align-items: center; gap: 2rem; margin: 1rem 0 1.6rem; }
+.duo-detail__summary > .duo-identity { flex: 1; }
+.duo-detail__summary .duo__names { font-size: 1rem; }
+.duo-detail__summary > .duo-record { padding-inline: 1.5rem; border-left: 1px solid var(--line); align-items: flex-start; }
+.duo-detail__run { display: flex; gap: 0.8rem; align-items: center; padding-left: 1.5rem; border-left: 1px solid var(--line); }
+.duo-detail__run > strong { font-family: var(--display); font-size: 2.5rem; font-weight: 400; }
+.duo-detail__run > span { font-size: var(--fs-small); }
+.duo-detail__columns { display: grid; grid-template-columns: 1fr 1.15fr 0.9fr; gap: 1.2rem; }
+.duo-detail__columns > section { min-width: 0; }
+.duo-detail__columns > section + section { border-left: 1px solid var(--line); padding-left: 1.2rem; }
+.duo-detail__columns h5 { font-family: var(--display); font-size: 1.15rem; font-weight: 400; letter-spacing: 0.04em; margin: 0 0 0.6rem; }
+.duo-detail__columns ul { list-style: none; margin: 0; padding: 0; }
+.duo-detail__columns li { display: flex; align-items: center; gap: 0.65rem; min-height: 65px; padding-block: 0.65rem; border-top: 1px solid var(--line); }
+.duo-detail__columns li > img { width: 62px; height: 42px; object-fit: contain; }
+.duo-detail__columns li > .ico { flex: none; width: 34px; }
+.duo-detail__columns li > span { min-width: 0; }
+.duo-detail__columns li b { display: block; font-size: var(--fs-mini); font-weight: 500; line-height: 1.45; }
+.duo-detail__columns li small { display: block; color: var(--dim); font-size: var(--fs-micro); line-height: 1.5; }
+.duo-detail__numbers { flex: none; margin-left: auto; text-align: right; }
+.duo-civs { display: flex; gap: 4px; flex: none; }
+.duo-civs img, .duo-civs .ico { width: 28px; height: 32px; object-fit: contain; }
+.duo-match { display: grid; place-items: center; flex: none; margin-left: auto; width: 44px; height: 44px; color: var(--muted); }
+.duo-match:hover { color: var(--red-light); }
+.duo-detail__feed-link { display: block; text-align: right; font-size: var(--fs-small); color: var(--red-light); padding: 0.75rem 0; min-height: 44px; }
+.pair-scope [data-clear-pair] { text-decoration: underline; text-underline-offset: 4px; padding: 0.6rem; min-height: 44px; }
 .pair-scope { color: var(--muted); font-size: 0.875rem; margin-bottom: 1rem; }
 .ledger__more { flex-wrap: wrap; gap: 1rem; align-items: center; }
 #clanFeed { scroll-margin-top: 100px; }
 @media (max-width: 1050px) {
-  .ledger__stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .ledger__stat--hero { grid-column: auto; }
   .warband__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .duo-spotlight { gap: 1.2rem; }
+  .duo-spotlight .duo-record { padding-inline: 1rem; }
+  .duo-detail__columns { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .duo-detail__columns > section:last-child { grid-column: 1 / -1; border-left: 0; padding-left: 0; }
 }
 @media (max-width: 760px) {
   .ledger__grid > .ledger__panel { grid-column: 1 / -1; }
@@ -1253,7 +1322,6 @@ h1, h2, h3 {
   .player__row { grid-template-columns: 1.4rem minmax(0, 1fr); grid-template-areas: 'idx name' 'idx country' 'idx stats' 'idx form'; padding: 1rem 0.6rem; }
   .player__form-cell, .player__stats-cell { justify-self: start; }
   .player__stats-cell { gap: 1.8rem; }
-  .roster-toolbar { align-items: flex-start; }
   .stat-table thead th:first-child { width: 46%; }
   .stat-table thead th:nth-child(2) { width: 27%; }
   .stat-name { gap: 0.4rem; }
@@ -1262,12 +1330,40 @@ h1, h2, h3 {
   .stat-table thead th { font-size: 0.75rem; }
   .ledger__stat { padding: 1rem; }
   .live-badge { white-space: normal; }
+  .duo-spotlight { flex-wrap: wrap; padding: 1rem; gap: 1rem; }
+  .duo-spotlight__intro { flex-basis: calc(100% - 120px); }
+  .duo-spotlight .duo-record { border-left: 0; padding: 0; }
+  .duo-spotlight__action { width: 100%; }
+  .duo-detail__summary { flex-wrap: wrap; gap: 1rem; }
+  .duo-detail__summary > .duo-identity { flex-basis: 100%; }
+  .duo-detail__summary > .duo-record { border-left: 0; padding: 0 1rem 0 0; }
+  .duo-detail__run { padding-left: 1rem; }
+  .duo-detail__columns { grid-template-columns: 1fr; }
+  .duo-detail__columns > section + section { border-left: 0; padding-left: 0; }
+}
+@media (max-width: 620px) {
+  .stats-toolbar { gap: 0.75rem; }
+  .stats-toolbar .segmented { display: flex; width: 100%; }
+  .stats-toolbar .segmented button { flex: 1; min-width: 0; padding: 0.6rem 0.55rem; font-size: var(--fs-micro); letter-spacing: 0.03em; }
+  .ledger__stat { padding: 1.15rem 0.7rem; min-width: 0; }
+  .ledger__stat strong { font-size: 1.9rem; }
+  .ledger__stat .data-label { font-size: var(--fs-mini); line-height: 1.4; }
+  .ledger__stat .sub { font-size: var(--fs-micro); line-height: 1.4; }
+  .duo-spotlight::before { background-position: center, 75% center; }
+  .duos-heading { align-items: flex-start; flex-direction: column; gap: 1rem; }
+  .duos-heading .select-control, .duos-heading select { width: 100%; }
+  .warband__grid { grid-template-columns: 1fr; }
+  .duo-spotlight__intro { flex-basis: 100%; }
+  .duo-spotlight .duo-record { flex-direction: row; align-items: center; gap: 1rem; }
+  .duo-spotlight .duo-record > strong { font-size: 2.7rem; }
+  .duo-spotlight .duo-record > small { margin: 0; }
+  .duo-spotlight .duo__names { font-size: var(--fs-small); }
+  .duo-spotlight .duo-avatars .avatar { width: 44px; height: 44px; }
+  .duo-detail__summary .duo__names { font-size: var(--fs-small); }
+  .pair-detail { padding: 1rem; }
 }
 @media (max-width: 420px) {
   .warband__grid { grid-template-columns: 1fr; }
-  .period-controls button { padding-inline: 0.65rem; font-size: 0.85rem; }
   .panel-heading { display: block; }
   .panel-heading .select-control { margin-top: 0.6rem; }
 }
-
-.pair-toggle { min-height: 44px; text-decoration: underline; text-underline-offset: 4px; color: var(--muted); margin-top: 0.5rem; font-size: 0.875rem; }
