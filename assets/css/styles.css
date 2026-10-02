@@ -158,6 +158,41 @@ h1, h2, h3 {
 .button--ghost:hover { background: rgba(240, 238, 232, 0.06); border-color: var(--bone); }
 .button svg { width: 16px; height: 16px; }
 
+/* The hero's Discord call gets a single light sweep and icon wiggle per
+   hover or keyboard focus, so the invitation feels alive without looping. */
+.button--discord {
+  position: relative; isolation: isolate; overflow: hidden;
+  white-space: nowrap;
+  transition: background 0.25s var(--ease), border-color 0.25s var(--ease),
+    transform 0.25s var(--ease), box-shadow 0.3s var(--ease);
+}
+.button--discord::before {
+  content: ""; position: absolute; inset: 0; z-index: -1;
+  background: linear-gradient(110deg, transparent 25%, rgba(255, 255, 255, 0.24) 50%, transparent 75%);
+  transform: translateX(-120%);
+  transition: transform 0.65s var(--ease);
+  pointer-events: none;
+}
+.button--discord .button__discord-icon {
+  width: 22px; height: 22px; flex: none;
+  fill: currentColor; stroke: none;
+}
+.button--discord .arrow { flex: none; transition: transform 0.3s var(--ease); }
+.button--discord:is(:hover, :focus-visible) {
+  background: var(--red); border-color: var(--red-light);
+  transform: translateY(-3px);
+  box-shadow: 0 0 0 1px rgba(239, 117, 121, 0.2), 0 8px 28px rgba(197, 43, 48, 0.4);
+}
+.button--discord:is(:hover, :focus-visible)::before { transform: translateX(120%); }
+.button--discord:is(:hover, :focus-visible) .button__discord-icon { animation: discord-call 0.6s var(--ease); }
+.button--discord:is(:hover, :focus-visible) .arrow { transform: translateX(4px); }
+@keyframes discord-call {
+  0%, 100% { transform: rotate(0) scale(1); }
+  25% { transform: rotate(-12deg) scale(1.12); }
+  50% { transform: rotate(9deg) scale(1.12); }
+  75% { transform: rotate(-5deg) scale(1.06); }
+}
+
 .arrow { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.8; }
 
 /* live status dot */
@@ -214,11 +249,15 @@ h1, h2, h3 {
 .nav a:hover, .nav a.is-active { color: var(--bone); }
 .nav a.is-active::before { opacity: 1; }
 
-/* The in-nav Discord button belongs to the mobile drawer only — the header
-   already carries one beside the burger. */
-.nav .button { display: none; }
-
-.header .button { padding: 0.7rem 1.2rem; font-size: var(--fs-mini); }
+/* A quiet Discord link stays beside the navigation on every screen size. */
+.header__discord {
+  display: grid; place-items: center; flex: none;
+  width: 44px; height: 44px; border-radius: 3px;
+  color: var(--muted);
+  transition: color 0.2s var(--ease), background 0.2s var(--ease);
+}
+.header__discord svg { width: 24px; height: 24px; fill: currentColor; }
+.header__discord:hover { color: var(--bone); background: var(--line-soft); }
 
 .burger {
   display: none; width: 44px; height: 44px;
@@ -1100,7 +1139,7 @@ h1, h2, h3 {
 
 @media (max-width: 820px) {
   .burger { display: flex; }
-  .header .button { display: none; }
+  .header__inner { gap: 0.75rem; }
   .nav {
     position: fixed; inset: 76px 0 auto 0;
     flex-direction: column; align-items: stretch; gap: 0;
@@ -1114,7 +1153,6 @@ h1, h2, h3 {
   }
   .nav.is-open { transform: none; visibility: visible; }
   .nav a { padding: 1rem 0; font-size: 0.9rem; border-bottom: 1px solid var(--line-soft); }
-  .nav .button { display: inline-flex; margin-top: 1.2rem; justify-content: center; color: #fff; }
 
   .d-civs, .d-maps { grid-column: span 6; }
   .d-name { flex-direction: column; }
@@ -1162,6 +1200,10 @@ h1, h2, h3 {
   }
   .reveal { opacity: 1; transform: none; }
   .hero__embers { display: none; }
+  .button--discord::before { display: none; }
+  .button--discord:is(:hover, :focus-visible),
+  .button--discord:is(:hover, :focus-visible) .arrow { transform: none; }
+  .button--discord:is(:hover, :focus-visible) .button__discord-icon { animation: none; }
 }
 
 /* ---------- print ---------- */

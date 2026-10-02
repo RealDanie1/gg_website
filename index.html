@@ -22,7 +22,7 @@
   <link rel="preload" as="image" href="assets/img/hero-castle.webp">
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="assets/css/styles.css?v=20261002">
+  <link rel="stylesheet" href="assets/css/styles.css?v=20261002-discord-call">
 </head>
 <body>
 
@@ -58,12 +58,10 @@
       <a href="#roster">Roster</a>
       <a href="#ledger">The Clan</a>
       <a href="#cities">Cities</a>
-      <a class="button" data-discord href="#join">Join Discord</a>
     </nav>
 
-    <a class="button" data-discord href="#join">
-      Join Discord
-      <svg class="arrow" aria-hidden="true"><use href="#i-arrow"></use></svg>
+    <a class="header__discord" data-discord href="#join" aria-label="Join GG Clan on Discord" title="Join Discord">
+      <svg aria-hidden="true" focusable="false"><use href="#i-discord"></use></svg>
     </a>
     <button class="burger" id="burger" aria-label="Menu" aria-expanded="false" aria-controls="nav">
       <i></i><i></i><i></i>
@@ -87,9 +85,10 @@
         <div class="hero__rule"></div>
         <p class="hero__body" data-blurb></p>
         <div class="hero__actions">
-          <a class="button" data-discord href="#join">
-            Join Discord
-            <svg class="arrow" aria-hidden="true"><use href="#i-arrow"></use></svg>
+          <a class="button button--discord" data-discord href="#join" aria-label="Call the GG — join GG Clan on Discord">
+            <svg class="button__discord-icon" aria-hidden="true" focusable="false"><use href="#i-discord"></use></svg>
+            <span>Call the GG</span>
+            <svg class="arrow" aria-hidden="true" focusable="false"><use href="#i-arrow"></use></svg>
           </a>
           <a class="button button--ghost" href="#roster">
             Meet the roster
