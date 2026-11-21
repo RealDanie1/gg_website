@@ -7,14 +7,171 @@
 
   var $  = function (s, r) { return (r || document).querySelector(s); };
   var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
-  var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   function esc(value) {
     return String(value).replace(/[&<>"']/g, function (c) {
       return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
     });
   }
-  function num(value) { return value == null ? "—" : String(value); }
+  var motionPreference = window.matchMedia("(prefers-reduced-motion: reduce)");
+  var countFormat = new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 });
+  var profileCounters = counterAnimation(".player--open");
+  var clanCounters = counterAnimation("#ledgerStats");
+
+  // Read the visible height before a render, including any unfinished transition.
+  // Release the previous animation before measuring the new, responsive layout.
+  var panelAnimations = new Map(), panelTiming;
+  function cancelPanelAnimation(panel) {
+    var running = panelAnimations.get(panel);
+    if (running) {
+      running.onfinish = null;
+      running.cancel();
+      panelAnimations.delete(panel);
+      panel.classList.remove("is-resizing");
+    }
+  }
+
+  function panelHeight(panel) {
+    var height = panel.getBoundingClientRect().height;
+    cancelPanelAnimation(panel);
+    return height;
+  }
+
+  function transitionPanel(panel, from, to, fade, onFinish) {
+    if (to == null) to = panel.getBoundingClientRect().height;
+    var resize = Math.abs(to - from) >= 1;
+    if (from == null || motionPreference.matches || !panel.animate || (!resize && !fade)) {
+      if (onFinish) onFinish();
+      return;
+    }
+    var start = {}, end = {};
+    if (resize) {
+      start.height = from + "px";
+      end.height = to + "px";
+      panel.classList.add("is-resizing");
+    }
+    if (fade) { start.opacity = .65; end.opacity = 1; }
+    playPanelAnimation(panel, start, end, onFinish);
+  }
+
+  function playPanelAnimation(panel, start, end, onFinish) {
+    if (!panelTiming) {
+      var style = getComputedStyle(document.documentElement);
+      panelTiming = {
+        duration: parseFloat(style.getPropertyValue("--panel-duration")) || 0,
+        easing: style.getPropertyValue("--ease").trim() || "ease",
+        fill: "both"
+      };
+    }
+    var animation = panel.animate([start, end], panelTiming);
+    panelAnimations.set(panel, animation);
+    animation.onfinish = function () {
+      if (panelAnimations.get(panel) !== animation) return;
+      panelAnimations.delete(panel);
+      animation.cancel();
+      panel.classList.remove("is-resizing");
+      if (onFinish) onFinish();
+    };
+  }
+
+  if (motionPreference.addEventListener) motionPreference.addEventListener("change", function (event) {
+    if (event.matches) panelAnimations.forEach(function (animation) { animation.finish(); });
+  });
+
+  // When folding content above the activated control, preserve its viewport
+  // position. Stop following as soon as the user scrolls or acts again.
+  function anchorCollapse(control, panel) {
+    if (!panel) return;
+    var rect = control.getBoundingClientRect(), top = rect.top;
+    if (rect.bottom <= 0 || top >= window.innerHeight || panel.getBoundingClientRect().bottom > top + 1) return;
+    var input = new AbortController();
+    ["wheel", "touchmove", "pointerdown", "keydown"].forEach(function (event) {
+      window.addEventListener(event, function () { input.abort(); }, { passive: true, signal: input.signal });
+    });
+    requestAnimationFrame(function follow() {
+      if (input.signal.aborted) return;
+      if (control.isConnected) {
+        var drift = control.getBoundingClientRect().top - top;
+        if (Math.abs(drift) > 1) window.scrollBy({ top: drift, behavior: "instant" });
+        var target = document.getElementById(control.getAttribute("aria-controls"));
+        if (panelAnimations.has(panel) || panelAnimations.has(target)) { requestAnimationFrame(follow); return; }
+      }
+      input.abort();
+    });
+  }
+
+  function countLabel(value, format) {
+    if (format === "duration") return fmtDuration(value);
+    var rounded = Math.round(value) || 0;
+    return (format === "signed" && rounded > 0 ? "+" : "") + countFormat.format(rounded) +
+      (format === "percent" ? "%" : "");
+  }
+
+  function countHTML(key, value, format) {
+    if (typeof value !== "number" || !isFinite(value)) return "—";
+    return '<span class="stat-count" data-count-key="' + esc(key) + '" data-count-value="' + value +
+      '" data-count-format="' + esc(format || "integer") + '"><span class="stat-count__value">' +
+      esc(countLabel(value, format)) + '</span></span>';
+  }
+  function valueHTML(value, format) {
+    return typeof value === "number" && isFinite(value) ? esc(countLabel(value, format)) : "—";
+  }
+
+  function counterAnimation(selector) {
+    var countFrame = 0, movingCounts = [];
+    function finishCounts() {
+      if (countFrame) cancelAnimationFrame(countFrame);
+      countFrame = 0;
+      movingCounts.forEach(function (item) {
+        item.overlay.remove();
+        item.node.removeAttribute("data-count-current");
+      });
+      movingCounts = [];
+    }
+
+    function captureCounts() {
+      var previous = new Map();
+      if (!motionPreference.matches) {
+        $$(selector + " [data-count-key]").forEach(function (node) {
+          previous.set(node.dataset.countKey, Number(node.dataset.countCurrent || node.dataset.countValue));
+        });
+      }
+      finishCounts();
+      return previous;
+    }
+
+    function animateCounts(previous) {
+      if (!previous.size || motionPreference.matches) return;
+      $$(selector + " [data-count-key]").forEach(function (node) {
+        var start = previous.get(node.dataset.countKey);
+        var end = Number(node.dataset.countValue), format = node.dataset.countFormat;
+        if (start == null || countLabel(start, format) === countLabel(end, format)) return;
+        var overlay = document.createElement("span");
+        overlay.className = "stat-count__frame";
+        overlay.setAttribute("aria-hidden", "true");
+        overlay.textContent = countLabel(start, format);
+        node.dataset.countCurrent = String(start);
+        node.appendChild(overlay);
+        movingCounts.push({ node: node, overlay: overlay, start: start, end: end, format: format });
+      });
+      if (!movingCounts.length) return;
+      var started = performance.now();
+      function tick(now) {
+        var progress = Math.max(0, Math.min(1, (now - started) / 420));
+        if (progress >= 1 || motionPreference.matches) { finishCounts(); return; }
+        var eased = 1 - Math.pow(1 - progress, 3);
+        movingCounts.forEach(function (item) {
+          var value = item.start + (item.end - item.start) * eased;
+          item.node.dataset.countCurrent = String(value);
+          var nextLabel = countLabel(value, item.format);
+          if (item.overlay.textContent !== nextLabel) item.overlay.textContent = nextLabel;
+        });
+        countFrame = requestAnimationFrame(tick);
+      }
+      countFrame = requestAnimationFrame(tick);
+    }
+    return { capture: captureCounts, animate: animateCounts, finish: finishCounts, active: function () { return movingCounts.length > 0; } };
+  }
 
   /* ============================================================
      1. Static content from data.js
@@ -98,7 +255,7 @@
   /* ============================================================
      3. Hero — embers + pointer parallax
      ============================================================ */
-  if (!reduceMotion) {
+  if (!motionPreference.matches) {
     var embers = $("#embers");
     var html = "";
     for (var i = 0; i < 16; i++) {
@@ -116,7 +273,7 @@
 
     var scene = $("#heroScene"), hero = $(".hero"), frame = null;
     hero.addEventListener("pointermove", function (e) {
-      if (e.pointerType === "touch") return;
+      if (e.pointerType === "touch" || motionPreference.matches) return;
       var box = hero.getBoundingClientRect();
       var x = ((e.clientX - box.left) / box.width - 0.5) * 2;
       var y = ((e.clientY - box.top) / box.height - 0.5) * 2;
@@ -134,75 +291,181 @@
   }
 
   /* ============================================================
-     4. City gallery
+     4. Castle cinema — both exposures share the same physical screen.
      ============================================================ */
-  (function gallery() {
+  (function cinemaGallery() {
+    var cinema = $("#cities");
+    var screen = cinema && $(".cinema__screen", cinema);
     var cities = CLAN.cities;
-    var index = 0;
-    var image = $("#cityImage"), name = $("#cityName"), story = $("#cityStory");
-    var idxEl = $("#cityIndex"), count = $("#cityCount"), thumbs = $("#cityThumbs");
+    if (!screen || !cities.length) return;
 
-    var pad = function (n) { return String(n + 1).padStart(2, "0"); };
-    var full = function (n) { return "assets/img/cities/city-" + pad(n) + ".webp"; };
+    var slide = $(".cinema__slide", screen);
+    var house = $(".cinema__house", cinema);
+    var picker = $(".cinema__picker", cinema);
+    var drawer = $("#cityDrawer", cinema);
+    var reels = $(".cinema__reels", drawer);
+    var front = $("#cityFront", cinema);
+    var announcement = $("#cityAnnouncement", cinema);
+    var current = Math.min(1, cities.length - 1), wanted = current;
+    var frames = new Map(), busy = false, fade = null;
+    var touch = null, wasSwipe = false;
 
-    thumbs.innerHTML = cities.map(function (city, n) {
-      return '<button role="tab" aria-current="' + (n === 0) + '" data-city="' + n + '" ' +
-             'aria-label="' + esc(city[0]) + '">' +
-             '<img src="assets/img/cities/thumb-' + pad(n) + '.webp" width="480" height="270" loading="lazy" alt=""></button>';
-    }).join("");
-
-    function show(n) {
-      index = (n + cities.length) % cities.length;
-      image.src = full(index);
-      image.alt = "Age of Empires II city built by GG Clan: " + cities[index][0];
-      name.textContent = cities[index][0];
-      story.textContent = cities[index][1];
-      idxEl.textContent = pad(index) + " /";
-      count.textContent = pad(index) + " — " + pad(cities.length - 1);
-      $$("button", thumbs).forEach(function (b) {
-        b.setAttribute("aria-current", String(Number(b.dataset.city) === index));
-      });
+    function number(index) { return String(index + 1).padStart(2, "0"); }
+    function cityURL(index) { return "assets/img/cities/city-" + number(index) + ".webp"; }
+    function alt(index) { return cities[index][0] + ", an Age of Empires II city built by GG Clan"; }
+    function imageFor(index) {
+      if (!frames.has(index)) {
+        var image = new Image();
+        image.alt = alt(index);
+        image.draggable = false;
+        image.src = cityURL(index);
+        frames.set(index, image.decode().then(function () { return image; }).catch(function (error) {
+          frames.delete(index);
+          throw error;
+        }));
+      }
+      return frames.get(index);
     }
 
-    $("#cityPrev").addEventListener("click", function () { show(index - 1); });
-    $("#cityNext").addEventListener("click", function () { show(index + 1); });
-    thumbs.addEventListener("click", function (e) {
-      var b = e.target.closest("[data-city]");
-      if (b) show(Number(b.dataset.city));
-    });
+    var air = $(".cinema__air", house);
+    for (var i = 0; i < 22; i++) {
+      var mote = document.createElement("i");
+      var duration = 17 + (i * 7 % 13);
+      mote.className = "cinema__mote";
+      mote.style.setProperty("--x", (12 + i * 37 % 76) + "%");
+      mote.style.setProperty("--y", (15 + i * 23 % 75) + "%");
+      mote.style.setProperty("--size", (i % 4 === 0 ? 1.6 : 1.1) + "px");
+      mote.style.setProperty("--strength", ((0.08 + (i % 4) * 0.027) * (i < 16 ? 1 : 0.78)).toFixed(3));
+      mote.style.setProperty("--time", duration + "s");
+      mote.style.setProperty("--phase", -(i * 5.7 % duration) + "s");
+      mote.style.setProperty("--dx", (8 + i * 9 % 17) + "px");
+      mote.style.setProperty("--dy", -(10 + i * 7 % 16) + "px");
+      air.appendChild(mote);
+    }
+    if ("IntersectionObserver" in window) {
+      new IntersectionObserver(function (entries) {
+        cinema.classList.toggle("cinema__offscreen", !entries[0].isIntersecting);
+      }).observe(cinema);
+    }
 
-    /* lightbox */
-    $("#cityOpen").addEventListener("click", function () {
-      var box = document.createElement("div");
-      box.className = "lightbox";
-      box.setAttribute("role", "dialog");
-      box.setAttribute("aria-modal", "true");
-      box.setAttribute("aria-label", cities[index][0]);
-      box.innerHTML =
-        '<button class="lightbox__close">Close ×</button>' +
-        "<div><img src=" + JSON.stringify(full(index)) + ' alt="">' +
-        '<p class="lightbox__cap">' + esc(cities[index][0]) + "</p></div>";
-      document.body.appendChild(box);
-      document.body.style.overflow = "hidden";
+    reels.innerHTML = cities.map(function (city, index) {
+      return '<button type="button" class="cinema__reel" data-city="' + index + '">' +
+        '<img src="assets/img/cities/thumb-' + number(index) + '.webp" loading="lazy" alt="">' +
+        '<span>' + esc(city[0]) + '</span></button>';
+    }).join("");
+    var choices = $$("[data-city]", reels);
 
-      var close = function () {
-        box.remove();
-        document.body.style.overflow = "";
-        document.removeEventListener("keydown", onKey);
-      };
-      var onKey = function (e) {
-        if (e.key === "Escape") close();
-        if (e.key === "ArrowRight") { show(index + 1); close(); }
-        if (e.key === "ArrowLeft") { show(index - 1); close(); }
-      };
-      box.addEventListener("click", function (e) {
-        if (e.target === box || e.target.closest(".lightbox__close")) close();
+    function caption(index) {
+      var name = cities[index][0];
+      $("#cityName", cinema).textContent = name;
+      $("#cityCount", cinema).textContent = number(index) + " / " + cities.length;
+      announcement.textContent = name + ", city " + (index + 1) + " of " + cities.length;
+      choices.forEach(function (choice, n) { choice.setAttribute("aria-current", String(n === index)); });
+      // Sampling at asset preparation also gives direct file previews the same light.
+      house.style.setProperty("--spill", cities[index][2] || "145,137,120");
+    }
+
+    // Keep the previous frame fully lit until its replacement has decoded.
+    // Rapid taps coalesce to the newest request, including while a dissolve runs.
+    function project() {
+      if (busy || wanted === current) return;
+      busy = true;
+      var target = wanted;
+      imageFor(target).then(function (incoming) {
+        if (target !== wanted) return;
+        slide.appendChild(incoming);
+        current = target;
+        caption(current);
+        if (motionPreference.matches || !incoming.animate) {
+          slide.replaceChildren(incoming);
+          return;
+        }
+        fade = incoming.animate([{ opacity: 0 }, { opacity: 1 }], {
+          duration: 900, easing: "cubic-bezier(.36,0,.25,1)"
+        });
+        return fade.finished.then(function () { slide.replaceChildren(incoming); });
+      }).catch(function () {
+        if (wanted === target) {
+          wanted = current;
+          announcement.textContent = "This city could not be projected. Choose another city.";
+        }
+      }).finally(function () {
+        fade = null;
+        busy = false;
+        project();
       });
-      document.addEventListener("keydown", onKey);
-      $(".lightbox__close", box).focus();
+    }
+    function select(index) {
+      wanted = (index + cities.length) % cities.length;
+      project();
+    }
+    motionPreference.addEventListener("change", function (event) {
+      if (event.matches && fade) fade.finish();
     });
 
-    show(0);
+    function toggleFront() {
+      var closer = cinema.classList.toggle("cinema__front");
+      front.setAttribute("aria-pressed", String(closer));
+      front.title = closer ? "Return to your seat (F)" : "Front row (F)";
+      screen.title = closer ? "Return to your seat" : "Take the front row";
+      screen.setAttribute("aria-label", screen.title);
+      $("path", front).setAttribute("d", closer ? "M3 8h5V3m8 0v5h5m0 8h-5v5m-8 0v-5H3" : "M3 9V3h6m6 0h6v6m0 6v6h-6m-6 0H3v-6");
+    }
+    $("#cityPrev", cinema).addEventListener("click", function () { select(wanted - 1); });
+    $("#cityNext", cinema).addEventListener("click", function () { select(wanted + 1); });
+    front.addEventListener("click", toggleFront);
+    picker.addEventListener("click", function () { drawer.showModal(); choices[current].focus(); });
+    $(".cinema__close", drawer).addEventListener("click", function () { drawer.close(); });
+    drawer.addEventListener("click", function (event) {
+      if (event.target !== drawer) return;
+      var rect = drawer.getBoundingClientRect();
+      if (event.clientX < rect.left || event.clientX > rect.right ||
+          event.clientY < rect.top || event.clientY > rect.bottom) drawer.close();
+    });
+    reels.addEventListener("click", function (event) {
+      var choice = event.target.closest("[data-city]");
+      if (choice) { drawer.close(); select(Number(choice.dataset.city)); }
+    });
+
+    // Page shortcuts belong to the cinema only while it is being viewed.
+    document.addEventListener("keydown", function (event) {
+      if (drawer.open || event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey) return;
+      var key = event.key.toLowerCase();
+      if (["arrowright", "arrowleft", "f", "escape"].indexOf(key) === -1) return;
+      var focus = document.activeElement;
+      if (!cinema.contains(focus) && focus !== document.body && !focus.matches('a[href="#cities"]')) return;
+      var rect = cinema.getBoundingClientRect();
+      if (rect.top > innerHeight / 2 || rect.bottom < innerHeight / 2) return;
+      if (key === "arrowright" || key === "arrowleft") {
+        event.preventDefault();
+        select(wanted + (key === "arrowright" ? 1 : -1));
+      } else if ((key === "f" && !event.repeat) || (key === "escape" && cinema.classList.contains("cinema__front"))) {
+        toggleFront();
+      }
+    });
+
+    screen.addEventListener("pointerdown", function (event) {
+      if (!event.isPrimary) return;
+      touch = { x: event.clientX, y: event.clientY, id: event.pointerId };
+      wasSwipe = false;
+      screen.setPointerCapture(event.pointerId);
+    });
+    screen.addEventListener("pointercancel", function () { touch = null; });
+    screen.addEventListener("pointerup", function (event) {
+      if (!touch || touch.id !== event.pointerId) return;
+      var dx = event.clientX - touch.x, dy = event.clientY - touch.y;
+      touch = null;
+      wasSwipe = Math.abs(dx) > 35 && Math.abs(dx) > Math.abs(dy) * 1.3;
+      if (wasSwipe) select(wanted + (dx < 0 ? 1 : -1));
+    });
+    screen.addEventListener("click", function (event) {
+      if (wasSwipe && event.detail) { wasSwipe = false; return; }
+      toggleFront();
+    });
+    var first = $("img", slide);
+    first.src = cityURL(current);
+    first.alt = alt(current);
+    caption(current);
   })();
 
   /* ============================================================
@@ -210,56 +473,40 @@
      ============================================================ */
   var state = {
     roster: [],
-    period: "30",
+    rosterPeriod: "30",
     asOf: Date.now(),
     rosterSort: "rating",
     rosterSortDirection: "desc",
-    chartSort: { civ: "volume", map: "volume" },
-    showPairs: false,
-    duoSort: "volume",
-    duoPairs: [],
+    clanView: { ladder: CLAN.ladders[0].id, period: "30", tab: "duos", sort: "volume", showAll: false, page: 0 },
     pair: null,
     feedError: false,
     feed: [],            // one row per clan-member appearance
     games: [],           // one row per match, with the members in it
     periodCache: new Map(),    // date windows prepared from the complete feed
-    ladder: CLAN.ladders[0].id,
+    rosterLadder: CLAN.ladders[0].id,
     openPlayer: null,
-    chartRange: null,          // null = let the chart pick its own window
-    dossierLadder: null,       // mode tab inside the open dossier
+    profileLadder: null,
+    profilePeriod: null,
     detailCache: new Map(),
     detailFailed: new Set(),   // profiles whose detail request came back empty
-    fullHistory: new Map(),    // profileId -> every match the feed will give up
-    fullLoading: new Set(),
-    fullProgress: new Map(),   // profileId -> games fetched so far
     profileCards: new Map(),   // profileId -> { avatar, platform, games, drops }
     countryTotals: new Map(),  // "rm_team|cz" -> 875
-    gamesById: new Map(),      // "match id" -> the game row, for the feed cards
     openMatch: null,
-    ledgerFilter: "rm_team",   // matches the roster's initial Team Ranked mode
     feedLoading: false,
     feedReady: false,
     feedHistoryComplete: true
   };
 
-  /* "#19 of 875 in CZ" reads better than "#19". */
-  function countryStanding(country, ladder, rankCountry) {
-    if (!country || !rankCountry) return null;
-    var total = state.countryTotals.get(ladder + "|" + country.toLowerCase());
-    return "#" + rankCountry + (total ? " of " + total.toLocaleString("en-US") : "") +
-           " in " + country.toUpperCase();
-  }
-
-  var LADDER_LABEL = {};
+  var LADDER_LABEL = Object.create(null);
   CLAN.ladders.forEach(function (l) { LADDER_LABEL[l.id] = l.label; });
+  var otherModeLabels = { qp_rm_team: "Team Quick Play", qp_rm_1v1: "1v1 Quick Play", ew_1v1: "1v1 Empire Wars" };
 
-  /* A panel label and its icon. The icon does the work the trailing
-     explainers used to do — "The warband · who actually queues together"
-     is a heading apologising for itself. */
-  function label(icon, text) {
-    return '<p class="data-label data-label--ico">' +
-      '<svg class="ico" aria-hidden="true"><use href="#i-' + icon + '"></use></svg>' +
-      esc(text) + "</p>";
+  function registerModes(boards) {
+    Object.keys(boards).forEach(function (id) {
+      if (!LADDER_LABEL[id] && (boards[id].games > 0 || boards[id].rating != null)) {
+        LADDER_LABEL[id] = otherModeLabels[id] || boards[id].label || ladderName(id);
+      }
+    });
   }
 
   /* Snapshot dates reflect the daily server refresh. */
@@ -277,21 +524,27 @@
 
   /* ---------- ladder switch ---------- */
   var switchEl = $("#ladderSwitch");
-  switchEl.innerHTML = CLAN.ladders.map(function (l) {
-    return '<button type="button" data-ladder="' + l.id + '" aria-pressed="' + (l.id === state.ladder) + '">' +
-           esc(l.label) + "</button>";
-  }).join("");
+  function modeButtons(attr, selected) {
+    return Object.keys(LADDER_LABEL).map(function (id) {
+      return '<button type="button" ' + attr + '="' + esc(id) + '" aria-pressed="' +
+        (id === selected) + '">' + esc(LADDER_LABEL[id]) + '</button>';
+    }).join("");
+  }
+  function syncModes(group, attr, selected) {
+    if (group.children.length !== Object.keys(LADDER_LABEL).length) {
+      var focus = document.activeElement;
+      var value = focus && group.contains(focus) && focus.getAttribute(attr);
+      group.innerHTML = modeButtons(attr, selected);
+      if (value) group.querySelector("[" + attr + '="' + value + '"]').focus({ preventScroll: true });
+    } else Array.from(group.children).forEach(function (button) {
+      button.setAttribute("aria-pressed", String(button.getAttribute(attr) === selected));
+    });
+  }
+  syncModes(switchEl, "data-ladder", state.rosterLadder);
   switchEl.addEventListener("click", function (e) {
     var b = e.target.closest("[data-ladder]");
     if (!b) return;
-    state.ladder = b.dataset.ladder;
-    state.openPlayer = null;
-    state.chartRange = null;
-    $$("button", switchEl).forEach(function (x) {
-      x.setAttribute("aria-pressed", String(x.dataset.ladder === state.ladder));
-    });
-    renderRoster();
-    loadCountryTotals();
+    setRosterScope(b.dataset.ladder, state.rosterPeriod);
   });
 
   /* All date windows are prepared when the saved history arrives. Selecting
@@ -302,70 +555,73 @@
   function shortDate(date) {
     return new Date(date).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
   }
-  function periodStart() { return state.period === "all" ? 0 : state.asOf - Number(state.period) * 86400000; }
+  function periodStart(period) { return period === "all" ? 0 : state.asOf - Number(period) * 86400000; }
   function inPeriod(row, start) {
-    var date = new Date(row.date).getTime();
+    var date = Date.parse(row.date);
     return isFinite(date) && date >= start && date <= state.asOf;
   }
   function preparePeriods() {
     state.periodCache.clear();
     PERIODS.forEach(function (period) {
-      var start = period.key === "all" ? 0 : state.asOf - Number(period.key) * 86400000;
+      var start = periodStart(period.key);
       state.periodCache.set(period.key, {
         rows: state.feed.filter(function (row) { return inPeriod(row, start); }),
         games: state.games.filter(function (game) { return inPeriod(game, start); })
       });
     });
   }
-  function periodData() {
-    return state.periodCache.get(state.period) || { rows: [], games: [] };
+  function periodData(period) {
+    return state.periodCache.get(period || state.rosterPeriod) || { rows: [], games: [] };
   }
-  function renderPeriod() {
-    $$("[data-period-controls]").forEach(function (group) {
-      if (!group.children.length) group.innerHTML = PERIODS.map(function (p) {
-        return '<button type="button" data-period="' + p.key + '" aria-pressed="' + (p.key === state.period) + '"' + (p.key === "all" ? ' aria-label="All recorded history"' : '') + '>' + p.label + '</button>';
-      }).join("");
-    });
-    $$("[data-period]").forEach(function (button) { button.setAttribute("aria-pressed", String(button.dataset.period === state.period)); });
-    var start = periodStart();
-    if (!start && state.games.length) start = Math.min.apply(null, state.games.map(function (g) { return new Date(g.date).getTime(); }));
-    var range = start ? shortDate(start) + " – " + shortDate(state.asOf) : "All recorded history";
-    var status = state.feedError ? "Match history unavailable" : !state.feedReady ? "Loading saved history…" : !state.feedHistoryComplete ? "History incomplete" : "";
-    var coverage = range + (status ? " · " + status : "");
-    $("#ledgerCoverage").textContent = coverage;
-    $("#rosterCoverage").textContent = coverage;
-    $$("[data-period-controls]").forEach(function (group) { group.setAttribute("aria-busy", String(state.feedLoading)); });
+  function renderPeriod(section) {
+    var group = $("#" + section + " [data-period-controls]");
+    var period = section === "roster" ? state.rosterPeriod : ledgerView().period;
+    var earliest = state.games.length ? state.games[state.games.length - 1].date : null;
+    var status = state.feedError ? "Match history unavailable" : !state.feedReady ? "Loading matches…" : !state.feedHistoryComplete ? "History incomplete" : "";
+    if (!group.children.length) group.innerHTML = PERIODS.map(function (p) {
+      return '<button type="button" data-period="' + p.key + '" aria-pressed="' + (p.key === period) + '">' + p.label + '</button>';
+    }).join("");
+    Array.from(group.children).forEach(function (button) { button.setAttribute("aria-pressed", String(button.dataset.period === period)); });
+    group.setAttribute("aria-busy", String(state.feedLoading));
+    var start = periodStart(period) || earliest;
+    var dates = start ? shortDate(start) + " – " + shortDate(state.asOf) : "";
+    $("#" + section + "Coverage").textContent = [dates, status].filter(Boolean).join(" · ");
   }
   $$("[data-period-controls]").forEach(function (group) {
     group.addEventListener("click", function (e) {
       var button = e.target.closest("[data-period]");
       if (!button) return;
-      var controlTop = group.getBoundingClientRect().top;
-      state.period = button.dataset.period;
-      state.pair = null;
-      state.openMatch = null;
-      renderPeriod(); renderRoster(); renderLedger();
-      // Changing the shared period can resize the roster above the clan
-      // controls. Keep the control the visitor used in the same position.
-      requestAnimationFrame(function () {
-        var controlShift = group.getBoundingClientRect().top - controlTop;
-        if (controlShift) window.scrollBy({ top: controlShift, behavior: "instant" });
-      });
-      var again = group.querySelector('[data-period="' + state.period + '"]');
-      if (again && e.detail === 0) again.focus();
+      if (group.dataset.periodControls === "ledger") setLedgerScope(ledgerView().ladder, button.dataset.period);
+      else setRosterScope(state.rosterLadder, button.dataset.period);
     });
   });
-  $$("[data-chart-sort]").forEach(function (select) {
-    select.addEventListener("change", function () { state.chartSort[select.dataset.chartSort] = select.value; renderLedger(); });
-  });
-  renderPeriod();
 
-  function activityFor(player) {
-    var rows = periodData().rows.filter(function (m) { return m.profileId === player.profileId && m.ladder === state.ladder; });
-    var rated = rows.filter(function (m) { return m.ratingDiff != null && isFinite(m.ratingDiff) && m.won != null && !m.vsAI; });
-    var stats = player.ladders[state.ladder];
-    return { rows: rows, change: rated.length ? rated.reduce(function (sum, m) { return sum + Number(m.ratingDiff); }, 0) : null,
-      last: stats && stats.lastMatch || (rows[0] && rows[0].date), rated: rated };
+  function setRosterScope(ladder, period) {
+    if (ladder === state.rosterLadder && period === state.rosterPeriod) return;
+    var modeChanged = ladder !== state.rosterLadder;
+    state.rosterLadder = ladder;
+    state.rosterPeriod = period;
+    if (modeChanged) syncModes(switchEl, "data-ladder", ladder);
+    renderRoster(true);
+    if (modeChanged) loadCountryTotals(ladder);
+  }
+  renderPeriod("roster");
+  renderPeriod("ledger");
+
+  function activityFor(player, ladder, period) {
+    ladder = ladder || state.rosterLadder;
+    var rows = periodData(period).rows.filter(function (m) { return m.profileId === player.profileId && m.ladder === ladder; });
+    var decided = rows.filter(function (m) { return !m.vsAI && m.won != null; });
+    var wins = decided.filter(function (m) { return m.won; }).length;
+    var rated = decided.filter(function (m) { return m.ratingDiff != null && isFinite(m.ratingDiff); });
+    var stats = player.ladders[ladder];
+    return {
+      rows: rows, decided: decided, rated: rated, wins: wins, losses: decided.length - wins,
+      winRate: decided.length ? wins / decided.length * 100 : null,
+      form: decided.slice(0, 5).map(function (m) { return m.won ? "W" : "L"; }),
+      change: rated.length ? rated.reduce(function (sum, m) { return sum + Number(m.ratingDiff); }, 0) : null,
+      last: stats && stats.lastMatch || (rows[0] && rows[0].date)
+    };
   }
   function sparkline(rows) {
     var points = rows.filter(function (m) { return m.rating != null && isFinite(m.rating); }).slice(0, 20).reverse();
@@ -383,18 +639,20 @@
   var ROSTER_SORTS = {
     name: { label: "Player", direction: "asc" },
     country: { label: "Country", direction: "asc" },
-    rating: { label: "Elo", direction: "desc" },
-    change: { label: "Change", direction: "desc" },
-    winRate: { label: "Win rate", direction: "desc" }
+    rating: { label: "Current Elo", direction: "desc" },
+    change: { label: "Elo change", direction: "desc" },
+    matches: { label: "Matches", direction: "desc" },
+    winRate: { label: "Period win rate", direction: "desc" }
   };
 
-  function rosterSortValue(player) {
-    var stats = player.ladders[state.ladder] || {};
+  function rosterSortValue(player, activity) {
+    var stats = player.ladders[state.rosterLadder] || {};
     if (state.rosterSort === "name") return player.name;
     if (state.rosterSort === "country") return player.country ? player.country.toUpperCase() : null;
     if (state.rosterSort === "rating") return stats.rating;
-    if (state.rosterSort === "winRate") return stats.rating == null ? null : stats.winRate;
-    return activityFor(player).change;
+    if (state.rosterSort === "matches") return activity.rows.length;
+    if (state.rosterSort === "winRate") return activity.winRate;
+    return activity.change;
   }
 
   function rosterSortOrder(key, direction) {
@@ -402,22 +660,22 @@
     return direction === "desc" ? "highest first" : "lowest first";
   }
 
-  function rosterSortHeading(key) {
+  function rosterSortHeading(key, label) {
     var sort = ROSTER_SORTS[key];
     var active = state.rosterSort === key;
     var next = active ? (state.rosterSortDirection === "desc" ? "asc" : "desc") : sort.direction;
     var description = (active ? sort.label + ", " + rosterSortOrder(key, state.rosterSortDirection) + ". " : "") +
       "Sort by " + sort.label + ", " + rosterSortOrder(key, next);
-    return '<button type="button" class="roster__sort" data-roster-sort="' + key + '" aria-pressed="' + active +
+    return '<button type="button" class="lineup-sort" data-roster-sort="' + key + '" aria-pressed="' + active +
       '" aria-label="' + esc(description) + '" title="' + esc(description) + '">' +
-      esc(sort.label) + '<span class="roster__sort-arrow" aria-hidden="true">' +
-      (active ? (state.rosterSortDirection === "desc" ? "↓" : "↑") : "↕") + '</span></button>';
+      esc(label || sort.label) + (active ? '<span class="lineup-sort__arrow" aria-hidden="true">' +
+        (state.rosterSortDirection === "desc" ? "↓" : "↑") + '</span>' : '') + '</button>';
   }
 
-  function sortedRoster() {
-    var ladder = state.ladder;
+  function sortedRoster(activityById) {
+    var ladder = state.rosterLadder;
     return state.roster.slice().sort(function (a, b) {
-      var av = rosterSortValue(a), bv = rosterSortValue(b);
+      var av = rosterSortValue(a, activityById.get(a.profileId)), bv = rosterSortValue(b, activityById.get(b.profileId));
       // Missing values stay at the bottom in either direction; ties keep a stable rating/name order.
       var aMissing = av == null || (typeof av === "number" && !isFinite(av));
       var bMissing = bv == null || (typeof bv === "number" && !isFinite(bv));
@@ -437,32 +695,10 @@
 
   function flag(country) {
     if (!country) return "";
-    return '<img src="https://flagcdn.com/40x30/' + esc(country.toLowerCase()) + '.png" ' +
+    var code = country.toLowerCase();
+    var url = /^(sk|cz|mx)$/.test(code) ? "assets/img/flag-" + code + ".png" : "https://flagcdn.com/40x30/" + encodeURIComponent(code) + ".png";
+    return '<img src="' + esc(url) + '" ' +
            'width="20" height="15" loading="lazy" alt="">';
-  }
-
-  function formStrip(results) {
-    var cells = results.length ? results : ["n", "n", "n", "n", "n"];
-    return '<div class="form" aria-label="Recent form: ' +
-           (results.length ? results.join(", ") : "no recent games") + '">' +
-           cells.map(function (r) {
-             var cls = r === "W" ? "w" : r === "L" ? "l" : "n";
-             return '<span class="' + cls + '" aria-hidden="true">' + (cls === "n" ? "·" : r) + "</span>";
-           }).join("") + "</div>";
-  }
-
-  /* Recent results for one player, taken from the clan-wide feed. */
-  function formFor(profileId, ladder) {
-    ladder = ladder || state.ladder;
-    return periodData().rows
-      .filter(function (m) { return m.profileId === profileId && m.ladder === ladder && !m.vsAI && m.won != null; })
-      .slice(0, 5)
-      .map(function (m) { return m.won ? "W" : "L"; });
-  }
-
-  function streakLabel(streak) {
-    if (!streak) return null;
-    return streak > 0 ? streak + " win streak" : Math.abs(streak) + " loss streak";
   }
 
   /* 38 -> "38m", 74 -> "1h 14m". */
@@ -491,118 +727,241 @@
     return LADDER_LABEL[id] || String(id).replace(/_/g, " ");
   }
 
-  function timeAgo(iso) {
-    if (!iso) return "—";
-    var diff = (Date.now() - new Date(iso)) / 1000;
-    if (diff < 3600) return Math.max(1, Math.round(diff / 60)) + "m ago";
-    if (diff < 86400) return Math.round(diff / 3600) + "h ago";
-    var days = Math.round(diff / 86400);
-    if (days < 31) return days + "d ago";
-    return Math.round(days / 30) + "mo ago";
-  }
-
   /* ---------- roster table ---------- */
 
-  /* Steam avatar where there is one, the player's initial where there
-     isn't. `size` picks the roster thumbnail or the dossier portrait. */
+  /* Saved portraits can expire. Keep initials under each image so an absent
+     portrait and a failed request both preserve the player's identity. */
+  var failedAvatars = new Set();
   function avatarHTML(player, size) {
     var card = state.profileCards.get(player.profileId);
     var url = card && card.avatar;
-    var cls = "avatar" + (size === "lg" ? " avatar--lg" : "");
+    var cls = "avatar avatar--portrait avatar--blank" + (size === "lg" ? " avatar--lg" : "");
     var px = size === "lg" ? 76 : 34;
+    var words = String(player.name || "").replace(/^gg[_ -]+/i, "").split(/[\s_.!-]+/).filter(Boolean);
+    var first = Array.from(words[0] || "?");
+    var initials = words.length > 1 ? first[0] + Array.from(words[words.length - 1])[0] : first.slice(0, 2).join("");
+    var image = url && !failedAvatars.has(url) ? '<img data-avatar src="' + esc(url) + '" width="' + px + '" height="' + px +
+      '" loading="lazy" alt="">' : "";
+    return '<span class="' + cls + '" aria-hidden="true">' + esc(initials.toUpperCase()) + image + '</span>';
+  }
+  document.addEventListener("error", function (event) {
+    var image = event.target;
+    if (image.tagName !== "IMG" || !image.hasAttribute("data-avatar")) return;
+    failedAvatars.add(image.getAttribute("src"));
+    image.remove();
+  }, true);
 
-    if (url) {
-      return '<span class="' + cls + '"><img src="' + esc(url) + '" width="' + px + '" height="' + px +
-             '" loading="lazy" alt=""></span>';
-    }
-    var first = Array.from(String(player.name || "?"))[0] || "?";
-    return '<span class="' + cls + ' avatar--blank" aria-hidden="true">' +
-           esc(first.toUpperCase()) + "</span>";
+  function lineupHeading(key, label, cls) {
+    var active = state.rosterSort === key || (key === "name" && state.rosterSort === "country");
+    var direction = state.rosterSortDirection === "desc" ? "descending" : "ascending";
+    var content = rosterSortHeading(key, label);
+    if (key === "name") content += '<span class="lineup-country-sort"><span aria-hidden="true"> / </span>' + rosterSortHeading("country") + '</span>';
+    return '<th scope="col" class="' + cls + '"' + (active ? ' aria-sort="' + direction + '"' : '') + '>' + content + '</th>';
   }
 
-  function renderRoster() {
-    var table = $("#rosterTable");
-    if (state.roster.length) statusOK($("#rosterStatus"), sourceLabel());
-    var players = sortedRoster();
-    var ladder = state.ladder;
+  function lineupForm(results) {
+    if (!results.length) return '<span class="lineup-null">—</span>';
+    var label = "Last " + results.length + ", newest first: " + results.join(", ");
+    return '<span class="lineup-form" role="img" aria-label="' + label + '" title="' + label + '">' +
+      results.map(function (r) { return '<span aria-hidden="true" class="' + (r === "W" ? "win" : "loss") + '">' + r + '</span>'; }).join("") + '</span>';
+  }
 
-    if (!players.length) {
-      table.innerHTML = '<div class="state">No members found on this ladder.</div>';
+  function lineupRow(player, activity) {
+    var stats = player.ladders[state.rosterLadder] || {};
+    var open = state.openPlayer === player.profileId;
+    var id = esc(player.profileId);
+    var country = player.country ? '<span class="lineup-country">' + esc(player.country.toUpperCase()) + '</span>' : "";
+    var last = activity.last ? "Last played " + shortDate(activity.last) : "";
+    var change = valueHTML(activity.change, "signed");
+    var matches = valueHTML(state.feedReady ? activity.rows.length : null);
+    var form = lineupForm(activity.form);
+    var record = activity.winRate != null ? '<span class="lineup-record">' + valueHTML(activity.wins) + '<i>–</i><wbr>' +
+      valueHTML(activity.losses) + '</span>' : '<span class="lineup-null">—</span>';
+    var shortRate = activity.winRate != null ? '<small class="lineup-rate">' + valueHTML(activity.winRate, "percent") + '</small>' : "";
+    return '<tr class="lineup-row" data-lineup-row="' + id + '">' +
+        '<th scope="row" class="lineup-person"><button type="button" class="lineup-disclosure" data-player="' + id + '" aria-expanded="' + open + '"' +
+          (open ? ' aria-controls="profile-' + id + '"' : "") + ' aria-label="' + esc((open ? "Close " : "Open ") + player.name + " profile") + '">' +
+          avatarHTML(player) + '<span class="lineup-ident"><span class="lineup-name">' + esc(player.name) + country + '</span>' +
+          (last ? '<span class="lineup-last">' + esc(last) + '</span>' : "") +
+          (activity.form.length ? '<span class="lineup-mobile-form">' + form + '</span>' : "") + '</span></button></th>' +
+        '<td class="lineup-elo"><strong>' + valueHTML(stats.rating) + '</strong>' +
+          (activity.change == null ? "" : '<span class="lineup-mobile-change"><span class="sr-only">Recorded Elo change: </span>' + change + '<span aria-hidden="true"> Δ</span></span>') + '</td>' +
+        '<td class="lineup-change" title="Sum of recorded Elo changes in this period">' + change + sparkline(activity.rated) + '</td>' +
+        '<td class="lineup-matches">' + matches + '</td>' +
+        '<td class="lineup-result">' + record + shortRate + (state.feedReady ? '<span class="lineup-mobile-count">' + matches + (activity.rows.length === 1 ? " match" : " matches") + '</span>' : '') + '</td>' +
+        '<td class="lineup-form-cell">' + form + '</td>' +
+        '<td class="lineup-chevron"><svg aria-hidden="true"><use href="#i-chevron"></use></svg></td></tr>';
+  }
+
+  function renderRoster(animate) {
+    renderPeriod("roster");
+    var table = $("#rosterTable");
+    if (!state.roster.length) {
+      $("#rosterCount").textContent = "";
+      table.innerHTML = '<div class="state">No roster members found.</div>';
       return;
     }
-
-    var head =
-      '<div class="roster__labels" role="group" aria-label="Sort lineup">' +
-        '<span class="roster__label-index" aria-hidden="true"></span>' +
-        rosterSortHeading("name") +
-        rosterSortHeading("country") + rosterSortHeading("rating") + rosterSortHeading("change") + rosterSortHeading("winRate") +
-        '<span class="roster__label-form">Form</span>' +
-      "</div>";
-
-    var rows = players.map(function (player, i) {
-      var stats = player.ladders[ladder];
+    statusOK($("#rosterStatus"), sourceLabel());
+    // Reuse each player's period record in the sort, the header count and the row.
+    var activities = new Map();
+    var activeCount = 0;
+    state.roster.forEach(function (player) {
       var activity = activityFor(player);
-      var open = state.openPlayer === player.profileId;
-      var unranked = !stats || stats.rating == null;
-
-      return '<div class="player' + (open ? " player--open" : "") + '">' +
-        '<button class="player__row" data-player="' + player.profileId + '" aria-expanded="' + open + '">' +
-          '<span class="player__idx">' +
-            '<svg class="player__chev" aria-hidden="true"><use href="#i-chevron"></use></svg>' +
-            String(i + 1).padStart(2, "0") +
-          "</span>" +
-          '<span class="player__name-cell">' +
-            avatarHTML(player) +
-            '<span class="player__ident">' +
-              '<span class="player__name">' + esc(player.name) + "</span>" +
-              '<span class="player__last">' + (activity.last ? 'Last played ' + esc(shortDate(activity.last)) : 'No activity in loaded history') + '</span>' +
-            "</span>" +
-          "</span>" +
-          '<span class="player__country">' + flag(player.country) +
-            esc(player.country ? player.country.toUpperCase() : "—") + "</span>" +
-          '<span class="player__stats-cell">' +
-            '<span class="player__stat' + (unranked ? " player__stat--empty" : "") + '">' +
-              (unranked ? "—" : stats.rating) + "<small>Elo</small></span>" +
-            '<span class="player__stat' + (unranked ? " player__stat--empty" : "") + '">' +
-              (activity.change == null ? "—" : (activity.change > 0 ? "+" : "") + activity.change) + "<small>Change</small>" + sparkline(activity.rated) + "</span>" +
-            '<span class="player__stat' + (unranked ? " player__stat--empty" : "") + '">' +
-              (unranked || stats.winRate == null ? "—" : stats.winRate + "%") + "<small>Win rate</small></span>" +
-          "</span>" +
-          '<span class="player__form-cell">' + formStrip(formFor(player.profileId)) + "</span>" +
-        "</button>" +
-        (open ? '<div class="player__detail">' + dossierHTML(player) + "</div>" : "") +
-      "</div>";
-    }).join("");
-
-    table.innerHTML = head + rows;
-
-    if (state.openPlayer) { bindChart(); bindRange(); }
+      activities.set(player.profileId, activity);
+      if (activity.rows.length) activeCount++;
+    });
+    var players = sortedRoster(activities);
+    $("#rosterCount").textContent = players.length + (players.length === 1 ? " member" : " members") +
+      (state.feedReady ? " · " + activeCount + " played this period" : "");
+    var select = $("#rosterSortSelect");
+    if (!select.options.length) {
+      select.innerHTML = Object.keys(ROSTER_SORTS).map(function (key) {
+        return ["desc", "asc"].map(function (direction) {
+          var order = direction === "asc" ? " ↑" : " ↓";
+          var label = key === "winRate" ? "Win rate" : key === "rating" ? "Elo" : ROSTER_SORTS[key].label;
+          return '<option value="' + key + '|' + direction + '" aria-label="' + esc(ROSTER_SORTS[key].label + ", " + rosterSortOrder(key, direction)) + '">' + esc(label + order) + '</option>';
+        }).join("");
+      }).join("");
+      select.parentElement.hidden = false;
+    }
+    select.value = state.rosterSort + "|" + state.rosterSortDirection;
+    var heading = '<tr>' + lineupHeading("name", "Player", "lineup-player-head") + lineupHeading("rating", "Elo", "lineup-elo") +
+      lineupHeading("change", "Elo change", "lineup-change") + lineupHeading("matches", "Matches", "lineup-matches") +
+      lineupHeading("winRate", "W–L", "lineup-result") + '<th scope="col" class="lineup-form-cell">Last 5</th><th scope="col" class="lineup-chevron"><span class="sr-only">Profile</span></th></tr>';
+    var grid = table.querySelector(".lineup-table");
+    if (!grid) {
+      table.innerHTML = '<table class="lineup-table"><caption class="sr-only">Roster. Elo is current. Matches and results cover the selected period. Records count decided games against human players.</caption>' +
+        '<colgroup><col class="lineup-col-person"><col class="lineup-col-elo"><col class="lineup-col-change"><col class="lineup-col-matches"><col class="lineup-col-record"><col class="lineup-col-form"><col class="lineup-col-chevron"></colgroup><thead>' +
+        heading + '</thead>' + players.map(function (p) { return '<tbody class="player">' + lineupRow(p, activities.get(p.profileId)) + '</tbody>'; }).join("") + '</table>';
+      return;
+    }
+    var from = animate ? panelHeight(table) : null;
+    var positions = new Map(), changedRows = new Set();
+    if (animate && !motionPreference.matches && table.animate) {
+      Array.from(grid.tBodies).forEach(function (body) {
+        var row = body.rows[0];
+        positions.set(row, row.getBoundingClientRect().top);
+      });
+      positions.forEach(function (_, row) { cancelPanelAnimation(row); });
+    }
+    var headers = grid.querySelector("thead");
+    if (headers.renderedHeading !== heading) {
+      headers.innerHTML = heading;
+      headers.renderedHeading = heading;
+    }
+    var bodies = new Map(Array.from(grid.tBodies, function (body) {
+      return [Number(body.rows[0].dataset.lineupRow), body];
+    }));
+    players.forEach(function (player, index) {
+      var body = bodies.get(player.profileId) || grid.createTBody();
+      var markup = lineupRow(player, activities.get(player.profileId));
+      if (body.rowMarkup !== markup) {
+        var temp = document.createElement("tbody");
+        temp.innerHTML = markup;
+        var next = temp.rows[0];
+        var current = body.rows[0];
+        if (!current) {
+          body.classList.add("player");
+          body.appendChild(next);
+        } else {
+          changedRows.add(current);
+          // Keep the disclosure, its focus and the loaded portrait in place.
+          [".avatar", ".lineup-ident"].forEach(function (selector) {
+            var oldPart = current.querySelector(selector), newPart = next.querySelector(selector);
+            if (!oldPart.isEqualNode(newPart)) oldPart.replaceWith(newPart);
+          });
+          for (var i = 1; i < current.cells.length; i++) {
+            if (!current.cells[i].isEqualNode(next.cells[i])) current.cells[i].replaceWith(next.cells[i].cloneNode(true));
+          }
+        }
+        body.rowMarkup = markup;
+      }
+      if (grid.tBodies[index] !== body) grid.insertBefore(body, grid.tBodies[index] || null);
+    });
+    if (animate) transitionPanel(table, from, null, false);
+    positions.forEach(function (top, row) {
+      var distance = top - row.getBoundingClientRect().top;
+      if (!changedRows.has(row) && Math.abs(distance) < 1) return;
+      var start = { opacity: .65 }, end = { opacity: 1 };
+      // Move the keyed rows through small reorders. Crossing an open dossier
+      // can span several screens, so keep that update local to each row.
+      if (Math.abs(distance) >= 1 && Math.abs(distance) <= window.innerHeight && state.openPlayer == null) {
+        start.transform = "translateY(" + distance + "px)";
+        end.transform = "translateY(0)";
+      }
+      playPanelAnimation(row, start, end);
+    });
   }
+
+  function sortRoster(key, direction) {
+    state.rosterSort = key;
+    state.rosterSortDirection = direction;
+    renderRoster(true);
+    $("#rosterSortStatus").textContent = "Sorted by " + ROSTER_SORTS[key].label + ", " + rosterSortOrder(key, direction) + ".";
+  }
+
+  $("#rosterSortSelect").addEventListener("change", function (e) {
+    var sort = e.target.value.split("|");
+    sortRoster(sort[0], sort[1]);
+  });
 
   $("#rosterTable").addEventListener("click", function (e) {
     var sort = e.target.closest("[data-roster-sort]");
     if (sort) {
       var key = sort.dataset.rosterSort;
-      state.rosterSortDirection = state.rosterSort === key
-        ? (state.rosterSortDirection === "desc" ? "asc" : "desc") : ROSTER_SORTS[key].direction;
-      state.rosterSort = key;
-      renderRoster();
-      $("#rosterSortStatus").textContent = "Sorted by " + ROSTER_SORTS[key].label + ", " + rosterSortOrder(key, state.rosterSortDirection) + ".";
+      var restoreFocus = e.detail === 0 || document.activeElement === sort;
+      sortRoster(key, state.rosterSort === key
+        ? (state.rosterSortDirection === "desc" ? "asc" : "desc") : ROSTER_SORTS[key].direction);
       // Rendering replaces the headings, so preserve the keyboard user's position.
-      if (e.detail === 0) $('#rosterTable [data-roster-sort="' + key + '"]').focus();
+      if (restoreFocus) $('#rosterTable [data-roster-sort="' + key + '"]').focus({ preventScroll: true });
       return;
     }
-    var row = e.target.closest("[data-player]");
+    var row = e.target.closest("[data-lineup-row]");
     if (!row) return;
-    var id = Number(row.dataset.player);
-    var opening = state.openPlayer !== id;
-
-    state.openPlayer = opening ? id : null;
-    state.chartRange = null;          // every player opens at its own best window
-    state.dossierLadder = null;       // ...and on the ladder the table is sorted by
-    renderRoster();
-    if (opening) loadDossier(id);
+    var id = Number(row.dataset.lineupRow);
+    var previous = state.openPlayer;
+    if (previous != null) {
+      var oldRow = $('#rosterTable [data-lineup-row="' + previous + '"]');
+      if (previous !== id) anchorCollapse(row.querySelector("[data-player]"), oldRow.parentElement.querySelector(".player__detail"));
+      state.openPlayer = null;
+      profileCounters.finish();
+      togglePlayerPanel(oldRow, false);
+    }
+    if (previous !== id) {
+      state.openPlayer = id;
+      state.profileLadder = state.rosterLadder;
+      state.profilePeriod = state.rosterPeriod;
+      togglePlayerPanel(row, true);
+      loadDossier(id);
+      loadCountryTotals(state.profileLadder);
+    }
+    if (e.detail === 0) row.querySelector("[data-player]").focus({ preventScroll: true });
   });
+
+  function togglePlayerPanel(row, opening) {
+    var body = row.parentElement;
+    var player = state.roster.find(function (p) { return p.profileId === Number(row.dataset.lineupRow); });
+    var button = row.querySelector("[data-player]");
+    var panel = body.querySelector(".player__detail");
+    body.classList.toggle("player--open", opening);
+    button.setAttribute("aria-expanded", String(opening));
+    button.setAttribute("aria-label", (opening ? "Close " : "Open ") + player.name + " profile");
+    if (opening) button.setAttribute("aria-controls", "profile-" + player.profileId);
+    else button.removeAttribute("aria-controls");
+    var height = panel ? panelHeight(panel) : 0;
+    if (opening && !panel) {
+      row.insertAdjacentHTML("afterend", '<tr><td class="lineup-detail-cell" colspan="7"><div class="player__detail" id="profile-' +
+        player.profileId + '"></div></td></tr>');
+      panel = body.querySelector(".player__detail");
+    }
+    if (!panel) return;
+    if (opening) {
+      panel.innerHTML = dossierHTML(player);
+      bindChart();
+    }
+    panel.inert = !opening;
+    transitionPanel(panel, height, opening ? null : 0, false, opening ? null : function () { panel.closest("tr").remove(); });
+  }
 
   /* The per-player profile is fetched on expand rather than on load: it
      carries that player's entire rating history, which for a five-thousand
@@ -614,8 +973,11 @@
 
     AOE.fetchPlayerDetail(profileId).then(function (detail) {
       state.detailCache.set(profileId, detail);
+      registerModes(detail.boards || {});
+      syncModes(switchEl, "data-ladder", state.rosterLadder);
+      renderLedgerTabs();
       if (state.openPlayer !== profileId) return;   // a newer pick won
-      paintDossier();
+      paintDossier(true);
     }).catch(function () {
       state.detailFailed.add(profileId);
       if (state.openPlayer !== profileId) return;
@@ -624,467 +986,268 @@
   }
 
   $("#rosterTable").addEventListener("click", function (e) {
-    var tab = e.target.closest("[data-mode]");
-    if (tab) {
-      /* A different mode is a different chart, so let it pick its own
-         window again rather than carrying "1M" onto a mode with no games
-         in the last month. */
-      state.dossierLadder = tab.dataset.mode;
-      state.chartRange = null;
+    if (e.target.closest("[data-profile-retry]")) {
+      loadDossier(state.openPlayer);
       paintDossier();
-      // This mode may never have been asked about; the denominator follows.
-      loadCountryTotals(state.dossierLadder);
-      if (e.detail === 0) {
-        var again = $('#rosterTable [data-mode="' + state.dossierLadder + '"]');
-        if (again) again.focus();
-      }
       return;
     }
-
-    var full = e.target.closest("[data-full]");
-    if (full) loadFullHistory(Number(full.dataset.full));
+    var control = e.target.closest("[data-profile-ladder], [data-profile-period]");
+    if (!control) return;
+    var ladder = control.dataset.profileLadder || state.profileLadder;
+    var period = control.dataset.profilePeriod || state.profilePeriod;
+    if (ladder === state.profileLadder && period === state.profilePeriod) return;
+    var previous = profileCounters.capture();
+    var modeChanged = ladder !== state.profileLadder;
+    state.profileLadder = ladder;
+    state.profilePeriod = period;
+    paintDossier();
+    profileCounters.animate(previous);
+    if (modeChanged) loadCountryTotals(ladder);
   });
 
-  /* Sixteen requests and ~12 MB for a five-thousand-game account, so this
-     runs only when asked. Progress is repainted as each page lands. */
-  function loadFullHistory(profileId) {
-    if (state.fullHistory.has(profileId) || state.fullLoading.has(profileId)) return;
-
-    state.fullLoading.add(profileId);
-    state.fullProgress.set(profileId, 0);
-    paintDossier();
-
-    AOE.fetchFullHistory(profileId, function (seen) {
-      state.fullProgress.set(profileId, seen);
-      if (state.openPlayer === profileId) paintDossier();
-    }).then(function (matches) {
-      state.fullLoading.delete(profileId);
-      state.fullHistory.set(profileId, matches);
-      if (state.openPlayer === profileId) paintDossier();
-    }).catch(function () {
-      /* Keep whatever the walk managed before it fell over; the panels just
-         stay on the 300 they opened with. */
-      state.fullLoading.delete(profileId);
-      if (state.openPlayer === profileId) paintDossier();
-    });
-  }
-
-  /* Repaints the open panel alone. Re-rendering the whole table would throw
-     away the control the reader is standing on — the range buttons live
-     inside the panel they redraw. */
-  function paintDossier() {
+  $("#rosterTable").addEventListener("keydown", function (e) {
+    var control = e.target.closest("[data-profile-ladder], [data-profile-period]");
+    if (!control) return;
+    var buttons = Array.from(control.parentElement.querySelectorAll("button"));
+    var index = buttons.indexOf(control);
+    if (e.key === "ArrowRight") index = (index + 1) % buttons.length;
+    else if (e.key === "ArrowLeft") index = (index - 1 + buttons.length) % buttons.length;
+    else if (e.key === "Home") index = 0;
+    else if (e.key === "End") index = buttons.length - 1;
+    else return;
+    e.preventDefault();
+    buttons[index].focus({ preventScroll: true });
+    buttons[index].click();
+  });
+  /* Controls and identity remain mounted while a selection changes. */
+  function paintDossier(updateIdentity) {
     if (!state.openPlayer) return;
     var host = $("#rosterTable .player--open .player__detail");
     if (!host) return;
-
-    var player = state.roster.filter(function (p) {
-      return p.profileId === state.openPlayer;
-    })[0];
+    var player = state.roster.find(function (p) { return p.profileId === state.openPlayer; });
     if (!player) return;
-
-    host.innerHTML = dossierHTML(player);
+    // History and filter changes can arrive mid-disclosure. Measure the
+    // full profile and its sections so both can continue from the visible frame.
+    var opening = panelAnimations.has(host);
+    var content = $(".pf-mode-content", host);
+    var motion = !motionPreference.matches && host.animate;
+    var height = motion ? panelHeight(host) : null;
+    var sections = ".pf-period-lead, .pf-chart, .pf-side, .pf-tables > section";
+    if (updateIdentity) sections += ", .pf-identity, .pf-scope";
+    var oldParts = motion ? $$(sections, host) : [];
+    var heights = oldParts.map(function (part) { return part.getBoundingClientRect().height; });
+    oldParts.forEach(cancelPanelAnimation);
+    var focus = document.activeElement;
+    var restore = "";
+    if (focus && host.contains(focus) && focus.closest(".pf-chart")) restore = ".chart-wrap";
+    var detail = state.detailCache.get(player.profileId);
+    if (updateIdentity) {
+      if (focus && focus.closest(".pf-links")) restore = '.pf-links a:nth-child(' + (Array.from(focus.parentElement.children).indexOf(focus) + 1) + ')';
+      host.querySelector(".pf-identity").outerHTML = nameplateHTML(player, detail);
+    }
+    syncModes(host.querySelector(".pf-modes"), "data-profile-ladder", state.profileLadder);
+    $$("[data-profile-period]", host).forEach(function (b) {
+      b.setAttribute("aria-pressed", String(b.dataset.profilePeriod === state.profilePeriod));
+    });
+    var previous = profileCounters.active() ? profileCounters.capture() : null;
+    content.innerHTML = profileContent(player, detail);
+    if (motion) {
+      var parts = $$(sections, host);
+      var targetHeight = host.getBoundingClientRect().height;
+      if (parts.length === heights.length) {
+        // Measure both grid columns before animating either. On phones the
+        // same regions stack, so each table and the chart folds independently.
+        var targets = parts.map(function (part) { return part.getBoundingClientRect().height; });
+        parts.forEach(function (part, index) { transitionPanel(part, heights[index], targets[index], true); });
+      }
+      if (opening || parts.length !== heights.length) transitionPanel(host, height, targetHeight, false);
+    }
+    if (previous) profileCounters.animate(previous);
     bindChart();
-    bindRange();
+    var next = restore && (host.querySelector(restore) || host.querySelector(".pf-chart h4"));
+    if (next) next.focus({ preventScroll: true });
   }
-
-  /* ---------- the dossier ----------
-     Roster and Intel used to be two sections asking the same question: you
-     picked a name here, then scrolled to a second list and picked the SAME
-     name again to see its chart. This is both, in one place.
-
-     Layout, top to bottom: a nameplate that is true whatever mode you are
-     looking at, the mode switch, then everything that changes with it. */
 
   function dossierHTML(player) {
     var detail = state.detailCache.get(player.profileId);
-    var failed = state.detailFailed.has(player.profileId);
-
-    return '<div class="dossier">' +
-      nameplateHTML(player, detail) +
-      modesHTML(player, detail) +
-      chartPanelHTML(detail, failed) +
-      numbersHTML(player, detail) +
-      topsHTML(player, detail) +
-    "</div>";
+    return '<div class="player-profile">' + nameplateHTML(player, detail) + profileScopeHTML() +
+      '<div class="pf-mode-content">' + profileContent(player, detail) + '</div></div>';
   }
 
-  /* The label a mode goes by: the site's own name for the ladders it is
-     configured for, then the service's abbreviation, then the bare id. */
-  function modeLabel(ladder, detail) {
-    if (LADDER_LABEL[ladder]) return LADDER_LABEL[ladder];
-    var board = detail && detail.boards ? detail.boards[ladder] : null;
-    if (board && board.label) return board.label;
-    return ladderName(ladder);
+  function profileContent(player, detail) {
+    var activity = activityFor(player, state.profileLadder, state.profilePeriod);
+    var key = "profile-" + player.profileId + "-";
+    return periodLeadHTML(key, activity, player, detail) +
+        '<div class="pf-ladder-grid">' + chartPanelHTML(player.profileId, detail) +
+          '<div class="pf-side">' + periodPerformanceHTML(activity) + '</div></div>' +
+        topsHTML(activity);
   }
 
-  /* Which ladder the open dossier is showing. Defaults to whichever the
-     roster table is sorted by, then follows the mode tabs. */
-  function dossierLadder(detail) {
-    var picked = state.dossierLadder;
-    if (picked && (!detail || modeList(detail).some(function (m) { return m.id === picked; }))) {
-      return picked;
-    }
-    return state.ladder;
-  }
-
-  /* Every mode this player actually has games on, busiest first — including
-     the ones CLAN.ladders doesn't list, because "switch between game modes"
-     should offer the modes they play, not the three the site was configured
-     for. */
-  function modeList(detail) {
-    if (!detail || !detail.boards) return [];
-    return Object.keys(detail.boards)
-      .map(function (id) {
-        var board = detail.boards[id];
-        return {
-          id: id,
-          label: LADDER_LABEL[id] || board.label || String(id).replace(/_/g, " "),
-          rating: board.rating,
-          games: board.games || 0
-        };
-      })
-      .filter(function (mode) { return mode.games > 0; })
-      .sort(function (a, b) { return b.games - a.games; });
-  }
-
-  /* ---------- nameplate ---------- */
-
-  /* This used to be a tall left-hand column holding three pale mono lines.
-     Same facts, one banner: the portrait and name lead, the rest reads as
-     chips along the bottom. */
   function nameplateHTML(player, detail) {
     var note = noteFor(player);
     var card = state.profileCards.get(player.profileId) || {};
-
-    var place = (detail && detail.countryName) ||
-                (player.country ? player.country.toUpperCase() : null);
-
-    var chips = [];
-    var platform = (detail && detail.platform) || card.platform;
-    if (platform) chips.push(["", platform]);
-
-    var allTime = detail && detail.allTimeGames != null ? detail.allTimeGames : card.games;
-    if (allTime) chips.push([allTime.toLocaleString("en-US"), "games"]);
-
-    /* Drops are the honest half of a record. Worth printing, not hiding. */
-    var drops = detail && detail.drops != null ? detail.drops : card.drops;
-    if (drops) chips.push([drops.toLocaleString("en-US"), "dropped"]);
-
-    ((detail && detail.linked) || []).forEach(function (alt) {
-      chips.push([alt.name, "alt account"]);
+    var place = detail && detail.countryName || (player.country || "").toUpperCase();
+    var platform = detail && detail.platform || card.platform;
+    var facts = [];
+    if (place) facts.push('<span>' + (player.country ? flag(player.country) : "") + esc(place) + '</span>');
+    if (platform) facts.push('<span>' + esc(platform) + '</span>');
+    var links = (CLAN.profileLinks || []).map(function (link) {
+      return '<a href="' + esc(link.url.replace("{id}", player.profileId)) +
+        '" target="_blank" rel="noopener noreferrer">' + esc(link.label) + ' <span aria-hidden="true">↗</span></a>';
     });
-
-    return '<section class="d-name">' +
-      '<div class="d-name__id">' +
-        avatarHTML(player, "lg") +
-        '<div class="d-name__who">' +
-          '<p class="d-name__title">' + esc(player.name) + "</p>" +
-          '<p class="d-name__sub">' +
-            (note.role ? '<b>' + esc(note.role) + "</b>" : "") +
-            (place ? '<span class="d-name__place">' + flag(player.country) + esc(place) + "</span>" : "") +
-          "</p>" +
-          (note.specialty ? '<p class="d-name__bio">' + esc(note.specialty) + "</p>" : "") +
-          (note.bio ? '<p class="d-name__bio">' + esc(note.bio) + "</p>" : "") +
-        "</div>" +
-      "</div>" +
-
-      '<div class="d-name__side">' +
-        '<p class="d-name__links">' +
-          (CLAN.profileLinks || []).map(function (link) {
-            return '<a class="text-link" href="' + esc(link.url.replace("{id}", player.profileId)) +
-                   '" target="_blank" rel="noopener noreferrer">' + esc(link.label) + " ↗</a>";
-          }).join("") +
-        "</p>" +
-        (chips.length
-          ? '<div class="chips">' + chips.map(function (chip) {
-              return '<span class="chip">' +
-                (chip[0] ? "<b>" + esc(chip[0]) + "</b>" : "") +
-                "<i>" + esc(chip[1]) + "</i></span>";
-            }).join("") + "</div>"
-          : "") +
-      "</div>" +
-    "</section>";
+    var linked = (detail && detail.linked || []).map(function (alt) { return esc(alt.name); });
+    return '<header class="pf-identity">' + avatarHTML(player, "lg") +
+      '<div class="pf-player"><h3>' + esc(player.name) + '</h3>' +
+        (facts.length ? '<p class="pf-identity-facts">' + facts.join("") + '</p>' : '') +
+        (note.role || note.specialty ? '<p class="pf-note">' + [note.role, note.specialty].filter(Boolean).map(esc).join(' · ') + '</p>' : '') +
+        (note.bio ? '<p class="pf-note">' + esc(note.bio) + '</p>' : '') +
+        (linked.length ? '<p class="pf-note">Linked accounts · ' + linked.join(' · ') + '</p>' : '') +
+      '</div>' + (links.length ? '<nav class="pf-links" aria-label="External player profiles">' + links.join("") + '</nav>' : '') +
+    '</header>';
   }
 
-  /* ---------- mode switch ----------
-     This absorbed the old "Rating across ladders" panel. That panel and
-     this control were answering the same question — which modes does this
-     player have a rating in — so the tabs carry the rating themselves and
-     the panel is gone, along with the dead space under its three rows. */
-  function modesHTML(player, detail) {
-    var modes = modeList(detail);
-    if (!modes.length) return '<section class="d-modes d-modes--empty"></section>';
-
-    var current = dossierLadder(detail);
-
-    return '<section class="d-modes" role="tablist" aria-label="Game mode">' +
-      modes.map(function (mode) {
-        var on = mode.id === current;
-        return '<button type="button" role="tab" data-mode="' + esc(mode.id) + '" ' +
-            'aria-selected="' + on + '">' +
-          "<span>" + esc(mode.label) + "</span>" +
-          "<b>" + (mode.rating != null ? mode.rating : "—") + "</b>" +
-          "<i>" + mode.games.toLocaleString("en-US") +
-            (mode.games === 1 ? " game" : " games") + "</i>" +
-        "</button>";
-      }).join("") +
-    "</section>";
+  function profileScopeHTML() {
+    return '<div class="pf-scope"><div class="pf-modes" role="group" aria-label="Player game mode">' +
+      modeButtons("data-profile-ladder", state.profileLadder) +
+      '</div><div class="pf-period-picker" role="group" aria-label="Player date range">' +
+      PERIODS.map(function (p) {
+        return '<button type="button" data-profile-period="' + p.key + '" aria-pressed="' +
+          (p.key === state.profilePeriod) + '">' + p.label + '</button>';
+      }).join("") + '</div></div>';
   }
 
-  function chartPanelHTML(detail, failed) {
-    var ladder = dossierLadder(detail);
-
-    function panel(headExtra, control, body) {
-      return '<section class="d-chart">' +
-        '<div class="d-chart__head">' +
-          label("trend", "Rating history · " + modeLabel(ladder, detail) + headExtra) +
-          control +
-        "</div>" + body +
-      "</section>";
-    }
-
-    if (failed) {
-      chartGeometry = null;
-      return panel("", "", '<p class="chart-empty">Match history unavailable right now.</p>');
-    }
-    if (!detail) {
-      chartGeometry = null;
-      return panel("", "", '<p class="chart-empty">Loading…</p>');
-    }
-
-    var history = detail.historyByLadder[ladder] || [];
-    if (history.length < 2) {
-      chartGeometry = null;
-      return panel("", "", '<p class="chart-empty">No rating history on this ladder.</p>');
-    }
-
-    var active = state.chartRange || defaultRange(history);
-    var points = sample(windowed(history, rangeFor(active).days));
-
-    return panel(" · " + history.length.toLocaleString("en-US") + " games",
-                 rangeHTML(history, active),
-                 chartHTML(points));
-  }
-
-  function numbersHTML(player, detail) {
-    var ladder = dossierLadder(detail);
+  function periodLeadHTML(key, activity, player, detail) {
+    var ladder = state.profileLadder;
     var stats = player.ladders[ladder] || {};
-    var board = detail && detail.boards ? detail.boards[ladder] : null;
-
-    /* A mode the roster query doesn't cover (Empire Wars, Quick Play) has no
-       entry in `player.ladders` at all — the profile payload is the only
-       place its rating and record exist. */
-    var rating = stats.rating != null ? stats.rating : (board ? board.rating : null);
-    var peak = stats.peak != null ? stats.peak : null;
-    var games = stats.games != null ? stats.games : (board ? board.games : null);
-    var wins = stats.wins, losses = stats.losses, winRate = stats.winRate;
-
-    var standing = standingText(player, ladder, stats, detail);
-    var recent = matchesOn(detail, ladder);
-    var lengths = recent.length ? AOE.durationStats(recent.filter(function (m) { return m.won != null && !m.vsAI; })) : null;
-    var streak = streakLabel(stats.streak);
-
-    return '<section class="d-numbers"><div class="numbers">' +
-      '<div><span class="data-label">Current</span><strong>' + num(rating) + "</strong>" +
-        (standing ? '<span class="sub">' + esc(standing) + "</span>" : "") + "</div>" +
-      '<div><span class="data-label">Peak</span><strong>' + num(peak) + "</strong>" +
-        (games ? '<span class="sub">' + games.toLocaleString("en-US") + " games on this mode</span>" : "") + "</div>" +
-      '<div><span class="data-label">Win rate</span><strong>' +
-        (winRate != null ? winRate + "%" : "—") + "</strong>" +
-        (wins != null
-          ? '<span class="sub">' + wins + "W · " + num(losses) + "L" +
-            (streak ? " · " + esc(streak) : "") + "</span>"
-          : "") + "</div>" +
-      /* Deliberately the same source as the strip on the row above, so
-         expanding a player can never appear to change their last five. */
-      '<div><span class="data-label">Last 5 · selected period</span>' + formStrip(formFor(player.profileId, ladder)) +
-        (lengths
-          ? '<span class="sub">avg ' + esc(fmtDuration(lengths.average)) +
-            " · longest " + esc(fmtDuration(lengths.longest)) + "</span>"
-          : "") + "</div>" +
-    "</div></section>";
-  }
-
-  /* The deepest feed we hold for this player, narrowed to one mode. Falls
-     back to every mode when the chosen one has nothing in the window. */
-  function matchesOn(detail, ladder) {
-    if (!detail) return [];
-    var all = state.fullHistory.get(state.openPlayer) || detail.matches;
-    var onLadder = all.filter(function (m) { return m.ladder === ladder; });
-    return onLadder.length ? onLadder : all;
-  }
-
-  function topsHTML(player, detail) {
-    if (!detail) {
-      return '<section class="d-civs">' + label("civ", "Most played civs") +
-               '<p class="chart-empty">Loading…</p></section>' +
-             '<section class="d-maps">' + label("map", "Most played maps") +
-               '<p class="chart-empty">Loading…</p></section>';
+    var board = detail && detail.boards && detail.boards[ladder] || {};
+    var ready = state.feedReady;
+    function metric(label, id, value, format, note) {
+      return '<div><dt>' + label + '</dt><dd>' + countHTML(key + id, value, format) + '</dd>' +
+        (note ? '<dd class="pf-metric-note">' + esc(note) + '</dd>' : '') + '</div>';
     }
-
-    var ladder = dossierLadder(detail);
-    var recent = matchesOn(detail, ladder);
-    var full = state.fullHistory.has(player.profileId);
-    var loading = state.fullLoading.has(player.profileId);
-
-    /* Say what the tally is actually counting. It was reading twenty games
-       and presenting the result as though it meant something. */
-    var scope = recent.length.toLocaleString("en-US") +
-                (recent.length === 1 ? " game" : " games");
-
-    return '<section class="d-civs">' +
-        '<div class="d-top__head">' + label("civ", "Most played civs") +
-          '<span class="d-top__scope">' + esc(scope) + "</span></div>" +
-        topRows(AOE.tally(recent, "civ", "civImage", 8), "Civilisation", "Picks") +
-      "</section>" +
-      '<section class="d-maps">' +
-        '<div class="d-top__head">' + label("map", "Most played maps") +
-          historyControlHTML(player, detail, full, loading) + "</div>" +
-        topRows(AOE.tally(recent, "map", "mapImage", 8), "Map", "Games") +
-      "</section>";
-  }
-
-  /* Dossier expansion reads the stored player file. Full-history controls
-     change the displayed scope without asking the source API for more. */
-  function historyControlHTML(player, detail, full, loading) {
-    if (full) {
-      var held = (state.fullHistory.get(player.profileId) || []).length;
-      return '<span class="d-top__scope d-top__scope--full">' + (detail.historyComplete === false ? 'stored history (incomplete) · ' : 'stored history · ') +
-             esc(held.toLocaleString("en-US")) +
-             (held === 1 ? " game" : " games") + "</span>";
+    function standing(field) {
+      return stats[field] != null ? stats[field] : board[field];
     }
-    if (loading) {
-      var seen = state.fullProgress.get(player.profileId) || 0;
-      return '<span class="d-top__scope">loading… ' +
-             esc(seen.toLocaleString("en-US")) + " games</span>";
+    var wins = standing("wins"), losses = standing("losses");
+    var careerRecord = wins != null && losses != null ?
+      countFormat.format(wins) + 'W · ' + countFormat.format(losses) + 'L' : '';
+    var country = (player.country || "").toLowerCase();
+    var national = standing("rankCountry");
+    var world = board.rank != null ? board.rank : stats.rank;
+    var countryName = detail && detail.countryName || country.toUpperCase() || 'National';
+    function rank(label, icon, place, total, nationalRank) {
+      return '<div><dt>' + icon + esc(label) + '</dt><dd>' + (place > 0 ? '#' + valueHTML(place) : '—') +
+        '</dd><dd class="pf-metric-note"' + (nationalRank ? ' data-national-total' : '') + '>' +
+        (place > 0 && total ? 'of ' + valueHTML(total) : '') + '</dd></div>';
     }
-
-    var allTime = detail.storedMatches;
-    return '<button type="button" class="link-button" data-full="' + player.profileId + '">' +
-      "Show all stored" + (allTime ? " " + allTime.toLocaleString("en-US") : "") + " games" +
-    "</button>";
+    var globe = '<span class="pf-world-flag" aria-hidden="true"><svg><use href="#i-globe"></use></svg></span>';
+    return '<section class="pf-period-lead" aria-label="Player statistics"><dl class="pf-key-values" aria-label="Selected range">' +
+      metric("Matches", "matches", ready ? activity.rows.length : null) +
+      metric("Win rate", "percentage", ready ? activity.winRate : null, "percent") +
+      metric("Elo change", "change", ready ? activity.change : null, "signed") + '</dl>' +
+      '<dl class="pf-key-values pf-career-values" aria-label="Career on this ladder">' +
+      metric("Current Elo", "elo", standing("rating")) +
+      metric("Peak Elo", "peak", standing("peak")) +
+      metric("Career win rate", "career-rate", standing("winRate"), "percent", careerRecord) + '</dl>' +
+      '<dl class="pf-rank-values" aria-label="Ladder rankings">' +
+      rank(countryName + ' rank', flag(country), national, state.countryTotals.get(ladder + "|" + country), true) +
+      rank('World rank', globe, world, board.total != null ? board.total : stats.total, false) + '</dl></section>';
   }
 
-  /* "#576 of 45,681 world · #10 of 875 in CZ". The world denominator rides
-     in on the profile request the dossier already makes; only the country
-     half costs a request of its own.
+  function periodPerformanceHTML(activity) {
+    if (!state.feedReady) return '<section class="pf-period"><h4>Match record</h4><p class="pf-empty">' +
+      (state.feedError ? 'Period results unavailable.' : 'Loading match results…') + '</p></section>';
+    var lengths = AOE.durationStats(activity.decided);
+    var recent = activity.decided.slice(0, 5).map(function (match) {
+      return '<li><b class="' + (match.won ? 'pf-win' : 'pf-loss') + '" aria-label="' + (match.won ? 'Win' : 'Loss') + '">' +
+        (match.won ? 'W' : 'L') + '</b><span>' + esc(match.map || 'Unknown map') +
+        '<small>' + esc(shortDate(match.date)) + '</small></span>' +
+        '<span class="pf-match-delta" title="Recorded Elo change">' +
+          valueHTML(match.ratingDiff, "signed") + '</span></li>';
+    });
+    return '<section class="pf-period"><div><h4>Match record</h4><dl class="pf-period-values">' +
+      '<div><dt>Wins</dt><dd class="pf-win">' + valueHTML(activity.wins) + '</dd></div>' +
+      '<div><dt>Losses</dt><dd class="pf-loss">' + valueHTML(activity.losses) + '</dd></div>' +
+      (lengths ? '<div><dt>Average length</dt><dd>' + valueHTML(lengths.average, "duration") + '</dd></div>' +
+        '<div><dt>Longest</dt><dd>' + valueHTML(lengths.longest, "duration") + '</dd></div>' : '') +
+      '</dl></div><div class="pf-recent"><h4>Last five results</h4>' +
+      (recent.length ? '<ol>' + recent.join("") + '</ol>' : '<p class="pf-empty">No results in this range.</p>') + '</div>' +
+      (state.feedHistoryComplete === false ? '<p class="pf-period-caveat">Match history is incomplete.</p>' : '') + '</section>';
+  }
 
-     The rank itself comes from the profile wherever there is one, because
-     the clan leaderboard query answers the same question a moment earlier
-     and drifts by a place or three. */
-  function standingText(player, ladder, stats, detail) {
-    var bits = [];
-    var board = detail && detail.boards ? detail.boards[ladder] : null;
-    var rank = board && board.rank != null ? board.rank : stats.rank;
-
-    if (rank != null) {
-      bits.push("#" + rank.toLocaleString("en-US") +
-        (board && board.total ? " of " + board.total.toLocaleString("en-US") : "") + " world");
+  function chartPanelHTML(profileId, detail) {
+    var history = detail && detail.historyByLadder && detail.historyByLadder[state.profileLadder] || [];
+    var start = periodStart(state.profilePeriod);
+    var visible = history.filter(function (point) {
+      return point.rating != null && Number.isFinite(point.rating) && inPeriod(point, start);
+    });
+    var body = "";
+    if (visible.length) {
+      body = chartHTML(sample(visible), visible.length);
+      if (visible.length === 1) body += '<p class="pf-single-rating">' + esc(visible[0].rating) + ' Elo · ' +
+        esc(chartDate(visible[0].date)) + '</p>';
+    } else {
+      chartGeometry = null;
+      var failed = state.detailFailed.has(profileId);
+      body = '<p class="pf-empty">' + (failed ? 'Rating history unavailable.' : !detail ? 'Loading rating history…' :
+        'No Elo ratings in this period.') + '</p>';
+      if (failed) body += '<button type="button" class="pf-action" data-profile-retry>Retry rating history</button>';
     }
-    var country = countryStanding(player.country, ladder, stats.rankCountry);
-    if (country) bits.push(country);
-
-    return bits.join(" · ");
+    return '<section class="pf-chart"><div class="pf-chart-head"><h4 tabindex="-1">Rating history</h4></div>' + body + '</section>';
   }
 
-  function topRows(rows, nameLabel, countLabel) {
-    nameLabel = nameLabel || "Name";
-    countLabel = countLabel || "Games";
-    if (!rows.length) return '<p class="chart-empty">No eligible results in this selection.</p>';
-    var most = Math.max.apply(null, rows.map(function (row) { return row.games; }));
-    return '<table class="stat-table"><thead><tr><th scope="col">' + esc(nameLabel) + '</th><th scope="col">' + esc(countLabel) + '</th><th scope="col">Win rate</th></tr></thead><tbody>' + rows.map(function (row) {
-      return '<tr><th scope="row"><div class="stat-name">' +
-        (row.image ? '<img src="' + esc(row.image) + '" loading="lazy" alt="">' : '') +
-        '<span>' + esc(row.name) + '</span></div></th>' +
-        '<td><span class="volume" style="--share:' + Math.round(row.games / most * 100) + '%">' + row.games + '</span></td>' +
-        '<td><b>' + row.winRate + '%</b><small>' + row.wins + 'W · ' + (row.games - row.wins) + 'L</small></td></tr>';
-    }).join('') + '</tbody></table>';
+  function topsHTML(activity) {
+    var title = '<div class="pf-breakdown-head"><h4>Match breakdown</h4></div>';
+    if (!state.feedReady) return '<section class="pf-breakdown">' + title + '<p class="pf-empty">' +
+      (state.feedError ? 'Match breakdown unavailable.' : 'Loading match breakdown…') + '</p></section>';
+    return '<section class="pf-breakdown">' + title + '<div class="pf-tables">' +
+      '<section><h5>Civilisations</h5>' + playerBreakdownTable(activity.decided, "civ", "Civilisation", "Picks") +
+      '</section><section><h5>Maps</h5>' + playerBreakdownTable(activity.decided, "map", "Map", "Matches") +
+      '</section></div></section>';
   }
 
-  function clanChart(rows, field, imageField) {
-    var values = AOE.tally(rows, field, imageField, Number.MAX_SAFE_INTEGER);
-    if (state.chartSort[field] === "win") values = values.filter(function (r) { return r.games >= 10; }).sort(function (a, b) { return b.winRate - a.winRate || b.games - a.games; });
-    return topRows(values.slice(0, 8), field === "civ" ? "Civilisation" : "Map", field === "civ" ? "Picks" : "Appearances");
+  function playerBreakdownTable(matches, field, nameLabel, countLabel) {
+    var rows = AOE.tally(matches, field, field + "Image", Number.MAX_SAFE_INTEGER);
+    if (!rows.length) return '<p class="pf-empty">No ' + nameLabel.toLowerCase() + ' results in this range.</p>';
+    var games = 0, wins = 0;
+    rows.forEach(function (row) { games += row.games; wins += row.wins; });
+    function cells(count, won, rate) {
+      return '<td>' + valueHTML(count) + '</td><td>' + valueHTML(won) + '–' +
+        valueHTML(count - won) + '</td><td>' + valueHTML(rate, "percent") + '</td>';
+    }
+    return '<table class="pf-table" aria-label="' + nameLabel + ' records"><thead><tr><th scope="col">' + nameLabel +
+      '</th><th scope="col">' + countLabel + '</th><th scope="col">W–L</th><th scope="col">Win rate</th></tr></thead><tbody>' +
+      rows.slice(0, 8).map(function (row) {
+        return '<tr><th scope="row"><span class="pf-table-name">' +
+          (row.image ? '<img src="' + esc(row.image) + '" loading="lazy" alt="">' : '') +
+          '<span>' + esc(row.name) + '</span></span></th>' + cells(row.games, row.wins, row.winRate) + '</tr>';
+      }).join('') + '</tbody><tfoot><tr><th scope="row">' + (field === 'civ' ? 'All civilisations' : 'All maps') +
+      '</th>' + cells(games, wins, wins / games * 100) + '</tr></tfoot></table>';
   }
 
   /* ---------- rating chart ---------- */
 
-  /* The public history runs the length of a career — one member has 3,344
-     rated games on record — and the chart used to draw a flat last-80 slice
-     of it. These windows open up the rest. */
-  var RANGES = [
-    { key: "1m",  label: "1M",  days: 30 },
-    { key: "6m",  label: "6M",  days: 182 },
-    { key: "1y",  label: "1Y",  days: 365 },
-    { key: "all", label: "All", days: null }
-  ];
-
-  function rangeFor(key) {
-    return RANGES.filter(function (r) { return r.key === key; })[0] || RANGES[RANGES.length - 1];
-  }
-
-  function windowed(history, days) {
-    if (!days) return history;
-    var cutoff = state.asOf - days * 86400000;
-    return history.filter(function (p) { return new Date(p.date).getTime() >= cutoff; });
-  }
-
-  /* Past a few hundred points the line is finer than the 640-unit viewBox
-     can draw, so long windows are thinned by a fixed stride. The shape
-     survives, and every point left standing is still a real game — which
-     matters, because the hover readout names it. */
+  /* Keep each bucket's high and low so that a short-lived peak survives a
+     long chart window. Every point the reader can inspect is a real game. */
   var MAX_POINTS = 360;
 
   function sample(points) {
     if (points.length <= MAX_POINTS) return points;
-    var out = [];
-    var stride = points.length / MAX_POINTS;
-    for (var i = 0; i < MAX_POINTS; i++) out.push(points[Math.floor(i * stride)]);
-    var last = points[points.length - 1];
-    if (out[out.length - 1] !== last) out.push(last);  // always land on the newest game
-    return out;
-  }
-
-  /* Open on the shortest window that still draws a real line. Someone who
-     plays monthly has nothing in the last thirty days, and an empty chart
-     is a worse first impression than a longer view. */
-  function defaultRange(history) {
-    for (var i = 0; i < RANGES.length; i++) {
-      if (windowed(history, RANGES[i].days).length >= 15) return RANGES[i].key;
-    }
-    return "all";
-  }
-
-  function rangeHTML(history, active) {
-    return '<div class="range" role="group" aria-label="Chart range">' +
-      RANGES.map(function (r) {
-        var count = windowed(history, r.days).length;
-        return '<button type="button" data-range="' + r.key + '"' +
-          (count < 2 ? " disabled" : "") +
-          ' aria-pressed="' + (r.key === active) + '">' + r.label + "</button>";
-      }).join("") +
-    "</div>";
-  }
-
-  function bindRange() {
-    var group = $("#rosterTable .range");
-    if (!group) return;
-
-    group.addEventListener("click", function (e) {
-      var button = e.target.closest("[data-range]");
-      if (!button || button.disabled) return;
-
-      state.chartRange = button.dataset.range;
-      paintDossier();
-
-      /* The control was just replaced. Only chase the focus back for
-         keyboard activation (detail 0) — after a mouse click it would paint
-         a focus ring nobody asked for. */
-      if (e.detail === 0) {
-        var again = $('#rosterTable .range [data-range="' + state.chartRange + '"]');
-        if (again) again.focus();
+    var out = [points[0]];
+    var buckets = Math.floor((MAX_POINTS - 2) / 2);
+    for (var i = 0; i < buckets; i++) {
+      var start = 1 + Math.floor(i * (points.length - 2) / buckets);
+      var end = 1 + Math.floor((i + 1) * (points.length - 2) / buckets);
+      var lo = start, hi = start;
+      for (var j = start + 1; j < end; j++) {
+        if (points[j].rating < points[lo].rating) lo = j;
+        if (points[j].rating > points[hi].rating) hi = j;
       }
-    });
+      out.push(points[Math.min(lo, hi)]);
+      if (hi !== lo) out.push(points[Math.max(lo, hi)]);
+    }
+    out.push(points[points.length - 1]);
+    return out;
   }
 
   /* Geometry of the chart currently on screen, so the hover handler can map
@@ -1096,53 +1259,59 @@
     if (!iso) return "—";
     var when = new Date(iso);
     if (isNaN(when.getTime())) return "—";
-    return when.toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" });
+    return shortDate(when);
   }
 
-  function chartHTML(points) {
-    if (points.length < 2) {
-      chartGeometry = null;
-      return '<p class="chart-empty">Not enough games in this range to draw a line.</p>';
-    }
-
-    var w = 640, h = 240, padX = 34, padY = 20;
-    var right = w - 12;
+  function chartHTML(points, recordCount) {
+    var w = 640, h = 208, padX = 4, padY = 5;
+    var right = w - 4;
     var values = points.map(function (p) { return p.rating; });
     var min = Math.min.apply(null, values);
     var max = Math.max.apply(null, values);
-    var span = Math.max(max - min, 1);
+    var step = Math.max(1, Math.ceil((max - min) / 4));
+    var low = min === max ? min - 2 : min;
+    var high = low + step * 4;
+    var firstDate = state.profilePeriod === "all" ? new Date(points[0].date).getTime() : periodStart(state.profilePeriod);
+    var lastDate = state.asOf;
 
     var coords = values.map(function (value, i) {
+      var date = new Date(points[i].date).getTime();
+      var x = lastDate > firstDate ? (date - firstDate) / (lastDate - firstDate) : 0.5;
       return {
-        x: padX + (i / Math.max(values.length - 1, 1)) * (right - padX),
-        y: h - padY - ((value - min) / span) * (h - padY * 2)
+        x: padX + x * (right - padX),
+        y: h - padY - ((value - low) / (high - low)) * (h - padY * 2)
       };
     });
 
     chartGeometry = { points: points, coords: coords, width: w, left: padX, right: right };
 
-    var grid = [0.25, 0.5, 0.75].map(function (f) {
+    var ticks = [0, 0.25, 0.5, 0.75, 1];
+    var grid = ticks.map(function (f) {
       var y = padY + f * (h - padY * 2);
       return '<line class="chart-grid" x1="' + padX + '" x2="' + right + '" y1="' + y + '" y2="' + y + '"/>';
     }).join("");
 
     return '<div class="chart-wrap" tabindex="0" role="group" ' +
         'aria-label="Rating history — hover, or use the arrow keys, to read individual games">' +
-      '<svg class="chart" viewBox="0 0 ' + w + " " + h + '" role="img" ' +
-        'aria-label="Rating history from ' + min + " to " + max + ' over ' + values.length + ' recorded games">' +
+      '<div class="pf-plot"><div class="pf-scale" aria-hidden="true">' + ticks.map(function (f) {
+        return '<span>' + Math.round(high - f * (high - low)) + '</span>';
+      }).join("") + '</div>' +
+      '<svg class="chart" viewBox="0 0 ' + w + " " + h + '" preserveAspectRatio="none" role="img" ' +
+        'aria-label="' + (recordCount === 1 ? 'One recorded rating, ' + min + ' Elo, ' + esc(chartDate(points[0].date)) :
+          'Rating history from ' + min + " to " + max + ' over ' + recordCount + ' recorded ratings') + '">' +
         grid +
-        '<polyline class="chart-line" points="' +
-          coords.map(function (c) { return c.x.toFixed(1) + "," + c.y.toFixed(1); }).join(" ") + '"/>' +
+        (coords.length > 1 ? '<polyline class="chart-line" points="' +
+          coords.map(function (c) { return c.x.toFixed(1) + "," + c.y.toFixed(1); }).join(" ") + '"/>' : '') +
+        '<circle class="pf-last-point" r="3.5" cx="' + coords[coords.length - 1].x + '" cy="' + coords[coords.length - 1].y + '"/>' +
         '<line class="chart-cursor" x1="0" x2="0" y1="' + padY + '" y2="' + (h - padY) + '"/>' +
         '<circle class="chart-dot" r="4" cx="0" cy="0"/>' +
-        '<text class="chart-axis" x="4" y="' + (padY + 4) + '">' + max + "</text>" +
-        '<text class="chart-axis" x="4" y="' + (h - padY + 4) + '">' + min + "</text>" +
-      "</svg>" +
-      /* The window is the reader's choice now, so the chart has to say what
-         it is actually showing. */
+      "</svg></div>" +
+      /* The period also determines the axis. A quiet week remains visible
+         at the end even when the player's last game was earlier. */
       '<div class="chart-dates">' +
-        "<span>" + esc(chartDate(points[0].date)) + "</span>" +
-        "<span>" + esc(chartDate(points[points.length - 1].date)) + "</span>" +
+        "<span>" + esc(chartDate(firstDate)) + "</span>" +
+        '<span class="pf-chart-middle">' + esc(chartDate((firstDate + lastDate) / 2)) + '</span>' +
+        "<span>" + esc(chartDate(lastDate)) + "</span>" +
       "</div>" +
       '<div class="chart-tip" aria-live="polite"></div>' +
     "</div>";
@@ -1151,8 +1320,9 @@
   /* The panel is rebuilt with innerHTML on every pick, so the handlers are
      bound to the fresh nodes each time rather than delegated. */
   function bindChart() {
-    var wrap = $(".chart-wrap");
-    if (!wrap || !chartGeometry) return;
+    var wrap = $("#rosterTable .player--open .chart-wrap");
+    var geo = chartGeometry;
+    if (!wrap || !geo) return;
 
     var svg = $(".chart", wrap);
     var cursor = $(".chart-cursor", wrap);
@@ -1161,7 +1331,6 @@
     var active = -1;
 
     function show(index) {
-      var geo = chartGeometry;
       index = Math.max(0, Math.min(geo.coords.length - 1, index));
       if (index === active) return;
       active = index;
@@ -1176,20 +1345,22 @@
       dot.setAttribute("cy", at.y);
 
       tip.innerHTML =
-        "<b>" + esc(num(point.rating)) + "</b>" +
+        "<b>" + valueHTML(point.rating) + "</b>" +
         (diff != null
           ? '<i class="' + (diff >= 0 ? "up" : "down") + '">' +
-            (diff >= 0 ? "+" : "") + diff + "</i>"
+            valueHTML(diff, "signed") + "</i>"
           : "") +
         "<em>" + esc(chartDate(point.date)) +
-          (point.games != null ? " · game " + point.games.toLocaleString("en-US") : "") +
+          (point.games != null ? " · game " + valueHTML(point.games) : "") +
         "</em>";
 
       /* The label rides the point. Clamped so it can't hang off either end
          of the panel — near the edges it detaches from the guide slightly,
          which beats being clipped. */
-      var percent = (at.x / geo.width) * 100;
-      tip.style.left = Math.max(11, Math.min(89, percent)) + "%";
+      var wrapBox = wrap.getBoundingClientRect(), plotBox = svg.getBoundingClientRect();
+      var pixel = plotBox.left - wrapBox.left + at.x / geo.width * plotBox.width;
+      var half = tip.offsetWidth / 2;
+      tip.style.left = Math.max(half, Math.min(wrapBox.width - half, pixel)) + "px";
 
       wrap.classList.add("is-active");
     }
@@ -1202,359 +1373,210 @@
     function indexAt(clientX) {
       var box = svg.getBoundingClientRect();
       if (!box.width) return 0;
-      var geo = chartGeometry;
       // client pixels -> viewBox units -> position along the plotted span
       var units = ((clientX - box.left) / box.width) * geo.width;
-      var along = (units - geo.left) / (geo.right - geo.left);
-      return Math.round(along * (geo.coords.length - 1));
+      var left = 0, right = geo.coords.length - 1;
+      while (left < right) {
+        var mid = Math.floor((left + right) / 2);
+        if (geo.coords[mid].x < units) left = mid + 1;
+        else right = mid;
+      }
+      return left && Math.abs(geo.coords[left - 1].x - units) < Math.abs(geo.coords[left].x - units) ? left - 1 : left;
     }
 
     wrap.addEventListener("pointermove", function (e) { show(indexAt(e.clientX)); });
     wrap.addEventListener("pointerleave", clear);
     wrap.addEventListener("blur", clear);
     wrap.addEventListener("focus", function () {
-      if (active < 0) show(chartGeometry.coords.length - 1);
+      if (active < 0) show(geo.coords.length - 1);
     });
     wrap.addEventListener("keydown", function (e) {
       var step = e.key === "ArrowRight" ? 1 : e.key === "ArrowLeft" ? -1 : 0;
       if (!step) return;
       e.preventDefault();
-      show(active < 0 ? chartGeometry.coords.length - 1 : active + step);
+      show(active < 0 ? geo.coords.length - 1 : active + step);
     });
   }
 
-  /* ---------- war ledger ----------
-     Every panel below reads off one filtered set, so the mode strip at the
-     top of the section moves all of them together. */
+  /* Clan and duo views share a single workspace. Only the projected members
+     change when a pair is selected, so every table uses the same matches. */
+  var ledgerModel = null;
+  var MATCH_PAGE_SIZE = 8;
+  function ledgerView() { return state.pair || state.clanView; }
+  function soloLadder(ladder) { return /(?:^|_)1v1(?:_|$)/.test(ladder); }
 
-  /* The same distinct ladders as the roster. A combined Ranked option
-     overlapped both ranked modes and duplicated the summary's game count. */
-  function ledgerTabs() {
-    return CLAN.ladders.map(function (ladder) {
-      return { id: ladder.id, label: ladder.label };
-    });
+  function agreedOutcome(players) {
+    var first = players.length ? players[0].won : null;
+    return typeof first === "boolean" && players.every(function (p) { return p.won === first; }) ? first : null;
   }
 
-  /* One row per member appearance, narrowed to the chosen mode. */
-  function ledgerRows() {
-    var filter = state.ledgerFilter;
-    return periodData().rows.filter(function (row) {
-      return row.ladder === filter;
-    });
+  function matchResult(game, members) {
+    if (game.vsAI) return { mark: "AI", cls: "n", label: "Against AI", won: null };
+    if (new Set(members.map(function (p) { return p.team; }).filter(function (team) { return team != null; })).size > 1)
+      return { mark: "±", cls: "n", label: "Clan on both sides", won: null };
+    var outcome = agreedOutcome(members);
+    if (outcome == null) return { mark: "–", cls: "n", label: "No agreed result", won: null };
+    return outcome ? { mark: "W", cls: "w", label: "Win", won: true } : { mark: "L", cls: "l", label: "Loss", won: false };
   }
 
-  /* The same narrowing over whole matches, for the feed and the warband. */
-  function ledgerGames() {
-    var filter = state.ledgerFilter;
-    return periodData().games.filter(function (game) {
-      return game.ladder === filter;
+  function buildLedgerModel() {
+    var scope = ledgerView(), pair = state.pair;
+    var games = [], records = [], together = 0, players = new Set();
+    periodData(scope.period).games.forEach(function (game) {
+      if (game.ladder !== scope.ladder) return;
+      var members = game.members;
+      if (pair) {
+        members = members.filter(function (p) { return pair.ids.includes(p.profileId); });
+        if (game.vsAI || members.length !== 2 || members[0].team == null || members[0].team !== members[1].team) return;
+      }
+      var result = matchResult(game, members);
+      var entry = { game: game, members: members, result: result, matchId: game.matchId, durationMinutes: game.durationMinutes, map: game.map };
+      games.push(entry);
+      if (result.won != null) records.push(entry);
+      members.forEach(function (p) { players.add(p.profileId); });
+      var teams = members.map(function (p) { return p.team; }).filter(function (team) { return team != null; });
+      if (!game.vsAI && new Set(teams).size < teams.length) together++;
     });
+    var pairs = !pair && soloLadder(scope.ladder) ? [] : AOE.warband(games.map(function (entry) { return entry.game; }), 1);
+    var partnership = pair && pairs.find(function (p) { return p.key === pair.key; });
+    return { games: games, records: records, pairs: pairs, partnership: partnership, together: together, players: players.size };
   }
 
-  /* What the civ, map and length tallies count: appearances, minus games
-     against the computer. Two members picking two civs in one game really
-     is two civ picks, so these stay per-appearance. */
-  function ledgerRated(rows) {
-    return rows.filter(function (row) { return !row.vsAI && row.won != null; });
+  function activityHTML(games, period) {
+    var bins = Array(24).fill(0), end = state.asOf;
+    var start = periodStart(period) || (games.length ? Date.parse(games[games.length - 1].game.date) : end);
+    var span = Math.max(1, end - start);
+    games.forEach(function (entry) {
+      var i = Math.floor((Date.parse(entry.game.date) - start) / span * bins.length);
+      bins[Math.max(0, Math.min(bins.length - 1, i))]++;
+    });
+    var max = Math.max.apply(null, bins), peak = bins.indexOf(max);
+    var description = max ? 'The busiest interval was ' + shortDate(start + peak * span / bins.length) + ' to ' +
+      shortDate(start + (peak + 1) * span / bins.length) + ' with ' + max + (max === 1 ? ' match.' : ' matches.') : 'No matches in this range.';
+    return '<div class="cs-activity"><span>Match activity</span><div class="cs-bars" role="img" aria-label="' +
+      esc(description) + '">' +
+      bins.map(function (n, i) {
+        return '<i style="--height:' + (max ? n / max * 100 : 0).toFixed(1) + '%" title="' +
+          esc(shortDate(start + i * span / bins.length)) + ' – ' + esc(shortDate(start + (i + 1) * span / bins.length)) +
+          ' · ' + n + (n === 1 ? ' match' : ' matches') + '"' + (n ? ' class="has-games"' : '') + '></i>';
+      }).join("") + '</div></div>';
   }
 
-  /* The win rate, by contrast, is per MATCH. A four-stack winning together
-     is one win, not four — and counting appearances made the headline
-     disagree with the game count sitting next to it. Games with no winner
-     recorded, or with members on both sides, describe no clan result and
-     are left out of both halves. */
-  function decidedGames(games) {
-    var out = [];
-    games.forEach(function (game) {
-      if (game.vsAI) return;
-      var ours = (game.lineup || []).filter(function (p) {
-        return p.isMember;
-      });
-      if (!ours.length || ours.some(function (p) { return p.won == null; })) return;
-
-      var won = ours.every(function (p) { return p.won; });
-      var lost = ours.every(function (p) { return !p.won; });
-      if (won === lost) return;                       // split sides: both, or neither
-
-      out.push({
-        matchId: game.matchId,
-        won: won,
-        durationMinutes: game.durationMinutes,
-        map: game.map
-      });
-    });
-    return out;
+  function summaryHTML(model) {
+    var scope = ledgerView(), wins = model.records.filter(function (entry) { return entry.result.won; }).length;
+    var lengths = AOE.durationStats(model.records);
+    function metric(label, value, note) {
+      return '<div><dt>' + label + '</dt><dd>' + value + '</dd>' +
+        (note ? '<dd class="cs-note">' + esc(note) + '</dd>' : '') + '</div>';
+    }
+    var key = state.pair ? "duo-" + state.pair.key : "clan";
+    var record = model.records.length ? wins + "W · " + (model.records.length - wins) + "L" : "";
+    var third = state.pair ? metric("Best win streak", valueHTML(model.partnership && model.partnership.bestRun)) :
+      soloLadder(scope.ladder) ? metric("Active players", valueHTML(model.players)) : metric("Played together", valueHTML(model.together),
+        model.games.length ? countLabel(100 * model.together / model.games.length, "percent") + " of matches" : "");
+    return '<dl class="cs-metrics">' + metric("Matches", countHTML(key + "-matches", model.games.length)) +
+      metric("Win rate", countHTML(key + "-rate", model.records.length ? wins / model.records.length * 100 : null, "percent"), record) +
+      third + metric("Average length", valueHTML(lengths && lengths.average, "duration")) +
+      '</dl>' + activityHTML(model.games, scope.period);
   }
 
   function renderLedgerTabs() {
-    var tabs = ledgerTabs();
-    if (!tabs.length) { $("#ledgerTabs").innerHTML = ""; return; }
-
-    // Keep a valid ladder selected even when its current period is empty.
-    if (!tabs.some(function (t) { return t.id === state.ledgerFilter; })) {
-      state.ledgerFilter = tabs[0].id;
-    }
-
-    $("#ledgerTabs").innerHTML = tabs.map(function (tab) {
-      return '<button type="button" data-ledger="' + esc(tab.id) + '" aria-pressed="' + (tab.id === state.ledgerFilter) + '">' + esc(tab.label) + '</button>';
-    }).join("");
+    syncModes($("#ledgerTabs"), "data-ledger", ledgerView().ladder);
   }
 
-  function renderLedger() {
+  function renderLedger(animate) {
     renderLedgerTabs();
+    renderPeriod("ledger");
+    var heading = state.pair ? esc(state.pair.a) + ' <span class="cs-plus">+</span> ' + esc(state.pair.b) : 'Clan statistics<span class="period">.</span>';
+    if ($("#ledgerTitle").innerHTML !== heading) {
+      var mast = $(".cs-mast"), previousHeight = animate ? panelHeight(mast) : null;
+      $("#backToDuos").hidden = !state.pair;
+      $("#ledgerTitle").innerHTML = heading;
+      if (animate) transitionPanel(mast, previousHeight, null, true);
+    }
+    $("#matchesTitle").textContent = state.pair ? "Shared matches" : "Match history";
+    renderLedgerMore();
     if (!state.feedReady) {
-      ["#clanCivs", "#clanMaps", "#clanFeed", "#warband", "#clanFormats", "#clanAtlas"]
-        .forEach(function (id) { $(id).innerHTML = '<div class="state">' + (state.feedError ? "Match history unavailable." : "Loading saved history…") + '</div>'; });
-      renderLedgerMore();
+      var message = state.feedError ? "Match history unavailable." : "Loading matches…";
+      $("#clanBreakdown").innerHTML = $("#clanFeed").innerHTML = '<p class="cs-empty">' + message + '</p>';
       return;
     }
-
-    renderPeriod();
-
-    var rows = ledgerRows();
-    var rated = ledgerRated(rows);
-    var games = ledgerGames();
-    var decided = decidedGames(games);
-    var wins = decided.filter(function (game) { return game.won; }).length;
-
-    var lengths = AOE.durationStats(decided);
-    var tiles = [
-      [games.length.toLocaleString("en-US"), "Games", ""],
-      [decided.length ? Math.round(wins / decided.length * 100) + "%" : "—", "Win rate",
-        decided.length ? wins + "W · " + (decided.length - wins) + "L" : ""],
-      [lengths ? fmtDuration(lengths.average) : "—", "Average length", lengths ? "Median " + fmtDuration(lengths.median) : ""]
-    ];
-
-
-    $("#ledgerStats").innerHTML = tiles.map(function (row) {
-      return '<div class="ledger__stat"><strong>' + esc(row[0]) + '</strong>' +
-             '<span class="data-label">' + esc(row[1]) + '</span>' +
-             (row[2] ? '<span class="sub">' + esc(row[2]) + '</span>' : '') + '</div>';
-    }).join("");
-
-    $("#clanCivs").innerHTML = clanChart(rated, "civ", "civImage");
-    $("#clanMaps").innerHTML = clanChart(rated, "map", "mapImage");
-
-    renderFormats(games);
-    renderAtlas(games);
-    renderWarband();
-    renderFeed();
-    renderLedgerMore();
+    ledgerModel = buildLedgerModel();
+    var previous = animate === true ? clanCounters.capture() : null;
+    if (!previous) clanCounters.finish();
+    var summary = $("#ledgerStats"), from = animate ? panelHeight(summary) : null;
+    summary.innerHTML = summaryHTML(ledgerModel);
+    if (animate) transitionPanel(summary, from, null, true);
+    if (previous) clanCounters.animate(previous);
+    renderBreakdown(animate);
+    renderFeed(animate);
     statusOK($("#ledgerStatus"), sourceLabel());
   }
 
-  /* ---------- how the clan queues ----------
-     Team size comes off the line-up: eight players is a 4v4, two is a 1v1.
-     Nothing on the page showed this, and the split turns out to be the most
-     honest answer to "what does this clan actually play". */
-  function renderFormats(games) {
-    var totals = new Map();
-
-    games.forEach(function (game) {
-      if (!decidedGames([game]).length) return;
-      var lineup = game.lineup || [];
-      if (game.vsAI || !lineup.length) return;
-
-      var sides = new Map();
-      lineup.forEach(function (player) {
-        var key = player.team != null ? player.team : 0;
-        sides.set(key, (sides.get(key) || 0) + 1);
-      });
-
-      // Only even, two-sided games describe a format cleanly.
-      var counts = Array.from(sides.values());
-      if (counts.length !== 2 || counts[0] !== counts[1]) return;
-
-      var name = counts[0] + "v" + counts[1];
-      var row = totals.get(name) || { name: name, games: 0, wins: 0, size: counts[0] };
-      row.games += 1;
-
-      var ours = lineup.filter(function (p) { return p.isMember && p.won != null; });
-      if (ours.length && ours.every(function (p) { return p.won; })) row.wins += 1;
-
-      totals.set(name, row);
-    });
-
-    var rows = Array.from(totals.values())
-      .map(function (row) {
-        row.winRate = row.games ? Math.round((row.wins / row.games) * 100) : 0;
-        return row;
-      })
-      .sort(function (a, b) { return b.games - a.games; });
-
-    $("#clanFormats").innerHTML = rows.length
-      ? barRows(rows.map(function (row) {
-          return { name: row.name, games: row.games, wins: row.wins, winRate: row.winRate };
-        }))
-      : '<p class="chart-empty">No two-sided games in view.</p>';
+  function setLedgerScope(ladder, period) {
+    var view = ledgerView();
+    if (ladder === view.ladder && period === view.period) return;
+    view.ladder = ladder;
+    view.period = period;
+    view.page = 0;
+    view.showAll = false;
+    state.openMatch = null;
+    renderLedger(true);
   }
 
-  /* ---------- who the clan runs into ----------
-     Opponents are kept on the line-up for exactly this. Everyone the clan has
-     faced in the selected period, counted once per opposing account. */
-  function renderAtlas(games) {
-    var totals = new Map();
-    var faced = new Set();
-
-    games.forEach(function (game) {
-      if (game.vsAI) return;
-      var memberTeams = new Set((game.lineup || []).filter(function (p) { return p.isMember && p.team != null; }).map(function (p) { return p.team; }));
-      if (!memberTeams.size) return;
-      (game.lineup || []).forEach(function (player) {
-        if (player.isMember || player.team == null || memberTeams.has(player.team) || !player.country || player.profileId == null || faced.has(player.profileId)) return;
-        faced.add(player.profileId);
-        var key = player.country.toLowerCase();
-        totals.set(key, (totals.get(key) || 0) + 1);
-      });
-    });
-
-    if (!totals.size) {
-      $("#clanAtlas").innerHTML = '<p class="chart-empty">No opponents recorded in view.</p>';
-      return;
-    }
-
-    var rows = Array.from(totals.entries())
-      .map(function (entry) { return { code: entry[0], games: entry[1] }; })
-      .sort(function (a, b) { return b.games - a.games; });
-
-    var most = rows[0].games;
-
-    $("#clanAtlas").innerHTML =
-      '<p class="atlas__lead"><b>' + rows.length + "</b> countries · <b>" +
-        faced.size.toLocaleString("en-US") + "</b> unique opponents</p>" +
-      '<div class="atlas">' + rows.slice(0, 18).map(function (row) {
-        return '<span class="atlas__cell" title="' + esc(row.code.toUpperCase()) + " · " +
-            row.games + (row.games === 1 ? " player" : " players") + '" ' +
-            'style="--share:' + Math.round((row.games / most) * 100) + '%">' +
-          flag(row.code) +
-          "<b>" + esc(row.code.toUpperCase()) + "</b>" +
-          "<i>" + row.games + "</i>" +
-        "</span>";
-      }).join("") + "</div>";
-  }
-
-  /* Retry a missing saved history file without tying requests to a period. */
   function renderLedgerMore() {
     var host = $("#ledgerMore");
-    if (!host) return;
     host.hidden = !state.feedError;
-    if (state.feedError) {
-      host.innerHTML = '<button type="button" class="button button--ghost" id="ledgerMoreBtn">Retry loading history</button>';
-    } else {
-      host.innerHTML = "";
-    }
+    host.innerHTML = state.feedError ? '<button type="button" class="button button--ghost" id="ledgerMoreBtn">Retry loading history</button>' : "";
   }
-
-
-  /* A bar row without an icon: name, count, win rate. Same shape as the civ
-     and map rows so the two read as one family. */
-  function barRows(rows) { return topRows(rows, "Format", "Matches"); }
-
 
   $("#ledgerTabs").addEventListener("click", function (e) {
     var tab = e.target.closest("[data-ledger]");
-    if (!tab || tab.dataset.ledger === state.ledgerFilter) return;
-
-    state.ledgerFilter = tab.dataset.ledger;
-    state.pair = null;
-    state.openMatch = null;      // the open card may not be in the new set
-    renderLedger();
-
-    if (e.detail === 0) {
-      var again = $('#ledgerTabs [data-ledger="' + state.ledgerFilter + '"]');
-      if (again) again.focus();
-    }
+    if (!tab) return;
+    setLedgerScope(tab.dataset.ledger, ledgerView().period);
   });
-
   $("#ledgerMore").addEventListener("click", function (e) {
     if (e.target.closest("#ledgerMoreBtn")) loadFeed();
   });
 
-  /* ---------- latest games, one expandable card each ---------- */
-
-  /* `state.feed` is one row per member APPEARANCE, so a game two members
-     played together sits in it twice. That already showed as a duplicate
-     pair of rows; now that a row opens into the full line-up it would open
-     two identical cards, so the feed folds them into one row per match and
-     names everyone from the clan who was in it. */
-  function pairGames() {
-    if (!state.pair) return [];
-    return ledgerGames().filter(function (game) {
-      if (game.vsAI) return false;
-      var members = game.members.filter(function (m) { return state.pair.ids.indexOf(m.profileId) !== -1; });
-      return members.length === 2 && members[0].team != null && members[0].team === members[1].team;
+  function renderFeed(animate) {
+    var view = ledgerView(), games = ledgerModel.games;
+    var pages = Math.ceil(games.length / MATCH_PAGE_SIZE);
+    view.page = Math.max(0, Math.min(view.page, pages - 1));
+    var start = view.page * MATCH_PAGE_SIZE, matches = games.slice(start, start + MATCH_PAGE_SIZE);
+    $("#matchPages").hidden = pages < 2;
+    $("#matchPageLabel").textContent = (view.page + 1) + " / " + pages;
+    $$("[data-page]").forEach(function (button) {
+      button.disabled = Number(button.dataset.page) < 0 ? !view.page : view.page >= pages - 1;
     });
-  }
-  function feedMatches() {
-    return (state.pair ? pairGames() : ledgerGames()).slice().sort(function (a, b) { return new Date(b.date) - new Date(a.date); });
-  }
-
-
-  /* Members on opposite sides of a custom game means the clan both won and
-     lost it, and scenarios record no winner at all — neither deserves a
-     confident W or L. */
-  function matchOutcome(game) {
-    var results = (game.lineup || [])
-      .filter(function (p) { return p.isMember && p.won != null; })
-      .map(function (p) { return p.won; });
-
-    if (!results.length) return { mark: "·", cls: "n", label: "no result recorded" };
-    if (results.every(Boolean)) return { mark: "W", cls: "w", label: "won" };
-    if (!results.some(Boolean)) return { mark: "L", cls: "l", label: "lost" };
-    return { mark: "±", cls: "n", label: "members on both sides" };
-  }
-
-  function renderFeed() {
-    var allMatches = feedMatches();
-    var matches = allMatches.slice(0, 10);
-    // A dossier's recent decided game can sit below ten unknown-result
-    // entries. Keep a directly opened match visible without hiding those.
-    if (state.openMatch && !matches.some(function (game) { return String(game.matchId) === state.openMatch; })) {
-      var opened = allMatches.filter(function (game) { return String(game.matchId) === state.openMatch; })[0];
-      if (opened) matches.push(opened);
-    }
-    $("#feedScope").innerHTML = state.pair ? '<p class="pair-scope">Shared matches: ' + esc(state.pair.a) + " × " + esc(state.pair.b) + ' <button type="button" data-clear-pair>Show all clan matches</button></p>' : "";
-    var host = $("#clanFeed");
-
-    if (!matches.length) {
-      host.innerHTML = '<div class="state">No recent games found.</div>';
-      return;
-    }
-
-    host.innerHTML = matches.map(function (game) {
-      var id = String(game.matchId);
+    var feed = $("#clanFeed"), from = animate ? panelHeight(feed) : null;
+    feed.innerHTML = matches.map(function (entry) {
+      var game = entry.game, id = String(game.matchId), outcome = entry.result;
       var open = state.openMatch === id;
-      var outcome = matchOutcome(game);
-      var ours = (game.lineup || []).filter(function (p) { return p.isMember; });
-
-      var civs = [];
-      ours.forEach(function (p) {
-        if (p.civ && civs.indexOf(p.civ) === -1) civs.push(p.civ);
-      });
-
-      var names = ours.length ? ours.map(function (p) { return p.name; }).join(" · ") : "GG Clan";
-      var sub = (civs.length ? civs.join(", ") + " · " : "") + (game.map || "—");
-      var diff = ours.length === 1 ? ours[0].ratingDiff : null;
-
-      return '<div class="feed-item' + (open ? " feed-item--open" : "") + '">' +
-        '<button class="feed-row" data-match="' + esc(id) + '" aria-expanded="' + open + '">' +
-          '<span class="feed-row__mark ' + outcome.cls + '" aria-hidden="true">' + outcome.mark + "</span>" +
-          '<span class="feed-row__who"><b>' + esc(names) + "</b>" +
-            "<em>" + esc(sub) + "</em>" +
-            '<span class="sr-only">' + esc(outcome.label) + "</span></span>" +
-          '<span class="feed-row__when">' + esc(timeAgo(game.date)) +
-            (game.durationMinutes != null || diff != null
-              ? "<em>" + (game.durationMinutes != null ? esc(fmtDuration(game.durationMinutes)) : "") +
-                (diff != null
-                  ? '<i class="' + (diff >= 0 ? "up" : "down") + '">' + (diff >= 0 ? "+" : "") + diff + "</i>"
-                  : "") + "</em>"
-              : "") +
-          "</span>" +
-        "</button>" +
-        (open ? matchCardHTML(game) : "") +
-      "</div>";
-    }).join("");
+      var names = entry.members.map(function (p) { return p.name; }).join(" · ");
+      var subtitle = state.pair ? (game.lineup || []).filter(function (p) { return state.pair.ids.includes(p.profileId); })
+        .map(function (p) { return p.civ; }).filter(Boolean).join(" · ") : names;
+      return '<div class="feed-item' + (open ? " feed-item--open" : "") + '"><button type="button" class="feed-row" data-match="' + esc(id) +
+        '" aria-expanded="' + open + '"' + (open ? ' aria-controls="match-' + esc(id) + '"' : '') + '><span class="feed-row__mark ' + outcome.cls + '" aria-label="' + esc(outcome.label) + '">' + outcome.mark + '</span>' +
+        '<span class="feed-row__who"><b>' + esc(game.map || "Unknown map") + '</b><em>' + esc(subtitle) + '</em></span>' +
+        '<span class="feed-row__when">' + esc(shortDate(game.date)) + (game.durationMinutes != null ? '<em>' + esc(fmtDuration(game.durationMinutes)) + '</em>' : '') +
+        '</span><svg class="cs-chevron" aria-hidden="true"><use href="#i-chevron"></use></svg></button>' +
+        (open ? '<div class="cs-match-detail" id="match-' + esc(id) + '">' + matchCardHTML(game) + '</div>' : "") + '</div>';
+    }).join("") || '<p class="cs-empty">' + (state.pair ? 'No shared matches in this range.' : 'No matches in this range.') + '</p>';
+    if (animate) transitionPanel(feed, from, null, true);
   }
+
+  $("#matchPages").addEventListener("click", function (e) {
+    var button = e.target.closest("[data-page]");
+    if (!button || button.disabled || !ledgerModel) return;
+    ledgerView().page += Number(button.dataset.page);
+    state.openMatch = null;
+    renderFeed(true);
+    if (e.detail === 0 && button.disabled) {
+      var available = $("#matchPages button:not(:disabled)");
+      if (available) available.focus({ preventScroll: true });
+    }
+  });
 
   /* Both full line-ups. The opponents are kept for this one panel —
      everything else on the page counts clan members alone. */
@@ -1577,22 +1599,21 @@
     var order = [];
     var byTeam = new Map();
     lineup.forEach(function (player) {
-      var key = player.team != null ? player.team : 0;
+      var key = player.team == null ? null : player.team;
       if (!byTeam.has(key)) { byTeam.set(key, []); order.push(key); }
       byTeam.get(key).push(player);
     });
-    order.sort(function (a, b) { return a - b; });
+    order.sort(function (a, b) {
+      if (a === b) return 0;
+      return a == null ? 1 : b == null ? -1 : a - b;
+    });
 
     var sides = order.map(function (key, i) {
       var side = byTeam.get(key);
-      var won = side.some(function (p) { return p.won === true; });
-      var decided = side.some(function (p) { return p.won != null; });
-
-      var lost = decided && !won;
-
-      return '<div class="side' + (won ? " side--won" : lost ? " side--lost" : "") + '">' +
-        '<p class="side__head"><span>Team ' + (i + 1) + "</span>" +
-          (decided ? "<em>" + (won ? "Won" : "Lost") + "</em>" : "") + "</p>" +
+      var outcome = key == null ? null : agreedOutcome(side);
+      return '<div class="side' + (outcome === true ? " side--won" : outcome === false ? " side--lost" : "") + '">' +
+        '<p class="side__head"><span>' + (key == null ? "Team unrecorded" : "Team " + (i + 1)) + "</span>" +
+          (outcome != null ? "<em>" + (outcome ? "Won" : "Lost") + "</em>" : "") + "</p>" +
         side.map(function (p) {
           return '<div class="side__player' + (p.isMember ? " side__player--ours" : "") + '">' +
             (p.civImage
@@ -1600,10 +1621,10 @@
               : '<span class="side__blank" aria-hidden="true"></span>') +
             "<b>" + esc(p.name || "—") + "</b>" +
             "<em>" + esc(p.civ || "—") + "</em>" +
-            "<i>" + (p.rating != null ? p.rating : "—") +
+            "<i>" + valueHTML(p.rating) +
               (p.ratingDiff != null
                 ? '<span class="' + (p.ratingDiff >= 0 ? "up" : "down") + '">' +
-                  (p.ratingDiff >= 0 ? "+" : "") + p.ratingDiff + "</span>"
+                  valueHTML(p.ratingDiff, "signed") + "</span>"
                 : "") +
             "</i>" +
           "</div>";
@@ -1617,139 +1638,203 @@
     "</div>";
   }
 
+  function toggleMatch(button, opening) {
+    var item = button.parentElement, panel = item.querySelector(".cs-match-detail");
+    var height = panel ? panelHeight(panel) : 0;
+    item.classList.toggle("feed-item--open", opening);
+    button.setAttribute("aria-expanded", String(opening));
+    if (opening && !panel) {
+      var entry = ledgerModel.games.find(function (entry) { return String(entry.matchId) === button.dataset.match; });
+      button.insertAdjacentHTML("afterend", '<div class="cs-match-detail" id="match-' + esc(button.dataset.match) + '">' + matchCardHTML(entry.game) + '</div>');
+      panel = item.querySelector(".cs-match-detail");
+    }
+    if (panel) {
+      if (opening) button.setAttribute("aria-controls", panel.id);
+      else button.removeAttribute("aria-controls");
+      panel.inert = !opening;
+      transitionPanel(panel, height, opening ? null : 0, false, opening ? null : function () { panel.remove(); });
+    }
+  }
   $("#clanFeed").addEventListener("click", function (e) {
-    var row = e.target.closest("[data-match]");
-    if (!row) return;
-    var id = row.dataset.match;
-    state.openMatch = state.openMatch === id ? null : id;
-    renderFeed();
-
-    /* innerHTML threw away the button that was just clicked, so a keyboard
-       user would land back at the top of the document. Only restore it for
-       keyboard activation (detail 0) — doing it after a mouse click makes
-       the browser paint a focus ring nobody asked for. */
-    if (e.detail === 0) {
-      $$("#clanFeed [data-match]").forEach(function (button) {
-        if (button.dataset.match === id) button.focus();
-      });
-    }
-  });
-
-  /* Partnership identities, form and combinations all come from the same
-     decided team games. Shared feed selection still includes unknown results.
-     Avatars are the existing stored profile cards, with distinct initials as
-     a fallback. The spotlight always rewards volume, regardless of sorting. */
-  function duoAvatarHTML(player) {
-    if (state.profileCards.get(player.profileId) && state.profileCards.get(player.profileId).avatar) return avatarHTML(player);
-    var name = String(player.name || "?").replace(/^gg[_\s]+/i, "");
-    return '<span class="avatar avatar--blank" aria-hidden="true">' + esc(Array.from(name).slice(0, 2).join("").toUpperCase()) + '</span>';
-  }
-  function duoIdentityHTML(pair) {
-    return '<span class="duo-identity"><span class="duo-avatars">' + pair.players.map(duoAvatarHTML).join("") + '</span>' +
-      '<span class="duo__names">' + pair.players.map(function (p) { return '<b>' + esc(p.name) + '</b>'; }).join("") + '</span></span>';
-  }
-  function duoFormHTML(pair) {
-    return '<span class="duo-form" aria-label="Last five decided shared games, newest first: ' + pair.form.join(", ") + '">' +
-      pair.form.map(function (result) { return '<span class="' + result.toLowerCase() + '" aria-hidden="true">' + result + '</span>'; }).join("") + '</span>';
-  }
-  function duoRecordHTML(pair) {
-    return '<span class="duo-record"><strong class="' + (pair.winRate > 50 ? "up" : pair.winRate < 50 ? "down" : "") + '">' + pair.winRate + '%</strong><small>Win rate</small>' +
-      '<span><b class="up">' + pair.wins + 'W</b> · <b class="down">' + (pair.games - pair.wins) + 'L</b></span></span>';
-  }
-  function duoArtHTML(image, kind) {
-    return image ? '<img src="' + esc(image) + '" width="64" height="40" loading="lazy" alt="">' :
-      '<svg class="ico" aria-hidden="true"><use href="#i-' + kind + '"></use></svg>';
-  }
-  function duoCardHTML(pair) {
-    var selected = Boolean(state.pair && state.pair.key === pair.key);
-    var map = pair.maps[0];
-    return '<button type="button" class="duo" data-pair="' + esc(pair.key) + '" aria-pressed="' + selected + '" aria-expanded="' + selected + '" aria-controls="pairDetail">' +
-      '<span class="duo__top">' + duoIdentityHTML(pair) + duoRecordHTML(pair) + '</span>' +
-      '<span class="duo__activity"><span>' + pair.games + ' games</span>' +
-        '<span class="duo__form-label">' + (state.duoSort === "run" ? pair.currentRun + 'W streak' : 'Last 5') + duoFormHTML(pair) + '</span></span>' +
-      '<span class="duo__battlefield">' + duoArtHTML(map && map.image, "map") + '<span><small>Most played map</small><b>' + esc(map ? map.name : "—") + '</b></span>' +
-        '<svg class="ico duo__arrow" aria-hidden="true"><use href="#i-arrow"></use></svg></span></button>';
-  }
-  function duoDetailHTML(pair) {
-    var maps = pair.maps.slice(0, 3).map(function (map) {
-      return '<li>' + duoArtHTML(map.image, "map") + '<span><b>' + esc(map.name) + '</b><small>' + map.wins + 'W · ' + (map.games - map.wins) + 'L</small></span>' +
-        '<span class="duo-detail__numbers"><b>' + map.games + ' games</b><small>' + map.winRate + '% win rate</small></span></li>';
-    }).join("");
-    var combinations = pair.combinations.slice(0, 3).map(function (combo) {
-      // Align crests and names with the same player order used in the identity.
-      var civs = pair.players.map(function (player) {
-        return combo.civs.filter(function (civ) { return civ.profileId === player.profileId; })[0];
-      });
-      return '<li class="duo-detail__combo"><span class="duo-civs">' + civs.map(function (civ) { return duoArtHTML(civ.image, "civ"); }).join("") + '</span>' +
-        '<span>' + civs.map(function (civ, index) { return '<b title="' + esc(pair.players[index].name) + '">' + esc(civ.name) + '</b>'; }).join("") + '</span>' +
-        '<span class="duo-detail__numbers"><b>' + combo.games + (combo.games === 1 ? ' game' : ' games') + '</b><small>' + combo.wins + 'W · ' + (combo.games - combo.wins) + 'L</small></span></li>';
-    }).join("");
-    var recent = pair.results.slice(0, 3).map(function (result) {
-      return '<li><span class="duo-form"><span class="' + (result.won ? 'w' : 'l') + '">' + (result.won ? 'W' : 'L') + '</span></span>' +
-        '<span><b>' + esc(result.map || "Map not recorded") + '</b><small>' + esc(shortDate(result.date)) + '</small></span>' +
-        '<button type="button" class="duo-match" data-duo-match="' + esc(result.matchId) + '" aria-label="Open shared match on ' + esc(result.map || "unrecorded map") + ', ' + esc(shortDate(result.date)) + '"><svg class="ico" aria-hidden="true"><use href="#i-arrow"></use></svg></button></li>';
-    }).join("");
-    return '<div class="pair-detail"><div class="duo-detail__heading"><h4>Duo stats</h4><button type="button" data-clear-pair>Close <span aria-hidden="true">×</span></button></div>' +
-      '<div class="duo-detail__summary">' + duoIdentityHTML(pair) + duoRecordHTML(pair) +
-        '<div class="duo-detail__run"><strong>' + pair.bestRun + '</strong><span>Best win streak</span></div></div>' +
-      '<div class="duo-detail__columns"><section><h5>Maps</h5><ul>' + (maps || '<li class="chart-empty">No map data.</li>') + '</ul></section>' +
-        '<section><h5>Civ combinations</h5><ul>' + (combinations || '<li class="chart-empty">No civ data.</li>') + '</ul></section>' +
-        '<section><h5>Recent games</h5><ul>' + recent + '</ul><a class="duo-detail__feed-link" href="#clanFeed">See games ↓</a></section></div></div>';
-  }
-  function renderWarband() {
-    var pairs = AOE.warband(ledgerGames(), 2);
-    state.duoPairs = pairs;
-    if (state.pair) state.pair = pairs.filter(function (p) { return p.key === state.pair.key; })[0] || null;
-    var host = $("#warband");
-    if (!pairs.length) {
-      host.innerHTML = '<p class="chart-empty">No duos to show.</p>';
-      $("#pairDetail").innerHTML = "";
-      return;
-    }
-    var spotlight = pairs[0];
-    var spotlightSelected = Boolean(state.pair && state.pair.key === spotlight.key);
-    var listed = pairs.slice();
-    if (state.duoSort === "win") listed = listed.filter(function (p) { return p.games >= 10; }).sort(function (a, b) { return b.winRate - a.winRate || b.games - a.games; });
-    if (state.duoSort === "run") listed.sort(function (a, b) { return b.currentRun - a.currentRun || b.games - a.games; });
-    host.innerHTML = '<div class="duo-spotlight"><div class="duo-spotlight__intro"><span class="duo-spotlight__label">Most played duo</span>' +
-      duoIdentityHTML(spotlight) + '</div>' + duoRecordHTML(spotlight) +
-      '<button type="button" class="duo-spotlight__action" data-pair="' + esc(spotlight.key) + '" aria-expanded="' + spotlightSelected + '" aria-controls="pairDetail">' + (spotlightSelected ? 'Close stats' : 'See stats') +
-        '<svg class="ico" aria-hidden="true"><use href="#i-arrow"></use></svg></button></div>' +
-      '<div class="warband__grid">' + (state.showPairs ? listed : listed.slice(0, 6)).map(duoCardHTML).join("") + '</div>' +
-      (!listed.length ? '<p class="chart-empty">No duos with 10+ games.</p>' : '') +
-      (listed.length > 6 ? '<button type="button" class="pair-toggle" data-toggle-pairs aria-expanded="' + state.showPairs + '">' + (state.showPairs ? 'Show fewer pairs ↑' : 'Show all ' + listed.length + ' pairs ↓') + '</button>' : '');
-    var detail = $("#pairDetail");
-    if (!state.pair) { detail.innerHTML = ""; return; }
-    detail.innerHTML = duoDetailHTML(state.pair);
-  }
-  $("#duoSort").addEventListener("change", function (e) { state.duoSort = e.target.value; state.showPairs = false; renderWarband(); });
-  $("#warband").addEventListener("click", function (e) {
-    if (e.target.closest("[data-toggle-pairs]")) { state.showPairs = !state.showPairs; renderWarband(); var toggle = $("[data-toggle-pairs]"); if (toggle) toggle.focus(); return; }
-    var button = e.target.closest("[data-pair]");
+    var button = e.target.closest("[data-match]");
     if (!button) return;
-    var key = button.dataset.pair;
-    state.pair = state.pair && state.pair.key === key ? null : state.duoPairs.filter(function (p) { return p.key === key; })[0] || null;
-    state.openMatch = null;
-    renderWarband(); renderFeed();
-    var again = $('#warband .duo[data-pair="' + key + '"]') || $('#warband [data-pair="' + key + '"]');
-    if (again && e.detail === 0) again.focus();
-    if (state.pair) $("#pairDetail").scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "nearest" });
-  });
-  $("#ledger").addEventListener("click", function (e) {
-    var match = e.target.closest("[data-duo-match]");
-    if (match) {
-      state.openMatch = match.dataset.duoMatch;
-      renderFeed();
-      var row = $('#clanFeed [data-match="' + state.openMatch + '"]');
-      if (row) { row.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "center" }); row.focus({ preventScroll: true }); }
-      return;
-    }
-    if (!e.target.closest("[data-clear-pair]")) return;
-    var previous = state.pair && state.pair.key;
-    state.pair = null; state.openMatch = null; renderWarband(); renderFeed();
-    if (e.detail === 0) { var first = $('#warband .duo[data-pair="' + previous + '"]') || $('#warband [data-pair]'); if (first) first.focus(); }
+    var opening = state.openMatch !== button.dataset.match;
+    var previous = $("#clanFeed [aria-expanded=true]");
+    if (previous && opening) anchorCollapse(button, previous.parentElement.querySelector(".cs-match-detail"));
+    if (previous) toggleMatch(previous, false);
+    state.openMatch = opening ? button.dataset.match : null;
+    if (opening) toggleMatch(button, true);
   });
 
+  var countryNames = typeof Intl.DisplayNames === "function" ? new Intl.DisplayNames(["en"], { type: "region" }) : null;
+  function countryRows(entries) {
+    var faced = new Set(), countries = new Map();
+    entries.forEach(function (entry) {
+      if (entry.game.vsAI) return;
+      var sides = new Set(entry.members.map(function (p) { return p.team; }).filter(function (team) { return team != null; }));
+      if (!sides.size) return;
+      entry.game.lineup.forEach(function (p) {
+        if (p.isMember || p.team == null || sides.has(p.team) || !/^[a-z]{2}$/i.test(p.country || "") ||
+            p.profileId == null || faced.has(p.profileId)) return;
+        faced.add(p.profileId);
+        var code = p.country.toUpperCase();
+        countries.set(code, (countries.get(code) || 0) + 1);
+      });
+    });
+    return Array.from(countries, function (entry) {
+      return { name: countryNames ? countryNames.of(entry[0]) : entry[0], code: entry[0], games: entry[1], share: 100 * entry[1] / faced.size };
+    }).sort(function (a, b) { return b.games - a.games || a.name.localeCompare(b.name); });
+  }
+
+  function formatName(game) {
+    var sides = new Map();
+    if (!game.lineup.length || game.lineup.some(function (p) { return p.team == null; })) return null;
+    game.lineup.forEach(function (p) { sides.set(p.team, (sides.get(p.team) || 0) + 1); });
+    var counts = Array.from(sides.values());
+    return counts.length === 2 && counts[0] === counts[1] ? counts[0] + "v" + counts[1] : null;
+  }
+  function breakdownRows(tab) {
+    var model = ledgerModel;
+    if (tab === "duos") return model.pairs;
+    if (tab === "opponents") return countryRows(model.games);
+    if (tab === "civ" && state.pair) return model.partnership ? model.partnership.combinations : [];
+    var appearances = [];
+    model.records.forEach(function (entry) {
+      var game = entry.game;
+      if (tab === "civ") game.lineup.forEach(function (p) {
+        if (p.isMember && p.civ) appearances.push({ name: p.civ, image: p.civImage, won: entry.result.won });
+      });
+      else appearances.push({ name: tab === "map" ? game.map : formatName(game), image: tab === "map" ? game.mapImage : null, won: entry.result.won });
+    });
+    return AOE.tally(appearances, "name", "image", Number.MAX_SAFE_INTEGER);
+  }
+
+  function rowIdentity(row, tab) {
+    if (tab === "duos") return '<button type="button" class="cs-pair" data-pair="' + esc(row.key) + '" aria-label="View ' + esc(row.a + ' and ' + row.b) + ' duo statistics">' +
+      '<span class="cs-avatars" aria-hidden="true">' + row.players.map(function (p) { return avatarHTML(p); }).join("") + '</span>' +
+      '<span class="cs-pair-names"><b>' + esc(row.a) + '</b><b>' + esc(row.b) + '</b></span>' +
+      '<svg class="cs-chevron" aria-hidden="true"><use href="#i-chevron"></use></svg></button>';
+    if (tab === "opponents") return '<span class="cs-name">' + flag(row.code) + esc(row.name) + '</span>';
+    return '<span class="cs-name">' + (row.image ? '<img width="26" height="26" loading="lazy" src="' + esc(row.image) + '" alt="">' : '') + esc(row.name) + '</span>';
+  }
+
+  function recordsTable(rows, tab, sort) {
+    var duo = tab === "duos", countries = tab === "opponents", picks = tab === "civ" && !state.pair;
+    var combinations = tab === "civ" && state.pair;
+    var name = { duos: "Partnership", map: "Map", civ: state.pair ? "Civilisation pairing" : "Civilisation", formats: "Format", opponents: "Country" }[tab];
+    var head = countries ? '<th scope="col">Opponents</th><th scope="col">Share</th>' :
+      '<th scope="col">' + (picks ? "Picks" : "Matches") + '</th><th scope="col">W–L</th><th scope="col">Win rate</th>' +
+      (duo ? '<th scope="col" class="cs-form">' + (sort === "run" ? "Win streak" : "Last 5") + '</th>' : '');
+    var names = combinations ? state.pair.players.map(function (p) { return '<th class="cs-civ-col" scope="col">' + esc(p.name) + '</th>'; }).join("") :
+      '<th scope="col">' + name + '</th>';
+    return '<table class="cs-table' + (duo ? ' cs-table--duos' : '') + '"><thead><tr>' + names + head + '</tr></thead><tbody>' +
+      rows.map(function (row) {
+        var extra = countries ? '<td>' + valueHTML(row.share, "percent") + '</td>' :
+          '<td>' + valueHTML(row.wins) + '–' + valueHTML(row.games - row.wins) + '</td><td>' + valueHTML(row.winRate, "percent") + '</td>' +
+          (duo ? '<td class="cs-form">' + (sort === "run" ? valueHTML(row.currentRun) : lineupForm(row.form)) + '</td>' : '');
+        var identity = combinations ? state.pair.players.map(function (player) {
+          var civ = row.civs.find(function (c) { return c.profileId === player.profileId; });
+          return '<td class="cs-civ-col">' + esc(civ.name) + '</td>';
+        }).join("") : '<th scope="row">' + rowIdentity(row, tab) + '</th>';
+        return '<tr' + (duo ? ' data-duo-row="' + esc(row.key) + '"' : '') + '>' + identity + '<td>' + valueHTML(row.games) + '</td>' + extra + '</tr>';
+      }).join("") + '</tbody></table>';
+  }
+
+  function renderBreakdown(animate, toggleRows) {
+    if (!ledgerModel) return;
+    var view = ledgerView(), solo = soloLadder(view.ladder);
+    var hideDuos = Boolean(state.pair || solo);
+    var tab = (view.tab === "duos" && hideDuos) || (view.tab === "formats" && solo) ? "map" : view.tab;
+    var tabs = $("#breakdownViews"), tabHeight = animate ? panelHeight(tabs) : null;
+    $$("[data-view]").forEach(function (button) {
+      var id = button.dataset.view;
+      button.hidden = (id === "duos" && hideDuos) || (id === "formats" && solo);
+      button.setAttribute("aria-pressed", String(id === tab));
+      if (id === "civ") button.textContent = state.pair ? "Civ pairings" : "Civilisations";
+    });
+    var picker = $("#breakdownSort");
+    var order = view.sort === "run" && tab !== "duos" || tab === "opponents" ? "volume" : view.sort;
+    picker.hidden = tab === "opponents";
+    Array.from(picker.options).forEach(function (opt) {
+      if (opt.value === "run") { opt.hidden = opt.disabled = tab !== "duos"; }
+      if (opt.value === "win") opt.textContent = "Highest win rate · 10+ " + (tab === "civ" && !state.pair ? "picks" : "matches");
+    });
+    picker.value = order;
+    if (animate) transitionPanel(tabs, tabHeight, null, false);
+    var rows = breakdownRows(tab);
+    if (order === "win") rows = rows.filter(function (row) { return row.games >= 10; }).sort(function (a,b) { return b.winRate - a.winRate || b.games - a.games; });
+    if (order === "run") rows = rows.slice().sort(function (a,b) { return b.currentRun - a.currentRun || b.games - a.games; });
+    var labels = { duos: "duos", map: "maps", civ: state.pair ? "pairings" : "civilisations", formats: "formats", opponents: "countries" };
+    var empty = order === "win" ? "No entries with 10 or more " + (tab === "civ" && !state.pair ? "picks." : "matches.") :
+      { duos: "No duo results in this range.", map: "No map results in this range.", civ: "No civilisation results in this range.",
+        formats: "No recorded game formats.", opponents: "No opponents with a recorded country." }[tab];
+    var results = $("#clanBreakdown"), from = animate ? panelHeight(results) : null;
+    var tail = toggleRows && !view.showAll && !motionPreference.matches ? $$("tbody tr", results).slice(8) : [];
+    results.innerHTML = rows.length ? recordsTable(view.showAll ? rows : rows.slice(0, 8), tab, order) : '<p class="cs-empty">' + empty + '</p>';
+    if (animate) {
+      var to = results.getBoundingClientRect().height;
+      // Keep the outgoing rows visible beneath the clipping edge while folding.
+      var body = $("tbody", results);
+      tail.forEach(function (row) { row.inert = true; body.appendChild(row); });
+      transitionPanel(results, from, to, !toggleRows, function () {
+        tail.forEach(function (row) { row.remove(); });
+      });
+    }
+    var more = $("#breakdownMore");
+    var actions = $("#breakdownActions"), actionHeight = animate ? panelHeight(actions) : null;
+    more.hidden = rows.length <= 8;
+    more.textContent = view.showAll ? "Show fewer" : "View all " + rows.length + " " + labels[tab];
+    more.setAttribute("aria-expanded", String(view.showAll));
+    if (animate) transitionPanel(actions, actionHeight, null, false);
+  }
+
+  $("#breakdownViews").addEventListener("click", function (e) {
+    var button = e.target.closest("[data-view]");
+    if (!button) return;
+    var view = ledgerView();
+    if (view.tab === button.dataset.view && !view.showAll && view.sort === "volume") return;
+    view.tab = button.dataset.view; view.showAll = false; view.sort = "volume";
+    renderBreakdown(true);
+  });
+  $("#breakdownSort").addEventListener("change", function (e) {
+    var view = ledgerView(); view.sort = e.target.value; view.showAll = false;
+    renderBreakdown(true);
+  });
+  $("#breakdownMore").addEventListener("click", function () {
+    if (ledgerView().showAll) anchorCollapse(this, $("#clanBreakdown"));
+    ledgerView().showAll = !ledgerView().showAll;
+    renderBreakdown(true, true);
+  });
+
+  $("#clanBreakdown").addEventListener("click", function (e) {
+    var row = e.target.closest("[data-duo-row]");
+    if (!row) return;
+    var duo = ledgerModel.pairs.find(function (p) { return p.key === row.dataset.duoRow; });
+    if (!duo) return;
+    state.pair = { key: duo.key, ids: duo.ids, players: duo.players, a: duo.a, b: duo.b, ladder: state.clanView.ladder, period: state.clanView.period,
+      tab: "map", sort: "volume", showAll: false, page: 0 };
+    state.openMatch = null;
+    renderLedger(true);
+    var back = $("#backToDuos");
+    back.focus({ preventScroll: true });
+    if (back.getBoundingClientRect().top < header.getBoundingClientRect().bottom) $("#ledger").scrollIntoView({ behavior: motionPreference.matches ? "instant" : "smooth", block: "start" });
+  });
+  $("#backToDuos").addEventListener("click", function () {
+    if (!state.pair) return;
+    var key = state.pair.key;
+    state.pair = null;
+    state.openMatch = null;
+    renderLedger(true);
+    var button = $('#clanBreakdown [data-pair="' + key + '"]') || $("#breakdownViews [aria-pressed=true]");
+    if (button) button.focus({ preventScroll: true });
+  });
+  window.addEventListener("hashchange", function () {
+    if (window.location.hash !== "#duos") return;
+    state.pair = null; state.openMatch = null;
+    state.clanView.tab = "duos";
+    if (soloLadder(state.clanView.ladder)) setLedgerScope("rm_team", state.clanView.period);
+    else renderLedger(true);
+  });
 
   /* ---------- boot ---------- */
   var ladderIds = CLAN.ladders.map(function (l) { return l.id; });
@@ -1761,6 +1846,8 @@
     state.roster = members.filter(function (m) {
       return CLAN.hidden.indexOf(m.name) === -1;
     });
+    state.roster.forEach(function (m) { registerModes(m.ladders); });
+    syncModes(switchEl, "data-ladder", state.rosterLadder);
 
     statusOK($("#rosterStatus"), sourceLabel());
     renderRoster();
@@ -1772,7 +1859,7 @@
     statusFail($("#ledgerStatus"), "Stored data unavailable");
     $("#rosterTable").innerHTML =
       '<div class="state">The saved data is unavailable. Please try again later.</div>';
-    $("#clanCivs").innerHTML = $("#clanMaps").innerHTML = $("#clanFeed").innerHTML =
+    $("#clanBreakdown").innerHTML = $("#clanFeed").innerHTML =
       '<div class="state">Unavailable.</div>';
   });
 
@@ -1787,7 +1874,8 @@
       if (!cards.size) return;
       state.profileCards = cards;
       renderRoster();
-      if (state.feedReady) renderWarband();
+      paintDossier(true);
+      if (state.feedReady) renderBreakdown();
     });
   }
 
@@ -1796,7 +1884,11 @@
   function loadFeed() {
     var ids = state.roster.map(function (m) { return m.profileId; });
     if (state.feedLoading) return;
-    state.feedLoading = true; state.feedError = false; renderLedgerMore(); renderPeriod();
+    state.feedLoading = true;
+    state.feedError = false;
+    $("#ledgerStatus").textContent = "Loading matches…";
+    renderPeriod("roster");
+    paintDossier();
     renderLedger();
 
     return AOE.fetchClanFeed(ids).then(function (result) {
@@ -1804,14 +1896,11 @@
       state.feedReady = true;
       state.feedHistoryComplete = result.historyComplete !== false;
       state.feed = result.rows;
-      state.games = result.games;
+      state.games = result.games.sort(function (a, b) { return Date.parse(b.date) - Date.parse(a.date) || b.matchId - a.matchId; });
       preparePeriods();
 
-      state.gamesById = new Map(state.games.map(function (game) {
-        return [String(game.matchId), game];
-      }));
-
       renderRoster();
+      paintDossier();
       renderLedger();
       // Saved roster data and webfonts change the height above this deep link.
       // Align after both have rendered so the panel title clears the header.
@@ -1826,10 +1915,12 @@
         if (document.fonts) document.fonts.ready.then(afterFonts);
         else afterFonts();
       }
-    }).catch(function () {
+    }, function () {
       state.feedLoading = false;
       state.feedError = true;
-      renderPeriod(); renderLedger();
+      renderPeriod("roster");
+      paintDossier();
+      renderLedger();
       statusFail($("#ledgerStatus"), "Feed unavailable");
     });
   }
@@ -1837,7 +1928,7 @@
   /* National totals turn "#19" into "#19 of 875 in CZ". One request per
      country per ladder, cached for the session. */
   function loadCountryTotals(forLadder) {
-    var ladder = forLadder || state.ladder;
+    var ladder = forLadder || state.rosterLadder;
     var countries = [];
     state.roster.forEach(function (m) {
       var c = m.country && m.country.toLowerCase();
@@ -1852,77 +1943,14 @@
         if (total != null) state.countryTotals.set(ladder + "|" + c, total);
       });
     })).then(function () {
-      // Repaint whatever is already showing a rank.
-      if (state.openPlayer) paintDossier();
+      // The country denominator is the only field this request changes.
+      // Leave the focused tab, active chart point and table controls in place.
+      if (!state.openPlayer || state.profileLadder !== ladder) return;
+      var standing = $("#rosterTable .player--open [data-national-total]");
+      var player = state.roster.find(function (p) { return p.profileId === state.openPlayer; });
+      if (!standing || !player || !player.country) return;
+      var total = state.countryTotals.get(ladder + "|" + player.country.toLowerCase());
+      if (total && standing.previousElementSibling.textContent !== "—") standing.textContent = "of " + countFormat.format(total);
     });
   }
-
-  /* ============================================================
-     6. Stored Discord presence on the join section
-     ------------------------------------------------------------
-     Independent of the ladder: it has its own request and its own
-     failure mode. If the widget is off the panel stays hidden and
-     the join button is exactly as it was.
-     ============================================================ */
-  (function discordPresence() {
-    var host = $("#presence");
-    if (!host || !window.DISCORD || !CLAN.discordGuildId) return;
-
-    var FACES = 12; // enough to read as a crowd without wrapping to three rows
-
-    function initial(name) {
-      var first = Array.from(String(name || "?"))[0] || "?";
-      return first.toUpperCase();
-    }
-
-    DISCORD.fetchWidget(CLAN.discordGuildId).then(function (guild) {
-      if (!guild.online) {
-        host.innerHTML = '<p class="live-badge presence__count">' +
-          '<span class="dot"></span> 0 online</p>';
-        host.hidden = false;
-        return;
-      }
-
-      var shown = guild.members.slice(0, FACES);
-      var extra = Math.max(0, guild.online - shown.length);
-
-      /* Whatever is worth saying beyond the headline count. */
-      var notes = [];
-      if (guild.inVoice) {
-        notes.push(guild.inVoice + (guild.inVoice === 1 ? " in a voice channel" : " in voice channels"));
-      }
-      if (guild.playingAoe) {
-        notes.push(guild.playingAoe + " in Age of Empires II");
-      }
-
-      host.innerHTML =
-        '<p class="live-badge presence__count"><span class="dot dot--live"></span> ' +
-          guild.online + " online</p>" +
-        (shown.length
-          ? '<div class="presence__faces">' +
-              shown.map(function (member) {
-                var title = member.name +
-                  (member.voice ? " · in " + member.voice : "") +
-                  (member.playing ? " · playing " + member.playing : "");
-                return '<span class="presence__face presence__face--' + esc(member.status) + '" ' +
-                    'title="' + esc(title) + '">' +
-                  (member.avatar
-                    ? '<img src="' + esc(member.avatar) + '" width="34" height="34" ' +
-                      'loading="lazy" alt="' + esc(member.name) + '">'
-                    : '<i aria-hidden="true">' + esc(initial(member.name)) + "</i>" +
-                      '<span class="sr-only">' + esc(member.name) + "</span>") +
-                "</span>";
-              }).join("") +
-              (extra ? '<span class="presence__more">+' + extra + "</span>" : "") +
-            "</div>"
-          : "") +
-        (notes.length ? '<p class="presence__note">' + esc(notes.join(" · ")) + "</p>" : "");
-
-      host.hidden = false;
-    }).catch(function () {
-      /* Widget disabled or unreachable. The join button still works, so
-         say nothing rather than showing a broken panel. */
-      host.hidden = true;
-    });
-  })();
 })();

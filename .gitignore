@@ -2,6 +2,7 @@
 /data/public/
 /data/gg.sqlite*
 /dist/
+/debug.log
 
 # Local macOS metadata.
 .DS_Store

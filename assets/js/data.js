@@ -14,14 +14,8 @@ const CLAN = {
     "We are a Czechoslovakian Age of Empires II clan. If you don't rage or build a nice city, you're in the wrong place.",
   discord: "https://discord.gg/eZrvfwaJJM",
 
-  /* Discord server id, used for the daily "who was online" panel above the
-     join button. It reads the server's public widget, so it needs
-     "Enable Server Widget" left ON in Server Settings -> Widget. Switch
-     the widget off, or blank this out, and the panel simply disappears.
-
-     Note the widget also publishes its own invite, which is currently a
-     DIFFERENT link to `discord` above (.../invite/SzjVCDnw). The site
-     links `discord`; if that one is the stale one, fix it here. */
+  /* The daily refresh can save the server's public widget. The join button
+     always uses the configured invite above. */
   discordGuildId: "833120416603963453",
 
   /* ------------------------------------------------------------------
@@ -100,19 +94,19 @@ const CLAN = {
      These names and one-liners are FLAVOUR TEXT carried over from the
      old site. They are not the real story of each build — swap in what
      actually happened: who made it, on what map, in which game.
-     Format: ["Title", "One-line caption"]
+     Format: ["Title", "One-line caption", "projected light RGB sampled from the city image"]
      ------------------------------------------------------------------ */
   cities: [
-    ["The Inner Keep",      "Built for control, traffic and unreasonable amounts of stone."],
-    ["The Red Citadel",     "A waterfront fortress with enough gates to make every route feel intentional."],
-    ["The Great Granary",   "Protected farms, patient trade and a harbor tucked behind the line."],
-    ["The Black Chapel",    "A compact stronghold where every street returns to the castle."],
-    ["The Marble Quarter",  "A city of towers, courtyards and one extremely committed skyline."],
-    ["The Basilica",        "Stone symmetry, civic pride and a bell tower visible from the whole map."],
-    ["The Siege Corridor",  "A working city wrapped around the machinery that protects it."],
-    ["The Temple City",     "Layered walls and quiet streets built around an impossible monument."],
-    ["The Desert Archive",  "A scholarly district held behind multiple answers to one narrow gate."],
-    ["The Western Wards",   "A chain of neighborhoods, chapels and walls that refuses to end."]
+    ["The Inner Keep",      "Built for control, traffic and unreasonable amounts of stone.", "116,96,69"],
+    ["The Red Citadel",     "A waterfront fortress with enough gates to make every route feel intentional.", "127,105,79"],
+    ["The Great Granary",   "Protected farms, patient trade and a harbor tucked behind the line.", "118,103,66"],
+    ["The Black Chapel",    "A compact stronghold where every street returns to the castle.", "124,109,76"],
+    ["The Marble Quarter",  "A city of towers, courtyards and one extremely committed skyline.", "128,108,78"],
+    ["The Basilica",        "Stone symmetry, civic pride and a bell tower visible from the whole map.", "124,101,68"],
+    ["The Siege Corridor",  "A working city wrapped around the machinery that protects it.", "116,104,80"],
+    ["The Temple City",     "Layered walls and quiet streets built around an impossible monument.", "111,92,61"],
+    ["The Desert Archive",  "A scholarly district held behind multiple answers to one narrow gate.", "123,103,72"],
+    ["The Western Wards",   "A chain of neighborhoods, chapels and walls that refuses to end.", "109,95,71"]
   ],
 
   /* Which ladders to show, and what to call them. */

@@ -135,6 +135,25 @@ function trimMatch(match, images) {
 
 /* ---------- pulls ---------- */
 
+const toNumber = (v) => (v != null && v !== "" && isFinite(Number(v)) ? Number(v) : null);
+
+// Both the clan leaderboard and the individual profile publish ladder records.
+// Missing win counts must stay unknown when either source omits them.
+function ladderRecord(entry) {
+  const games = toNumber(entry.games);
+  const wins = toNumber(entry.wins);
+  return {
+    rating: toNumber(entry.rating),
+    peak: toNumber(entry.maxRating),
+    rank: toNumber(entry.rank),
+    rankCountry: toNumber(entry.rankCountry),
+    wins,
+    losses: toNumber(entry.losses),
+    games,
+    winRate: games > 0 && wins != null ? Math.round(100 * wins / games) : null
+  };
+}
+
 /* Same merge as AOE.fetchRoster: a member who only plays unranked still
    has to appear, so the three boards are unioned on profile id. */
 async function pullRoster(clanTag, ladderIds) {
@@ -170,16 +189,9 @@ async function pullRoster(clanTag, ladderIds) {
       if (id === "rm_team") member.name = entry.name;
 
       member.ladders[id] = {
-        rating: entry.rating != null ? entry.rating : null,
-        peak: entry.maxRating != null ? entry.maxRating : null,
-        rank: entry.rank != null ? entry.rank : null,
-        rankCountry: entry.rankCountry != null ? entry.rankCountry : null,
-        wins: entry.wins != null ? entry.wins : null,
-        losses: entry.losses != null ? entry.losses : null,
-        games: entry.games != null ? entry.games : null,
+        ...ladderRecord(entry),
         streak: entry.streak != null ? entry.streak : null,
-        lastMatch: entry.lastMatchTime || null,
-        winRate: entry.games ? Math.round((entry.wins / entry.games) * 100) : null
+        lastMatch: entry.lastMatchTime || null
       };
     }
   }
@@ -196,8 +208,6 @@ function avatarUrl(profile) {
   if (!/^[a-f0-9]{40}$/i.test(hash)) return null;
   return "https://avatars.steamstatic.com/" + hash + "_full.jpg";
 }
-
-const toNumber = (v) => (v != null && v !== "" && isFinite(Number(v)) ? Number(v) : null);
 
 async function pullProfiles(ids) {
   const cards = {};
@@ -233,10 +243,8 @@ async function pullPlayerDetail(profileId) {
   const boards = {};
   for (const entry of profile.leaderboards || []) {
     boards[entry.leaderboardId] = {
-      rank: entry.rank != null ? entry.rank : null,
-      rating: entry.rating != null ? entry.rating : null,
-      games: entry.games != null ? entry.games : null,
-      total: entry.total != null ? entry.total : null,
+      ...ladderRecord(entry),
+      total: toNumber(entry.total),
       label: entry.abbreviation || entry.leaderboardName || entry.leaderboardId
     };
   }

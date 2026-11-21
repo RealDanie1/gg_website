@@ -76,6 +76,11 @@ try {
   assert.notEqual(store.getJson("meta.json").updatedAt, originalMeta.updatedAt);
   assert.ok(Object.values(store.getJson("meta.json").players).every(player => player.historyComplete));
   assert.equal(store.getJson("discord.json").payload, null, "Disabled widgets clear stale presence");
+  const savedBoard = store.getJson("players/" + first.profileId + ".json").boards.qp_rm_team;
+  assert.equal(savedBoard.winRate, 0, "A recorded zero wins is a valid rate");
+  assert.equal(savedBoard.peak, 1200);
+  assert.equal(savedBoard.rankCountry, 4);
+  assert.equal(store.getJson("roster.json")[0].ladders.rm_team.winRate, null, "An unknown win count cannot yield a zero win rate");
   store.close();
   assert.equal(requests.filter(url => url.includes("/matches?")).length, roster.length + 2, "Matches fetched for another player cannot prematurely stop this player's pagination");
   assert.ok(cards[first.profileId], "Seed includes identity cards");
@@ -86,8 +91,9 @@ try {
 
 function response(value) { return { ok: true, json: async () => value }; }
 function profile(member) {
-  return { ...member, games: 10, ratings: [], leaderboards: [], linkedProfiles: [] };
+  return { ...member, games: 10, ratings: [], linkedProfiles: [],
+    leaderboards: [{ leaderboardId: "qp_rm_team", games: 10, wins: 0, maxRating: 1200, rankCountry: 4 }] };
 }
 function entry(member) {
-  return { profileId: member.profileId, name: member.name, country: member.country, clan: member.clan, rating: 1000, games: 10, wins: 5, losses: 5 };
+  return { profileId: member.profileId, name: member.name, country: member.country, clan: member.clan, rating: 1000, games: 10, wins: null, losses: 5 };
 }

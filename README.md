@@ -19,25 +19,26 @@ Use Node 24 or newer for the tools; SQLite and fetch are built in, with no npm i
 
 ## Data display
 
-Roster and clan controls share one segmented toolbar: game mode on the left and period on the right, stacked into full-width rows on mobile.
+The roster and clan statistics each keep their own game mode and date range. Player profiles start with the roster selection. Duos start with the clan selection. Each detail view keeps its own filters while open.
 
-- **Period controls:** 30 days, 90 days, Year (365 days), All. Roster activity and the clan ledger share the period, ending at the server snapshot date. The complete saved clan feed loads once when the page opens, and all four date windows are prepared in memory. Switching periods shows the stored data immediately without another request or a period-loading state. A selection made during the initial history load is applied when that load finishes. Incomplete source history is labelled and a failed history load offers a retry. All means all recorded history available from the source, not guaranteed complete career coverage. The clicked control stays in place if the roster above it changes height.
-- **Roster:** choose a ladder and click the Player, Country, Elo, Change or Win rate headings to sort. Click the same heading again to reverse the order; the active arrow shows the direction, and missing values stay at the bottom. Sorting starts with Elo, highest first, and the headings wrap into a compact strip on mobile. Current rating and win rate are lifetime ladder figures. Change sums recorded Elo adjustments within the selected period/ladder, excluding AI and unknown results; it is not a difference between official rating snapshots. The sparkline shows up to 20 recent ratings. Last played uses the ladder last-match date with a loaded-feed fallback. Form follows the selected period and ladder, newest first. Missing change data displays a dash.
-- **Dossiers:** expand a player for their profile, linked accounts, peak, rating history and civ/map tables. Dossier mode and rating-chart controls are independent of the roster. Chart windows remain 1M / 6M / 1Y / All. Player tables initially cover their latest 300 matches; Show all stored games displays the saved history without an API request. Captions state the local coverage. Unknown results and AI games are excluded from result tables and duration summaries.
-- **Ledger:** compact Team Ranked, 1v1 Ranked and Unranked buttons match the roster controls, with period buttons alongside. Team Ranked is the default. The combined Ranked category was removed because it overlapped Team and 1v1. One summary strip shows unique games, match win rate (with W/L) and average/median duration; it counts shared matches once. Mode and period control all clan panels. Clan-wide civilisation and map tables appear above Duos, so selecting a partnership does not imply that those tables change.
-- **Civs/maps:** labelled tables with artwork, quiet volume bars, picks/appearances, percentages and W/L totals. Most played is the default. Highest win rate requires at least 10 appearances; the threshold is a browsing aid, not a confidence claim. Tables omit Small sample labels.
-- **The Duos:** the Most played duo spotlight and six initial cards show stored avatars (or initials), W/L, last-five form and the most played map. Maps use unframed artwork. Sort by Most played, Highest win rate (10+ decided games) or Win streak; Show all pairs reveals the rest. See stats opens map records, player-specific civilisation combinations, best recorded win streak and recent games, and filters Latest games. Recent-game arrows open the full match line-up, including a selected match beyond the initial ten feed entries. Close restores the clan feed. Other panels retain the clan-wide scope. Date/mode changes clear pair selection. Shared match lists include unknown results; duo statistics, form, map/combination records and win streaks use agreed decided non-AI team results only. Form is newest first; streaks are within the selected period and count consecutive decided results. Combination crests/names follow the displayed player order; swapped civ assignments remain separate combinations. The #duos deep link aligns after the saved data renders.
-- **Freshness:** the roster and ledger show the last successful server refresh date. Period and chart windows end at that date. Discord shows who was online at its own snapshot date, including bots exposed by the widget. If a transient widget failure retains an older snapshot, its original date is preserved; a disabled widget hides the panel.
+- **Period controls:** 30 days, 90 days, Year (365 days), All. Each period ends at the server snapshot date. The complete saved clan feed loads once when the page opens, and all four date windows are prepared in memory. Switching periods shows the stored data immediately without another request or a period-loading state. A selection made during the initial history load is applied when that load finishes. Incomplete source history is labelled and a failed history load offers a retry. All means all recorded history available from the source, not guaranteed complete career coverage.
+- **Roster:** the default sort is current Elo, highest first. Use the column headings or the mobile sort menu to order by player, country, Elo, Elo change, matches or period win rate. Missing values sort last. Elo comes from the ladder snapshot. The other match figures follow the selected mode and period. Matches include recorded appearances with unknown results. W–L, win rate and last five use decided matches against human players, newest first for form. Elo change sums the recorded adjustments in those decided games. The adjacent sparkline shows up to 20 recorded ratings. Last played uses the ladder's last-match date with a match-history fallback.
+- **Player profiles** open with six headline figures and national and world ranks. The match count, win rate, Elo change, chart, recent results and breakdowns follow the profile’s mode and period. Current Elo, peak Elo, career win rate and ranks describe the selected ladder. Each breakdown totals every eligible match and shows its eight most-played entries. All available ladder buttons appear directly in both toolbars. The six headline figures count between values. The chart and tables resize when filters change or saved history arrives.
+- **Clan statistics** puts one record above the breakdown table and paginated match history. The default team view compares duos by matches, W–L, win rate and recent form. Solo ladders open on maps. The other breakdowns cover civilisation picks, game formats and opponent countries. The activity bars divide the selected range into 24 equal intervals.
+- **Duos** open with the clan’s mode and period. Changing either filter in a duo updates its record, best win streak, activity, breakdowns and shared match history. All duos returns to the clan selection and its table order. The civilisation pairing table has one column per player. Headline matches and win rate count between values on a filter change. The match rows expand to show both teams.
+- **Motion:** Roster rows, profile and match disclosures, breakdowns, and match pages use the same 260 ms transition. Reduced-motion preferences apply immediately. Folding a long list or switching to a lower row keeps the activated control in view.
+- **Freshness:** the roster and ledger show the last successful server refresh date. Period and chart windows end at that date.
+- **Cities:** use the arrows to browse, the city title to open the picker, and the screen or front-row control to zoom in. The gallery also supports swiping and keyboard navigation.
 
 ## Counting rules
 
 `state.games` contains unique matches; `state.feed` contains roster-account appearances.
 
 - Match win rate and duration exclude AI, unknown clan outcomes and split clan outcomes. Four members winning together count as one clan win.
-- Civ/map tables count non-AI member appearances with recorded results. Two members picking two civs contribute two picks. Player dossier tables count one player's games.
+- Clan maps and formats count each eligible match once. Civilisations count one pick per clan member in those matches. A duo contributes one assigned civilisation combination per match when both picks are known. Player tables count one player’s games.
 - Formats count decided, balanced, two-sided matches once each.
-- Pair results require a known shared team and matching non-null results; AI games are excluded. Keys use profile IDs so name changes do not split partnerships. Pairs need two decided games to appear.
-- Opponent-country totals deduplicate profile IDs across selected games and exclude non-clan teammates, AI games, unknown teams and unknown countries. The caption shows country and unique-opponent totals.
+- Pair results require a known shared team and matching non-null results; AI games are excluded. Keys use profile IDs so name changes do not split partnerships. A pair appears after its first decided game. Sorting by win rate requires ten matches or picks.
+- Opponent-country totals deduplicate profile IDs across selected games and exclude non-clan teammates, AI games, unknown teams and unknown countries. The share column is the percentage of unique opponents with a known country.
 - Latest games preserves unknown and split outcomes with neutral markers. Missing results remain null throughout clan and player data paths.
 
 ## Files and editable content
@@ -46,6 +47,7 @@ Roster and clan controls share one segmented toolbar: game mode on the left and 
 | --- | --- |
 | `index.html` | Structure and explanatory copy |
 | `assets/css/styles.css` | Colour/type tokens and responsive layout |
+| `assets/css/roster.css`, `player-profile.css`, `clan-stats.css`, `cinema.css` | Section layouts and controls |
 | `assets/js/data.js` | Clan tag, Discord links, gallery captions, player notes and other copy |
 | `assets/js/snapshot.js` | Shared JSON reader with direct-file snapshot loading |
 | `assets/js/aoe.js` | Published snapshot reads and aggregations |
@@ -59,8 +61,9 @@ Roster and clan controls share one segmented toolbar: game mode on the left and 
 | `.github/workflows/pages.yml` | Daily server refresh, persistence, validation and Pages deployment |
 | `tools/test-data.mjs` | Offline regression checks |
 | `tools/test-duos.mjs` | Duo form, win runs, map records and assigned civ-combination checks |
+| `tools/test-player-scope.mjs` | Roster, player and duo filters, deferred history and displayed statistics |
 
-The visual identity uses black, bone and red, Bebas Neue headings, Inter body/data labels and selected IBM Plex Mono metadata. Win/loss indicators include W/L text. Gallery stories in `data.js` are flavour copy, not verified build credits. The Most played duo spotlight uses the supplied Age of Empires II cover in `assets/img/duos-cover.png`, subdued with a CSS dark overlay and reduced saturation.
+The visual identity uses black, bone and red, Bebas Neue headings, Inter body/data labels and selected IBM Plex Mono metadata. Win/loss indicators include W/L text. Gallery stories in `data.js` are flavour copy, not verified build credits.
 
 About us uses the supplied gameplay screenshot in `assets/img/about-battle.webp`, with a light CSS blur and dark fades behind the copy. The four values form open columns on desktop, a two-column layout on tablets and numbered rows on mobile.
 
@@ -102,7 +105,7 @@ node tools/build.mjs
 node tools/package.mjs
 ```
 
-If a published file is missing, show unavailable/incomplete data and allow local-file retry. Never fall back to external APIs or trigger refresh from a visitor request. Discord requires Enable Server Widget in its server settings; if unavailable, its presence panel hides and the join link remains.
+If a published file is missing, show unavailable/incomplete data and allow local-file retry. Never fall back to external APIs or trigger refresh from a visitor request. The join button uses the Discord invite configured in `data.js`.
 
 ## Source limitations
 

@@ -123,8 +123,13 @@ async function main() {
     let playerFiles = 0;
     let deepest = { name: null, games: 0 };
     for (const member of roster) {
-      const detail = await readJson(path.join("players", member.profileId + ".json"), null);
+      const detail = await readJson("players/" + member.profileId + ".json", null);
       if (!detail) continue;
+      // The mode picker and roster need the small board records before any
+      // player is opened. Keep the much larger rating histories on demand.
+      for (const [id, board] of Object.entries(detail.boards || {})) {
+        if (!member.ladders[id] && (board.games > 0 || board.rating != null)) member.ladders[id] = board;
+      }
 
       const matches = stored
         .map((m) => playerRow(m, member.profileId, images))

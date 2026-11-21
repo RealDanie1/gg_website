@@ -18,11 +18,14 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="preconnect" href="https://cdn.discordapp.com">
   <link rel="preload" as="image" href="assets/img/hero-castle.webp">
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="assets/css/styles.css?v=20261002-discord-call">
+  <link rel="stylesheet" href="assets/css/styles.css">
+  <link rel="stylesheet" href="assets/css/player-profile.css">
+  <link rel="stylesheet" href="assets/css/roster.css">
+  <link rel="stylesheet" href="assets/css/clan-stats.css">
+  <link rel="stylesheet" href="assets/css/cinema.css">
 </head>
 <body>
 
@@ -32,13 +35,6 @@
 <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>
   <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h13M13 6l6 6-6 6"/></symbol>
   <symbol id="i-chevron" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></symbol>
-  <symbol id="i-civ" viewBox="0 0 24 24"><path d="M12 3l7 3v5.5c0 4.2-2.9 7.4-7 8.5-4.1-1.1-7-4.3-7-8.5V6z"/></symbol>
-  <symbol id="i-map" viewBox="0 0 24 24"><path d="M9 5 3 7v12l6-2 6 2 6-2V5l-6 2z"/><path d="M9 5v12M15 7v12"/></symbol>
-  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></symbol>
-  <symbol id="i-duo" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><path d="M3.5 19c0-3 2.4-5 5.5-5s5.5 2 5.5 5"/><circle cx="17.2" cy="9" r="2.3"/><path d="M15.4 14.4c2.7-.5 5.1 1.3 5.1 4.6"/></symbol>
-  <symbol id="i-trend" viewBox="0 0 24 24"><path d="M3 17l5.5-5.5 3.5 3.5L21 6"/><path d="M15.5 6H21v5.5"/></symbol>
-  <symbol id="i-bars" viewBox="0 0 24 24"><path d="M3 20h18M6 20v-7M12 20V5M18 20v-4"/></symbol>
-  <symbol id="i-swords" viewBox="0 0 24 24"><path d="M4 4h3.5l9 9-3.5 3.5-9-9z"/><path d="M20 4h-3.5l-9 9 3.5 3.5 9-9z"/><path d="M14.5 16.5 18 20M9.5 16.5 6 20"/></symbol>
   <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17"/><path d="M12 3.5c2.3 2.4 3.5 5.4 3.5 8.5s-1.2 6.1-3.5 8.5c-2.3-2.4-3.5-5.4-3.5-8.5S9.7 5.9 12 3.5z"/></symbol>
   <symbol id="i-discord" viewBox="0 0 24 24" fill="currentColor" stroke="none">
     <path d="M20.3 4.9A19 19 0 0 0 15.6 3.5l-.2.4a14 14 0 0 0-6.8 0l-.2-.4a19 19 0 0 0-4.7 1.4C.8 9.3 0 13.5.4 17.7a19 19 0 0 0 5.7 2.9l1.2-1.9a12 12 0 0 1-1.9-.9l.5-.4a13.6 13.6 0 0 0 12.2 0l.5.4c-.6.4-1.2.7-1.9.9l1.2 1.9a19 19 0 0 0 5.7-2.9c.5-4.9-.8-9-3.3-12.8ZM8.1 15.2c-1.1 0-2-1-2-2.3s.9-2.3 2-2.3 2 1 2 2.3-.9 2.3-2 2.3Zm7.8 0c-1.1 0-2-1-2-2.3s.9-2.3 2-2.3 2 1 2 2.3-.9 2.3-2 2.3Z"/>
@@ -56,7 +52,7 @@
     <nav class="nav" id="nav" aria-label="Primary">
       <a href="#creed">About us</a>
       <a href="#roster">Roster</a>
-      <a href="#ledger">The Clan</a>
+      <a href="#ledger">Clan stats</a>
       <a href="#cities">Cities</a>
     </nav>
 
@@ -117,123 +113,136 @@
   </section>
 
   <!-- ============================================================ ROSTER -->
-  <section class="section" id="roster">
+  <section class="section lineup" id="roster" aria-labelledby="rosterTitle">
     <div class="wrap">
-      <p class="marker">Roster</p>
-      <div class="section-head">
-        <div>
-          <h2 class="title">Our lineup<span class="period">.</span></h2>
+      <div class="lineup__mast">
+        <div class="lineup__title">
+          <h2 id="rosterTitle">Roster<span class="period">.</span></h2>
+          <p id="rosterCount"></p>
         </div>
-        <p class="live-badge" id="rosterStatus"><span class="dot"></span> Loading…</p>
+        <p class="lineup__refresh" id="rosterStatus">Loading ladder…</p>
       </div>
-
-      <div class="stats-toolbar">
+      <div class="stats-toolbar lineup__filters">
         <div class="segmented" id="ladderSwitch" role="group" aria-label="Choose game mode"></div>
         <div class="segmented period-controls" data-period-controls role="group" aria-label="Roster activity period"></div>
       </div>
-      <p class="coverage" id="rosterCoverage" aria-live="polite"></p>
+      <div class="lineup__context">
+        <p class="coverage" id="rosterCoverage" aria-live="polite"></p>
+        <label class="lineup__mobile-sort" hidden><span class="sr-only">Sort roster</span><select id="rosterSortSelect" aria-label="Sort roster"></select></label>
+      </div>
       <p class="sr-only" id="rosterSortStatus" role="status"></p>
-
       <div class="roster" id="rosterTable">
         <div class="state">Loading the ladder…</div>
       </div>
     </div>
   </section>
 
-  <!-- ============================================================ LEDGER -->
-  <section class="section" id="ledger">
+  <!-- ============================================================ CLAN STATISTICS -->
+  <section class="section clan-stats" id="ledger" aria-labelledby="ledgerTitle">
     <div class="wrap">
-      <p class="marker">The Clan</p>
-      <div class="section-head">
-        <div>
-          <h2 class="title">Stats of the GG Clan<span class="period">.</span></h2>
+      <header class="cs-mast">
+        <div class="cs-heading">
+          <button type="button" id="backToDuos" hidden><span aria-hidden="true">←</span> All duos</button>
+          <h2 id="ledgerTitle">Clan statistics<span class="period">.</span></h2>
         </div>
-        <p class="live-badge" id="ledgerStatus"><span class="dot"></span> Loading…</p>
-      </div>
-
-      <div class="stats-toolbar">
-        <div class="segmented" id="ledgerTabs" role="group" aria-label="Choose game mode"></div>
-        <div class="segmented period-controls" data-period-controls role="group" aria-label="Clan statistics period"></div>
+        <p class="lineup__refresh" id="ledgerStatus">Loading…</p>
+      </header>
+      <div class="stats-toolbar lineup__filters cs-toolbar">
+        <div class="segmented" id="ledgerTabs" role="group" aria-label="Statistics game mode"></div>
+        <div class="segmented period-controls" data-period-controls="ledger" role="group" aria-label="Statistics period"></div>
       </div>
       <p class="coverage" id="ledgerCoverage" aria-live="polite"></p>
-      <!-- Every panel below answers to the same date and mode filters. -->
-      <div class="ledger__stats" id="ledgerStats"></div>
+      <div class="cs-summary" id="ledgerStats"></div>
 
-      <div class="ledger__grid">
-        <section class="ledger__panel ledger__panel--civs">
-          <div class="panel-heading"><p class="data-label">Civilisations</p><label class="select-control"><span class="sr-only">Sort civilisations</span><select data-chart-sort="civ"><option value="volume">Most played</option><option value="win">Highest win rate · 10+ picks</option></select></label></div>
-          <div id="clanCivs"><div class="state">Loading…</div></div>
-        </section>
-        <section class="ledger__panel ledger__panel--maps">
-          <div class="panel-heading"><p class="data-label">Maps</p><label class="select-control"><span class="sr-only">Sort maps</span><select data-chart-sort="map"><option value="volume">Most played</option><option value="win">Highest win rate · 10+ appearances</option></select></label></div>
-          <div id="clanMaps"><div class="state">Loading…</div></div>
-        </section>
-        <section class="ledger__panel ledger__panel--warband" id="duos" aria-labelledby="duosTitle">
-          <div class="duos-heading">
-            <div class="duos-heading__title"><svg class="ico" aria-hidden="true"><use href="#i-duo"></use></svg><h3 id="duosTitle">The Duos</h3></div>
-            <label class="select-control"><span class="sr-only">Sort duos</span><select id="duoSort"><option value="volume">Most played</option><option value="win">Highest win rate · 10+ games</option><option value="run">Win streak</option></select></label>
+      <div class="cs-workspace" id="duos">
+        <section class="cs-breakdown" aria-labelledby="breakdownTitle">
+          <div class="cs-section-head">
+            <h3 id="breakdownTitle">Breakdowns</h3>
+            <select class="cs-sort" id="breakdownSort" aria-label="Sort breakdown">
+              <option value="volume">Most played</option><option value="win">Highest win rate · 10+ matches</option>
+              <option value="run">Current win streak</option>
+            </select>
           </div>
-          <div id="warband"><div class="state">Loading…</div></div>
-          <div id="pairDetail" aria-live="polite"></div>
+          <div class="cs-views" id="breakdownViews" role="group" aria-label="Choose breakdown">
+            <button type="button" data-view="duos" aria-pressed="true">Duos</button>
+            <button type="button" data-view="map" aria-pressed="false">Maps</button>
+            <button type="button" data-view="civ" aria-pressed="false">Civilisations</button>
+            <button type="button" data-view="formats" aria-pressed="false">Formats</button>
+            <button type="button" data-view="opponents" aria-pressed="false">Opponents</button>
+          </div>
+          <div id="clanBreakdown"></div>
+          <div id="breakdownActions">
+            <button type="button" class="cs-show" id="breakdownMore" aria-controls="clanBreakdown" hidden></button>
+          </div>
         </section>
-        <section class="ledger__panel ledger__panel--feed">
-          <p class="data-label data-label--ico"><svg class="ico" aria-hidden="true"><use href="#i-clock"></use></svg>Latest games</p>
-          <div id="feedScope"></div>
-          <div id="clanFeed"><div class="state">Loading…</div></div>
-        </section>
-
-        <section class="ledger__panel ledger__panel--formats">
-          <p class="data-label data-label--ico"><svg class="ico" aria-hidden="true"><use href="#i-swords"></use></svg>Game formats</p>
-          <div id="clanFormats"><div class="state">Loading…</div></div>
-        </section>
-        <section class="ledger__panel ledger__panel--atlas">
-          <p class="data-label data-label--ico"><svg class="ico" aria-hidden="true"><use href="#i-globe"></use></svg>Opponent countries</p>
-          <div id="clanAtlas"><div class="state">Loading…</div></div>
+        <section class="cs-matches" aria-labelledby="matchesTitle">
+          <div class="cs-section-head">
+            <h3 id="matchesTitle">Match history</h3>
+            <div class="cs-pages" id="matchPages" hidden>
+              <span id="matchPageLabel"></span>
+              <button type="button" data-page="-1" aria-label="Previous matches">‹</button>
+              <button type="button" data-page="1" aria-label="Next matches">›</button>
+            </div>
+          </div>
+          <div id="clanFeed"></div>
         </section>
       </div>
-
       <div class="ledger__more" id="ledgerMore" hidden></div>
-
     </div>
   </section>
 
   <!-- ============================================================ CITIES -->
-  <section class="section" id="cities">
-    <div class="wrap">
-      <p class="marker">Cities</p>
-      <div class="section-head">
-        <div>
-          <h2 class="title">Cities worth defending<span class="period">.</span></h2>
+  <section class="cinema" id="cities" aria-labelledby="citiesTitle" tabindex="-1">
+    <h2 class="sr-only" id="citiesTitle">Cities worth defending.</h2>
+    <div class="cinema__space">
+      <div class="cinema__stage">
+        <div class="cinema__house" aria-hidden="true">
+          <picture>
+            <source media="(max-aspect-ratio: 1/1)" srcset="assets/img/cinema/portrait.jpg">
+            <img class="cinema__plate" src="assets/img/cinema/room.jpg" loading="lazy" alt="">
+          </picture>
+          <img class="cinema__crest cinema__first" src="assets/img/logo.png" alt="">
+          <img class="cinema__crest cinema__last" src="assets/img/logo.png" alt="">
+          <div class="cinema__spill"></div>
+          <div class="cinema__air"></div>
         </div>
-      </div>
-
-      <div class="gallery reveal">
-        <div class="gallery__stage">
-          <button class="gallery__open" id="cityOpen" aria-label="Open city full screen">
-            <img id="cityImage" src="assets/img/cities/city-01.webp" width="1600" height="900" alt="">
-          </button>
-          <div class="gallery__caption">
-            <span id="cityIndex">01</span>
-            <div>
-              <h3 id="cityName"></h3>
-              <p id="cityStory"></p>
-            </div>
-          </div>
-        </div>
-
-        <div class="gallery__bar">
-          <button class="nav-btn" id="cityPrev" aria-label="Previous city">
-            <svg class="arrow" aria-hidden="true" style="transform:rotate(180deg)"><use href="#i-arrow"></use></svg>
-          </button>
-          <button class="nav-btn" id="cityNext" aria-label="Next city">
-            <svg class="arrow" aria-hidden="true"><use href="#i-arrow"></use></svg>
-          </button>
-          <span class="gallery__count" id="cityCount"></span>
-        </div>
-
-        <div class="thumbs" id="cityThumbs" role="tablist" aria-label="City gallery"></div>
+        <button type="button" class="cinema__screen" aria-label="Take the front row" title="Take the front row">
+          <span class="cinema__slide">
+            <img src="assets/img/cities/city-02.webp" width="1600" height="701" loading="lazy"
+                 draggable="false" alt="The Red Citadel, an Age of Empires II city built by GG Clan">
+          </span>
+        </button>
       </div>
     </div>
+    <div class="cinema__hud">
+      <button type="button" class="cinema__picker" aria-label="Choose a city" aria-haspopup="dialog"
+              aria-controls="cityDrawer" title="Choose a city">
+        <span class="cinema__kicker">CITIES <svg viewBox="0 0 16 16" aria-hidden="true"><path d="m3 10 5-5 5 5"/></svg></span>
+        <span class="cinema__title" id="cityName">The Red Citadel</span>
+      </button>
+      <div class="cinema__tools">
+        <span class="cinema__count" id="cityCount">02 / 10</span>
+        <button type="button" class="cinema__icon" id="cityPrev" aria-label="Previous city" title="Previous city (left arrow)">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12H4m7-7-7 7 7 7"/></svg>
+        </button>
+        <button type="button" class="cinema__icon" id="cityNext" aria-label="Next city" title="Next city (right arrow)">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h16m-7-7 7 7-7 7"/></svg>
+        </button>
+        <button type="button" class="cinema__icon" id="cityFront" aria-label="Front row" aria-pressed="false" title="Front row (F)">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9V3h6m6 0h6v6m0 6v6h-6m-6 0H3v-6"/></svg>
+        </button>
+      </div>
+    </div>
+    <p class="sr-only" id="cityAnnouncement" aria-live="polite" aria-atomic="true"></p>
+    <dialog class="cinema__drawer" id="cityDrawer" aria-labelledby="cityDrawerTitle">
+      <div class="cinema__drawer-head">
+        <h2 id="cityDrawerTitle">Choose a city</h2>
+        <button type="button" class="cinema__close" aria-label="Close city selection">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 5 14 14M19 5 5 19"/></svg>
+        </button>
+      </div>
+      <div class="cinema__reels"></div>
+    </dialog>
   </section>
 
   <!-- ============================================================ JOIN -->
@@ -261,7 +270,7 @@
       <nav aria-label="Footer">
         <a href="#creed">About us</a>
         <a href="#roster">Roster</a>
-        <a href="#ledger">The Clan</a>
+        <a href="#ledger">Clan stats</a>
         <a href="#cities">Cities</a>
         <a data-discord href="#">Discord</a>
       </nav>
@@ -277,7 +286,6 @@
 <script src="assets/js/data.js"></script>
 <script src="assets/js/snapshot.js"></script>
 <script src="assets/js/aoe.js"></script>
-<script src="assets/js/discord.js"></script>
 <script src="assets/js/main.js"></script>
 </body>
 </html>

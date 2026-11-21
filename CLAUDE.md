@@ -29,12 +29,13 @@ same snapshot over `file://`. Browser scripts remain plain scripts.
 
 ```
 index.html                page markup, all section ids the JS binds to
-assets/css/styles.css     all styling; tokens in :root at the top
+assets/css/styles.css     shared styles and tokens in :root
+assets/css/               roster, player profile, clan statistics and cinema styles
 assets/js/data.js         global `CLAN` — the only content file
 assets/js/snapshot.js     shared JSON/file-preview snapshot reader
 assets/js/aoe.js          global `window.AOE` — stored ladder/match data
 assets/js/discord.js      stored Discord widget with its own timestamp
-assets/js/main.js         one IIFE, six numbered sections, all rendering
+assets/js/main.js         one IIFE, five numbered sections, all rendering
 tools/update.mjs          server APIs -> SQLite
 tools/build.mjs           SQLite -> data/public
 tools/store.mjs           SQLite schema, migration and atomic writes
@@ -55,7 +56,7 @@ data/public/              generated, gitignored; published only through dist/
   code should read the same way; when you change a decision a comment records,
   update the comment.
 - `main.js` is organised as numbered sections (`1. Static content` …
-  `6. Stored Discord presence`). Put new rendering in the section it belongs to.
+  `5. Stored data`). Put new rendering in the section it belongs to.
 - Escape anything interpolated into HTML with the local `esc()` in `main.js`.
 - Colours, spacing, fonts and the type floor are CSS custom properties at the
   top of `styles.css`. Change tokens, not call sites. `--dim` is held at 5.6:1+
@@ -72,7 +73,7 @@ Every data fetch reads `data/public/`. HTTP pages use JSON; direct `file://`
 previews load matching generated `.js` copies through `GG_SNAPSHOT`. Missing files, another clan tag or
 missing ladder coverage must fail or omit optional decoration locally. Never
 contact AoE2 Companion or Discord APIs from browser scripts, including retries,
-profile expansion and full-history controls. Only `tools/update.mjs` fetches
+profile expansion and filter changes. Only `tools/update.mjs` fetches
 upstream data. A refresh commits once after every required response succeeds;
 failed jobs preserve the existing database and live deployment.
 
@@ -83,8 +84,9 @@ refresh; daily and manual refresh jobs update the data on GitHub's server.
 
 `feed.json` contains the complete saved clan history and loads once on page
 open. Period controls only render prepared date windows; never start a request
-when a period changes. `MATCH_PAGE = 300` in `aoe.js` only limits the initial
-match tables in an expanded player dossier.
+when a period changes. Player match breakdowns use the complete clan feed
+filtered to the selected player, mode and period. Rating history comes from
+the player's profile and uses the same date boundaries.
 
 ## Invariants — don't break these
 
@@ -92,11 +94,11 @@ match tables in an expanded player dossier.
 - Keep player/clan result shapes consistent; unknown is null.
 - Period labels must describe actual coverage. Label partial results and offer
   retry on failure. Read README → Data display before changing filters.
-- Match summaries and formats count unique matches. Civ/maps count member
-  appearances. Pair keys use IDs; results require agreed outcomes on known teams.
+- Match summaries, maps and formats count unique matches. Civilisations count
+  member picks. Pair keys use IDs; results require agreed outcomes on known teams.
 - Opponent-country totals count unique opposing profile IDs with known countries,
   excluding non-clan teammates. Latest games retains unknown and split outcomes.
-- Keep README counting rules and the ledger footnote synchronized with code.
+- Keep README counting rules and on-screen table labels synchronized with code.
 - Heavy profile histories remain deferred until a dossier opens.
 
 ## Editing content
